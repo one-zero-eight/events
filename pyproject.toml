@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "innohassle-events"
+version = "0.1.0"
+description = ""
+authors = ["Ruslan Bel'kov <ruslan.belckov@yandex.ru>"]
+readme = "README.md"
+packages = [{ include = "innohassle_events" }]
+
+[tool.poetry.dependencies]
+python = "^3.10,<3.12"
+sqlalchemy = { extras = ["asyncpg"], version = "^2.0.7", allow-prereleases = true }
+fastapi = "^0.95.0"
+fastapi-filter = "^0.5.4"
+aiohttp = "^3.8.4"
+asyncpg = { version = "^0.27.0", allow-prereleases = true }
+alembic = "^1.10.2"
+uvicorn = "^0.21.1"
+pydantic = {extras = ["email"], version = "^1.10.7"}
+starlette = {extras = ["corsmiddleware"], version = "^0.26.1"}
+
+[tool.poetry.group.dev.dependencies]
+sqlalchemy2-stubs = "^0.0.2a32"
+coverage = "^7.2.2"
+pytest = {extras = ["asyncio"], version = "^7.2.2"}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
