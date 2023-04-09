@@ -12,12 +12,6 @@ class Settings(BaseSettings):
 
     ENVIRONMENT: Environment = Environment.PRODUCTION
 
-    SENTRY_DSN: str | None
-
-    CORS_ORIGINS: list[str]
-    CORS_ORIGINS_REGEX: str | None
-    CORS_HEADERS: list[str]
-
     APP_VERSION: str = "0.1.0"
 
     @root_validator(skip_on_failure=True)
@@ -31,6 +25,7 @@ class Settings(BaseSettings):
 settings = Settings(_env_file=".env", _env_file_encoding="utf-8")
 
 app_configs: dict[str, Any] = {"title": "App API"}
+
 if settings.ENVIRONMENT.is_deployed:
     app_configs["root_path"] = f"/v{settings.APP_VERSION}"
 

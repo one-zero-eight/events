@@ -11,12 +11,16 @@
 ## Structure
 
     .
-    ├── api                 # API implementation             
-    │   ├── api                     # API server configuration, API models and routes
-    │   ├── crud                    # CRUD interface over the database
+    ├── src                 # API implementation             
+    │   ├── core                    # Main service
+    │   ├── {service_name}                 # Common service
     │   ├── database                # Database configuration and models
-    │   ├── tests                   # Automated tests(unit)
-    │   └── run.py                  # Script to run the API server
+    │   └── main.py                 # FastAPI app instance
     ├── docs                # Documentation (server, builders, templates)
+    ├── tests               # Automated tests(unit)
+    ├── scripts             # Scripts (f.e. migration)
+    ├── alembic             # Alembic migrations 
+    ├── pyproject.toml      # Project dependencies
     ├── LICENSE
     └── README.md
+        
