@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import BaseSettings, PostgresDsn, root_validator
 
-from src.constants import Environment
+from constants import Environment
 
 
 class Settings(BaseSettings):
@@ -22,12 +22,12 @@ class Settings(BaseSettings):
 
 
 # from env file or env variables
-settings = Settings(_env_file=".env", _env_file_encoding="utf-8")
+# settings = Settings(_env_file=".env", _env_file_encoding="utf-8")
 
 app_configs: dict[str, Any] = {"title": "App API"}
-
-if settings.ENVIRONMENT.is_deployed:
-    app_configs["root_path"] = f"/v{settings.APP_VERSION}"
-
-if not settings.ENVIRONMENT.is_debug:
-    app_configs["openapi_url"] = None  # hide docs
+#
+# if settings.ENVIRONMENT.is_deployed:
+#     app_configs["root_path"] = f"/v{settings.APP_VERSION}"
+#
+# if not settings.ENVIRONMENT.is_debug:
+#     app_configs["openapi_url"] = None  # hide docs

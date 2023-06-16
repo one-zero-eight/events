@@ -1,1 +1,0 @@
-# Docs for Events API in InNoHassle ecosystem
