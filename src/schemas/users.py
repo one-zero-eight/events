@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel
+from schemas._base import BaseSchema
 
 
 class UserPermissionEnum(Enum):
@@ -9,7 +9,7 @@ class UserPermissionEnum(Enum):
     ADMIN = 'admin'
 
 
-class User(BaseModel):
+class User(BaseSchema):
     """
     Pydantic model that represents a user instance
     """

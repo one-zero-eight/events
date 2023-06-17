@@ -1,10 +1,9 @@
 from typing import Dict, List
-from User import User
 
-from pydantic import BaseModel
+from schemas._base import BaseSchema
 
 
-class PermissionStruct(BaseModel):
+class PermissionStruct(BaseSchema):
     """
     Represents a permission structure with role name and a list of commands applicable to a group of users and events.
     """
@@ -14,7 +13,7 @@ class PermissionStruct(BaseModel):
     """The list of commands applicable to the role."""
 
 
-class UserGroup(BaseModel):
+class UserGroup(BaseSchema):
     """Represents a group of users"""
 
     id: str
@@ -25,5 +24,11 @@ class UserGroup(BaseModel):
 
     permission_struct: PermissionStruct
     """PermissionName/ID and list of commands applicable to group of users and events."""
-    user_map: Dict[User, PermissionStruct]
+    user_map: Dict['User', PermissionStruct]
     """Pair of user and it’s role/status in group."""
+
+
+# fix circular imports
+from schemas.users import User
+
+UserGroup.update_forward_refs()

@@ -1,13 +1,10 @@
 from typing import List
 
-from pydantic import BaseModel
-
-from schemas.EventGroup import EventGroup
-from schemas.Event import Event
-from schemas.Tag import HasOwnerMixin, HasModeratorsMixin, HasTagMixin
+from ._base import BaseSchema
+from ._mixins import HasOwnerMixin, HasModeratorsMixin, HasTagMixin
 
 
-class EventChain(BaseModel, HasOwnerMixin, HasModeratorsMixin, HasTagMixin):
+class EventChain(BaseSchema, HasOwnerMixin, HasModeratorsMixin, HasTagMixin):
     """
     Represents the main Pydantic model.
     """
@@ -21,9 +18,16 @@ class EventChain(BaseModel, HasOwnerMixin, HasModeratorsMixin, HasTagMixin):
     """The short description that contains plain text."""
     description: str
     """The full description that can contain various formats (e.g., markdown, HTML)."""
-    events: List[Event]
+    events: List['Event']
     """The events included in this chain."""
-    connected_event_groups: List[EventGroup]
+    connected_event_groups: List['EventGroup']
     """The event groups to which this chain has been added."""
-    ignored_event_groups: List[EventGroup]
+    ignored_event_groups: List['EventGroup']
     """The event groups in which this chain should be ignored."""
+
+
+# fix circular imports
+from .event_groups import EventGroup
+from .events import Event
+
+EventChain.update_forward_refs()
