@@ -1,26 +1,28 @@
 # Events API in InNoHassle ecosystem
+
 > Trust the system more than the memory
 
-## Features
+## Table of contents
 
-- Event creation and storage system
-- User interest analysis
-- Moderation
-- Subscriptions
+- [Description](#description)
+- [How to use](#how-to-use)
 
-## Structure
+## Description
 
-    .
-    ├── src                 # API implementation             
-    │   ├── core                    # Main service
-    │   ├── {service_name}                 # Common service
-    │   ├── database                # Database configuration and models
-    │   └── main.py                 # FastAPI app instance
-    ├── docs                # Documentation (server, builders, templates)
-    ├── tests               # Automated tests(unit)
-    ├── scripts             # Scripts (f.e. migration)
-    ├── alembic             # Alembic migrations 
-    ├── pyproject.toml      # Project dependencies
-    ├── LICENSE
-    └── README.md
-        
+This is the API for events in InNoHassle ecosystem. It is written in Python 3.10 using [FastAPI](https://fastapi.tiangolo.com/).
+
+
+## How to use
+
+1. Install dependencies with [poetry](https://python-poetry.org/docs/).
+    ```bash
+    poetry install
+    ```
+2. Setup environment variables in `.env.local` file.
+    ```bash
+    cp .env.example .env.local
+    ```
+3. Run the ASGI server.
+    ```bash
+    poetry run uvicorn src.main:app --reload
+    ```
