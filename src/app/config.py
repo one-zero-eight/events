@@ -1,33 +1,18 @@
-from typing import Any
-
-from pydantic import BaseSettings, PostgresDsn, root_validator
-
-from constants import Environment
+from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
-    DATABASE_URL: PostgresDsn
-
-    SITE_DOMAIN: str = "myapp.com"
-
-    ENVIRONMENT: Environment = Environment.PRODUCTION
+    """
+    Settings for the application. Get settings from .env file.
+    """
+    SITE_DOMAIN: str = "api.innohassle.ru"
 
     APP_VERSION: str = "0.1.0"
+    APP_DESCRIPTION: str = "InNoHassle-Events API"
 
-    @root_validator(skip_on_failure=True)
-    def validate_sentry_non_local(cls, data: dict[str, Any]) -> dict[str, Any]:
-        if data["ENVIRONMENT"].is_deployed and not data["SENTRY_DSN"]:
-            raise ValueError("Sentry is not set")
-        return data
+    class Config:
+        env_file = ".env"
+        env_file_encoding = "utf-8"
 
 
-# from env file or env variables
-# settings = Settings(_env_file=".env", _env_file_encoding="utf-8")
-
-app_configs: dict[str, Any] = {"title": "App API"}
-#
-# if settings.ENVIRONMENT.is_deployed:
-#     app_configs["root_path"] = f"/v{settings.APP_VERSION}"
-#
-# if not settings.ENVIRONMENT.is_debug:
-#     app_configs["openapi_url"] = None  # hide docs
+settings = Settings()
