@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.schemas import CreateEventGroup
+from src.app.schemas import CreateEventGroup
 from ._types import ID
 
 router = APIRouter(prefix="/event-groups", tags=["Event Groups"])

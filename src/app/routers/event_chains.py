@@ -1,4 +1,4 @@
-from app.schemas import CreateEventChain, ViewEventChain
+from src.app.schemas import CreateEventChain, ViewEventChain
 from fastapi import APIRouter
 from ._types import ID
 

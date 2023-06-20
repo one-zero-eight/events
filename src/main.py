@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 
-from app.routers import routers
-from app.schemas import schemas_router
+from src.app.routers import routers
+from src.app.schemas import schemas_router
+
+from src.app.config import settings
 
 app = FastAPI()
 
@@ -13,8 +15,8 @@ for router in routers:
 
 
 class VersionInfo(BaseModel):
-    version = "1.0.0"
-    description = "InNoHassle-Events API"
+    version = settings.APP_VERSION
+    description = settings.APP_DESCRIPTION
 
 
 @app.get("/", tags=["Root"])

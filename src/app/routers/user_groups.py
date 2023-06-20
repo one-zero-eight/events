@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.schemas import UserGroup
+from src.app.schemas import UserGroup
 from ._types import ID
 
 router = APIRouter(prefix="/user-groups", tags=["User Groups"])

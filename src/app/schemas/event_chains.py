@@ -51,7 +51,7 @@ class ViewEventChain(BaseEventChain, HasIdMixin, ORMMixin, metaclass=CollectConf
 
 
 # fix circular imports
-from .events import ViewEvent
-from .event_groups import ViewEventGroup
+from src.app.schemas.events import ViewEvent
+from src.app.schemas.event_groups import ViewEventGroup
 
 ViewEventChain.update_forward_refs()

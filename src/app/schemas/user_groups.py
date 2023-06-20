@@ -38,6 +38,6 @@ class ViewUserGroup(BaseUserGroup, HasIdMixin, ORMMixin, metaclass=CollectConfig
 
 
 # fix circular imports
-from .users import ViewUser
+from src.app.schemas.users import ViewUser
 
 ViewUserGroup.update_forward_refs()
