@@ -1,26 +1,22 @@
-import json
-from typing import Any, Union
-
 from fastapi import FastAPI
+from pydantic import BaseModel
 
-from schemas import all_schemas
-
-from routers.routers import router as router_functions
+from app.routers import routers
+from app.schemas import schemas_router
 
 app = FastAPI()
 
-app.include_router(router_functions)
+app.include_router(schemas_router)
+
+for router in routers:
+    app.include_router(router)
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+class VersionInfo(BaseModel):
+    version = "1.0.0"
+    description = "InNoHassle-Events API"
 
 
-@app.get("/schemas", response_model=dict[str, dict[str, Any]]
-                                    | Union[*all_schemas])
-async def schemas():
-    schems = {}
-    for schema in all_schemas:
-        schems[schema.__name__] = schema.schema()
-    return schems
+@app.get("/", tags=["Root"])
+async def version() -> VersionInfo:
+    return VersionInfo()

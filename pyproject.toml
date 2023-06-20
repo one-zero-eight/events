@@ -9,14 +9,12 @@ packages = [{ include = "innohassle_events" }]
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"
 sqlalchemy = { extras = ["asyncpg"], version = "^2.0.7", allow-prereleases = true }
-fastapi = "^0.95.0"
-fastapi-filter = "^0.5.4"
 aiohttp = "^3.8.4"
 asyncpg = { version = "^0.27.0", allow-prereleases = true }
 alembic = "^1.10.2"
-uvicorn = "^0.21.1"
 pydantic = {extras = ["dotenv"], version = "^1.10.7"}
-starlette = {extras = ["corsmiddleware"], version = "^0.26.1"}
+fastapi = "^0.97.0"
+uvicorn = "^0.22.0"
 
 [tool.poetry.group.dev.dependencies]
 sqlalchemy2-stubs = "^0.0.2a32"

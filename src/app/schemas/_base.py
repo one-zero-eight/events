@@ -5,4 +5,5 @@ class BaseSchema(BaseModel):
     """
     Base schema for all schemas.
     """
+
     ...
