@@ -11,6 +11,11 @@ class Settings(BaseSettings):
     APP_VERSION: str
     APP_DESCRIPTION: str = "InNoHassle-Events API"
 
+    SESSION_SECRET_KEY: str
+
+    INNOPOLIS_SSO_CLIENT_ID: str
+    INNOPOLIS_SSO_CLIENT_SECRET: str
+
     class Config:
         env_file = ".env.local"
         env_file_encoding = "utf-8"
