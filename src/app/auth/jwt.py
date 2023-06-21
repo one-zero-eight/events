@@ -1,4 +1,4 @@
-__all__ = ("create_access_token", "verify_token", "Token", "TokenData")
+__all__ = ["create_access_token", "verify_token", "Token", "TokenData"]
 
 from datetime import timedelta, datetime
 from typing import Optional

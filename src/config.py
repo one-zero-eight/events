@@ -23,8 +23,14 @@ class Settings(BaseSettings):
     SESSION_SECRET_KEY: str
     JWT_SECRET_KEY: str
 
-    INNOPOLIS_SSO_CLIENT_ID: str
-    INNOPOLIS_SSO_CLIENT_SECRET: str
+    AUTH_REDIRECT_URI_PREFIX: str = "https://innohassle.campus.innopolis.university/oauth2/callback"
+
+    # Use these only in production
+    INNOPOLIS_SSO_CLIENT_ID: str = ""
+    INNOPOLIS_SSO_CLIENT_SECRET: str = ""
+
+    # Use dev auth while development
+    DEV_AUTH_EMAIL: str = ""
 
     USERS_JSON_PATH: Path = Path("src/repositories/users/users.json")
 

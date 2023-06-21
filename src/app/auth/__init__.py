@@ -1,4 +1,4 @@
-__all__ = ("oauth", "router", "get_current_user_email")
+__all__ = ["oauth", "router", "get_current_user_email"]
 
 from authlib.integrations.starlette_client import OAuth
 from fastapi import APIRouter, Depends, HTTPException
@@ -23,3 +23,4 @@ def get_current_user_email(data: str = Depends(oauth2_scheme)):
 
 # Register all OAuth applications and routes
 import src.app.auth.innopolis  # noqa
+import src.app.auth.dev  # noqa
