@@ -1,4 +1,6 @@
-from pydantic import BaseSettings
+from pathlib import Path
+
+from pydantic import BaseSettings, validator
 
 
 class Settings(BaseSettings):
@@ -15,6 +17,15 @@ class Settings(BaseSettings):
 
     INNOPOLIS_SSO_CLIENT_ID: str
     INNOPOLIS_SSO_CLIENT_SECRET: str
+
+    USERS_JSON_PATH: Path = Path("src/repositories/users/users.json")
+
+    @validator("USERS_JSON_PATH", pre=True, always=True)
+    def set_relative_path(cls, v):
+        v = Path(v)
+        if not v.is_absolute():
+            v = Path(__file__).parent.parent / v
+        return v
 
     class Config:
         env_file = ".env.local"

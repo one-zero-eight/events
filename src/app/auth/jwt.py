@@ -6,7 +6,7 @@ from typing import Optional
 from jose import JWTError, jwt
 from pydantic import BaseModel
 
-from src.app.config import settings
+from src.config import settings
 
 ALGORITHM = "HS256"
 
