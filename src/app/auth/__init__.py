@@ -18,7 +18,7 @@ def get_current_user_email(data: str = Depends(oauth2_scheme)):
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    return verify_token(data, credentials_exception)
+    return verify_token(data, credentials_exception).email
 
 
 # Register all OAuth applications and routes
