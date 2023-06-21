@@ -11,7 +11,9 @@ class Settings(BaseSettings):
     APP_VERSION: str
     APP_DESCRIPTION: str = "InNoHassle-Events API"
 
+    # You can run 'openssl rand -hex 32' to generate keys
     SESSION_SECRET_KEY: str
+    JWT_SECRET_KEY: str
 
     INNOPOLIS_SSO_CLIENT_ID: str
     INNOPOLIS_SSO_CLIENT_SECRET: str

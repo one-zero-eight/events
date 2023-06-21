@@ -1,6 +1,7 @@
 from starlette.requests import Request
 
 from src.app.auth import router, oauth
+from src.app.auth.jwt import create_access_token, Token
 from src.app.config import settings
 
 innopolis_sso = oauth.register(
@@ -20,10 +21,8 @@ async def login_via_innopolis(request: Request):
 
 
 @router.get("/innopolis/token")
-async def auth_via_innopolis(request: Request):
+async def auth_via_innopolis(request: Request) -> Token:
     token = await oauth.innopolis.authorize_access_token(request)
     user_info = token['userinfo']
     email = user_info["email"]
-    name = user_info["commonname"]
-    # TODO: Create user and return JWT
-    return {"email": email, "name": name}
+    return create_access_token(email)
