@@ -20,19 +20,7 @@ all_schemas = [
     ViewEventGroup, CreateEventGroup,
     ViewTag, CreateTag,
 ]
-
-any_scheme = Union[
-    ViewEvent, CreateEvent,
-    ViewUser, CreateUser,
-    ViewUserGroup, CreateUserGroup,
-    ViewEventChain, CreateEventChain,
-    ViewEventGroup, CreateEventGroup,
-    ViewTag, CreateTag,
-]
 # fmt: on
-
-# for schema in all_schemas:
-#     schema.update_forward_refs()
 
 schemas_router = APIRouter(tags=["Schemas"])
 schema_dict = {
@@ -51,7 +39,7 @@ class Schemas(BaseModel):
 
 @schemas_router.get(
     "/schemas",
-    response_model=Schemas | any_scheme,
+    response_model=Schemas,
     responses={
         200: {
             "description": "Returns a dictionary of all schemas.",
