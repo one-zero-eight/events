@@ -9,15 +9,15 @@ router = APIRouter(prefix="/users", tags=["Users"])
 
 @router.get("/", response_model=list[ViewUser])
 async def get_users(
-        user_repository: Annotated[UserRepository, Depends(get_user_repository)]
+    user_repository: Annotated[UserRepository, Depends(get_user_repository)]
 ):
     return [ViewUser.from_orm(user) for user in user_repository.get_users()]
 
 
 @router.get("/me", response_model=ViewUser)
 async def get_me(
-        email: Annotated[str, Depends(get_current_user_email)],
-        user_repository: Annotated[UserRepository, Depends(get_user_repository)],
+    email: Annotated[str, Depends(get_current_user_email)],
+    user_repository: Annotated[UserRepository, Depends(get_user_repository)],
 ):
     try:
         return ViewUser.from_orm(user_repository.get_user_by_email(email))
