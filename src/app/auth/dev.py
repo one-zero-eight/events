@@ -8,7 +8,9 @@ from src.app.auth import router
 from src.app.auth.jwt import create_access_token, Token
 from src.config import settings, Environment
 
-enabled = bool(settings.DEV_AUTH_EMAIL) and settings.ENVIRONMENT == Environment.DEVELOPMENT
+enabled = (
+    bool(settings.DEV_AUTH_EMAIL) and settings.ENVIRONMENT == Environment.DEVELOPMENT
+)
 redirect_uri = settings.AUTH_REDIRECT_URI_PREFIX + "/dev"
 
 if enabled:

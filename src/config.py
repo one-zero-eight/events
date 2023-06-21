@@ -1,7 +1,7 @@
 from enum import StrEnum
 from pathlib import Path
 
-from pydantic import BaseSettings, validator
+from pydantic import BaseSettings, validator, SecretStr
 
 
 class Environment(StrEnum):
@@ -20,14 +20,16 @@ class Settings(BaseSettings):
     ENVIRONMENT = Environment.DEVELOPMENT
 
     # You can run 'openssl rand -hex 32' to generate keys
-    SESSION_SECRET_KEY: str
-    JWT_SECRET_KEY: str
+    SESSION_SECRET_KEY: SecretStr
+    JWT_SECRET_KEY: SecretStr
 
-    AUTH_REDIRECT_URI_PREFIX: str = "https://innohassle.campus.innopolis.university/oauth2/callback"
+    AUTH_REDIRECT_URI_PREFIX: str = (
+        "https://innohassle.campus.innopolis.university/oauth2/callback"
+    )
 
     # Use these only in production
-    INNOPOLIS_SSO_CLIENT_ID: str = ""
-    INNOPOLIS_SSO_CLIENT_SECRET: str = ""
+    INNOPOLIS_SSO_CLIENT_ID: SecretStr = ""
+    INNOPOLIS_SSO_CLIENT_SECRET: SecretStr = ""
 
     # Use dev auth while development
     DEV_AUTH_EMAIL: str = ""

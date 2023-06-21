@@ -32,13 +32,17 @@ def _create_access_token(data: dict, expires_delta: timedelta):
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(
+        to_encode, settings.JWT_SECRET_KEY.get_secret_value(), algorithm=ALGORITHM
+    )
     return encoded_jwt
 
 
 def verify_token(token: str, credentials_exception):
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(
+            token, settings.JWT_SECRET_KEY.get_secret_value(), algorithms=[ALGORITHM]
+        )
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception

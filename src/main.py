@@ -6,7 +6,9 @@ from src.app.routers import routers
 from src.config import settings
 
 app = FastAPI()
-app.add_middleware(SessionMiddleware, secret_key=settings.SESSION_SECRET_KEY)
+app.add_middleware(
+    SessionMiddleware, secret_key=settings.SESSION_SECRET_KEY.get_secret_value()
+)
 
 for router in routers:
     app.include_router(router)
