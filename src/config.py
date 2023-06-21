@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     APP_VERSION = "0.1.0"
     APP_DESCRIPTION = "InNoHassle-Events API"
 
-    ENVIRONMENT = Environment.DEVELOPMENT
+    ENVIRONMENT: Environment = Environment.DEVELOPMENT
 
     # You can run 'openssl rand -hex 32' to generate keys
     SESSION_SECRET_KEY: SecretStr
