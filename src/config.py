@@ -6,10 +6,8 @@ class Settings(BaseSettings):
     Settings for the application. Get settings from .env file.
     """
 
-    SITE_DOMAIN: str = "api.innohassle.ru"
-
-    APP_VERSION: str
-    APP_DESCRIPTION: str = "InNoHassle-Events API"
+    APP_VERSION = "0.1.0"
+    APP_DESCRIPTION = "InNoHassle-Events API"
 
     # You can run 'openssl rand -hex 32' to generate keys
     SESSION_SECRET_KEY: str
