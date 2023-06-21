@@ -1,7 +1,7 @@
 __all__ = []
 
+from typing import Optional
 from fastapi import status, HTTPException
-from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
 from src.app.auth import router
@@ -30,16 +30,16 @@ def check_enabled():
 
 
 @router.get("/dev/login")
-async def login_via_dev(request: Request):
+async def login_via_dev(user_id: Optional[str] = None):
     check_enabled()
     url = redirect_uri
-    if request.query_params.get("user_id", None):
-        url += "?user_id=" + request.query_params.get("user_id")
+    if user_id:
+        url += "?user_id=" + user_id
     return RedirectResponse(redirect_uri, status_code=302)
 
 
 @router.get("/dev/token")
-async def auth_via_dev(request: Request) -> Token:
+async def auth_via_dev(user_id: Optional[str] = None) -> Token:
     check_enabled()
-    user_id = request.query_params.get("user_id", settings.DEV_AUTH_EMAIL)
+    user_id = user_id or settings.DEV_AUTH_EMAIL
     return create_access_token(user_id)
