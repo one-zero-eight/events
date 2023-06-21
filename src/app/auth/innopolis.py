@@ -21,7 +21,6 @@ if enabled:
 
     @router.get("/innopolis/login")
     async def login_via_innopolis(request: Request):
-        check_enabled()
         return await oauth.innopolis.authorize_redirect(request, redirect_uri)
 
     @router.get("/innopolis/token")
