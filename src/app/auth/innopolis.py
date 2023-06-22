@@ -14,7 +14,7 @@ from src.config import settings
 
 
 class UserInfoFromSSO(BaseModel):
-    email: str = Field(alias="upn")
+    email: str
     commonname: str | None
     status: str | None = Field(alias="Status")
 
@@ -32,14 +32,16 @@ if enabled:
         client_kwargs={"scope": "openid"},
     )
 
+
     @router.get("/innopolis/login")
     async def login_via_innopolis(request: Request):
         return await oauth.innopolis.authorize_redirect(request, redirect_uri)
 
+
     @router.get("/innopolis/token")
     async def auth_via_innopolis(
-        request: Request,
-        user_repository: Annotated[UserRepository, Depends(get_user_repository)],
+            request: Request,
+            user_repository: Annotated[UserRepository, Depends(get_user_repository)],
     ) -> Token:
         token = await oauth.innopolis.authorize_access_token(request)
         user_info_dict: dict = token["userinfo"]

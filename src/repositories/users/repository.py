@@ -1,37 +1,51 @@
 import json
 from pathlib import Path
 
+from pydantic import BaseModel, Field
 from pydantic.tools import parse_obj_as
 
 from src.repositories.users.models import InJsonUser
 
 
+class UserStorage(BaseModel):
+    users: list[InJsonUser] = Field(default_factory=list)
+
+    def append(self, user: InJsonUser):
+        self.users.append(user)
+
+    def save_json(self, file_path: Path):
+        with open(file_path, "w", encoding="utf-8") as f:
+            js = self.json(indent=4, ensure_ascii=False)
+            f.write(js)
+
+
 class UserRepository:
     file_path: Path
-    users: list[InJsonUser]
+    user_storage: UserStorage
 
-    def __init__(self, file_path: Path):
+    def __init__(self, file_path: Path, out_file_path: Path):
         self.file_path = file_path
-        self.users = self._load_users(file_path)
+        self.out_file_path = out_file_path
+        self.user_storage = self._load_users(file_path)
 
     @staticmethod
-    def _load_users(file_path: Path) -> list[InJsonUser]:
+    def _load_users(file_path: Path) -> UserStorage:
         with open(file_path, "r", encoding="utf-8") as f:
-            users_list = json.load(f)
-        return parse_obj_as(list[InJsonUser], users_list)
+            users_dict = json.load(f)
+        return parse_obj_as(UserStorage, users_dict)
 
-    def get_users(self):
-        return self.users
+    def get_users(self) -> list[InJsonUser]:
+        return self.user_storage.users.copy()
 
     def get_user_by_email(self, email: str) -> InJsonUser:
-        for user in self.users:
+        for user in self.user_storage.users:
             if user.email == email:
                 return user.copy()
         raise ValueError(f"User with email {email} not found")
 
     def create_user(self, user: InJsonUser):
         # ensure that user with such email does not exist
-        self.users.append(user)
+        self.user_storage.append(user)
         self._save_users()
 
     def update_user(self, email: str, **kwargs):
@@ -47,5 +61,9 @@ class UserRepository:
             self.create_user(InJsonUser(email=email, **kwargs))
 
     def _save_users(self):
-        with open(self.file_path, "w", encoding="utf-8") as f:
-            json.dump(self.users, f, indent=4)
+        self.user_storage.save_json(self.out_file_path)
+
+    def extend_favorites(self, email: str, *favorites: str):
+        user = self.get_user_by_email(email)
+        user.favorites.extend(favorites)
+        self._save_users()
