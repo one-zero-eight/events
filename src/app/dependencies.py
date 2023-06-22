@@ -4,7 +4,7 @@ from src.config import settings
 from src.repositories import UserRepository
 
 user_repository = UserRepository(
-    settings.INNOPOLIS_USER_DATA_PATH, settings.USERS_JSON_PATH
+    settings.USERS_JSON_PATH, settings.INNOPOLIS_USER_DATA_PATH
 )
 
 
