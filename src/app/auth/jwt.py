@@ -20,9 +20,9 @@ class TokenData(BaseModel):
     email: Optional[str] = None
 
 
-def create_access_token(user_id: str):
+def create_access_token(email: str):
     access_token = _create_access_token(
-        data={"sub": user_id},
+        data={"sub": email},
         expires_delta=timedelta(days=90),
     )
     return Token(access_token=access_token, token_type="bearer")
@@ -38,7 +38,7 @@ def _create_access_token(data: dict, expires_delta: timedelta):
     return encoded_jwt
 
 
-def verify_token(token: str, credentials_exception):
+def verify_token(token: str, credentials_exception) -> TokenData:
     try:
         payload = jwt.decode(
             token, settings.JWT_SECRET_KEY.get_secret_value(), algorithms=[ALGORITHM]

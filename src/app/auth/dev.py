@@ -20,13 +20,13 @@ if enabled:
     )
 
     @router.get("/dev/login")
-    async def login_via_dev(user_id: Optional[str] = None):
+    async def login_via_dev(email: Optional[str] = None):
         url = redirect_uri
-        if user_id:
-            url += "?user_id=" + user_id
+        if email:
+            url += "?email=" + email
         return RedirectResponse(redirect_uri, status_code=302)
 
     @router.get("/dev/token")
-    async def auth_via_dev(user_id: Optional[str] = None) -> Token:
-        user_id = user_id or settings.DEV_AUTH_EMAIL
-        return create_access_token(user_id)
+    async def auth_via_dev(email: Optional[str] = None) -> Token:
+        email = email or settings.DEV_AUTH_EMAIL
+        return create_access_token(email)
