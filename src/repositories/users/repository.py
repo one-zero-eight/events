@@ -37,11 +37,14 @@ class UserRepository:
     def get_users(self) -> list[InJsonUser]:
         return self.user_storage.users.copy()
 
-    def get_user_by_email(self, email: str) -> InJsonUser:
+    def _get_user_by_email(self, email: str) -> InJsonUser:
         for user in self.user_storage.users:
             if user.email == email:
-                return user.copy()
+                return user
         raise ValueError(f"User with email {email} not found")
+
+    def get_user_by_email(self, email: str) -> InJsonUser:
+        return self._get_user_by_email(email).copy()
 
     def create_user(self, user: InJsonUser):
         # ensure that user with such email does not exist
@@ -49,7 +52,7 @@ class UserRepository:
         self._save_users()
 
     def update_user(self, email: str, **kwargs):
-        user = self.get_user_by_email(email)
+        user = self._get_user_by_email(email)
         for key, value in kwargs.items():
             setattr(user, key, value)
         self._save_users()

@@ -18,8 +18,8 @@ router = APIRouter(prefix="/users", tags=["Users"])
     },
 )
 async def get_me(
-        email: Annotated[str, Depends(get_current_user_email)],
-        user_repository: Annotated[UserRepository, Depends(get_user_repository)],
+    email: Annotated[str, Depends(get_current_user_email)],
+    user_repository: Annotated[UserRepository, Depends(get_user_repository)],
 ):
     """
     Get current user info if authenticated
@@ -36,12 +36,12 @@ async def get_me(
     "/me/favorites",
     responses={
         200: {"description": "Favorite added"},
-    }
+    },
 )
 async def add_favorite(
-        email: Annotated[str, Depends(get_current_user_email)],
-        user_repository: Annotated[UserRepository, Depends(get_user_repository)],
-        favorites: list[str],
+    email: Annotated[str, Depends(get_current_user_email)],
+    user_repository: Annotated[UserRepository, Depends(get_user_repository)],
+    favorites: list[str],
 ):
     """
     Add favorite to current user

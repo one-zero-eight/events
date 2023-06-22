@@ -35,7 +35,9 @@ class Settings(BaseSettings):
     DEV_AUTH_EMAIL: str = ""
 
     USERS_JSON_PATH: Path = Path("src/repositories/users/users.json")
-    INNOPOLIS_USER_DATA_PATH: Path = Path("src/repositories/users/innopolis_user_data.json")
+    INNOPOLIS_USER_DATA_PATH: Path = Path(
+        "src/repositories/users/innopolis_user_data.json"
+    )
 
     @validator("USERS_JSON_PATH", pre=True, always=True)
     def set_relative_path(cls, v):
