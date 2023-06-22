@@ -15,9 +15,8 @@ class InJsonUser(BaseModel):
     # "Tech Elective": "Programming in Python",
     # "Hum Elective": "Personal Efficiency Skills of IT-specialist"
     email: str
-    ru_name: Optional[str]
     groups: list[Group] = Field(default_factory=list)
     favorites: list[str] = Field(default_factory=list)
 
-    commonname: str | None
+    name: str | None = Field(alias="commonname")
     status: str | None = Field(alias="Status")

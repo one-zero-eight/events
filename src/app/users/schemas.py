@@ -14,7 +14,8 @@ class ViewUser(BaseModel):
     """
 
     email: str
-    ru_name: Optional[str]
+    name: Optional[str]
+    status: Optional[str]
     groups: list[Group] = Field(default_factory=list)
     favorites: list[str] = Field(default_factory=list)
 
