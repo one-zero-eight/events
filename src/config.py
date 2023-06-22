@@ -14,8 +14,9 @@ class Settings(BaseSettings):
     Settings for the application. Get settings from .env file.
     """
 
+    APP_TITLE = "InNoHassle Events API"
+    APP_DESCRIPTION = "API of Events project in InNoHassle Ecosystem."
     APP_VERSION = "0.1.0"
-    APP_DESCRIPTION = "InNoHassle-Events API"
 
     ENVIRONMENT: Environment = Environment.DEVELOPMENT
 

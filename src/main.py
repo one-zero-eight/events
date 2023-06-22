@@ -5,7 +5,17 @@ from starlette.middleware.sessions import SessionMiddleware
 from src.app.routers import routers
 from src.config import settings
 
-app = FastAPI()
+app = FastAPI(
+    title=settings.APP_TITLE,
+    description=settings.APP_DESCRIPTION,
+    version=settings.APP_VERSION,
+    servers=[
+        {"url": "", "description": "Current"},
+        {"url": "https://api.innohassle.ru", "description": "Production environment"},
+    ],
+    root_path_in_servers=False,
+)
+
 app.add_middleware(
     SessionMiddleware, secret_key=settings.SESSION_SECRET_KEY.get_secret_value()
 )
@@ -15,8 +25,9 @@ for router in routers:
 
 
 class VersionInfo(BaseModel):
-    version = settings.APP_VERSION
+    title = settings.APP_TITLE
     description = settings.APP_DESCRIPTION
+    version = settings.APP_VERSION
 
 
 @app.get("/", tags=["Root"])
