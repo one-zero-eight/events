@@ -22,7 +22,13 @@ This is the API for events in InNoHassle ecosystem. It is written in Python 3.10
     ```bash
     cp .env.example .env.local
     ```
-3. Run the ASGI server.
+3. Run the ASGI server using src/dev.py script
+    ```bash
+    poetry shell
+    python -m src.dev
+    ```
+    OR using uvicorn directly
     ```bash
     poetry run uvicorn src.main:app --reload
     ```
+    OR using 'Dev server' configuration in PyCharm.
