@@ -15,7 +15,7 @@ from src.config import settings
 
 class UserInfoFromSSO(BaseModel):
     email: str
-    commonname: str | None
+    name: str | None = Field(alias="commonname")
     status: str | None = Field(alias="Status")
 
 

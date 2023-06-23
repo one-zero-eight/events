@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 from pydantic.tools import parse_obj_as
 
 from src.app.users.schemas import CreateUser, CreateFavorite
@@ -20,16 +20,27 @@ class UserStorage(BaseModel):
             f.write(js)
 
     def update_from_file(self, file_path: Path):
-        with open(file_path, "r", encoding="utf-8") as f:
-            users_dict = json.load(f)
-        users = users_dict["users"]
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                users_dict = json.load(f)
+        except FileNotFoundError:
+            return
+        except json.JSONDecodeError:
+            return
+        users = parse_obj_as(list[InJsonUser], users_dict["users"])
         # update fields
         for user in users:
-            email = user["email"]
+            email = user.email
             for existing_user in self.users:
                 if existing_user.email == email:
-                    existing_user.favorites = user["favorites"]
+                    existing_user.favorites = user.favorites
                     break
+
+    @validator("users", pre=True, each_item=True, always=True)
+    def _validate_user(cls, v):
+        if isinstance(v, dict):
+            return InJsonUser(**v)
+        return v
 
 
 class UserRepository:
@@ -46,8 +57,14 @@ class UserRepository:
 
     @staticmethod
     def _load_users(file_path: Path) -> UserStorage:
-        with open(file_path, "r", encoding="utf-8") as f:
-            users_dict = json.load(f)
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                users_dict = json.load(f)
+        except FileNotFoundError:
+            # create empty file
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write('{"users": []}')
+            return UserStorage()
         return parse_obj_as(UserStorage, users_dict)
 
     def get_users(self) -> list[InJsonUser]:
@@ -94,6 +111,7 @@ class UserRepository:
         user = self._get_user_by_email(email)
         favorites = list(map(lambda f: InJsonFavorite(**f.dict()), favorites))
         user.favorites.extend(favorites)
+        print(user.favorites)
         self._save_users()
         return user.favorites
 

@@ -32,5 +32,5 @@ class InJsonUser(BaseModel):
     groups: list[InJsonGroup] = Field(default_factory=list)
     favorites: list[InJsonFavorite] = Field(default_factory=list)
 
-    name: str | None = Field(alias="commonname")
-    status: str | None = Field(alias="Status")
+    name: str | None
+    status: str | None

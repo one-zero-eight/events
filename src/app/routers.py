@@ -1,4 +1,4 @@
-from src.app.users.routes import router as router_users
+from src.app.users import router as router_users
 from src.app.auth import router as router_auth
 from src.app.schemas import router as router_schemas
 

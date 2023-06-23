@@ -5,7 +5,7 @@ from pydantic import Field, BaseModel
 
 class ViewGroup(BaseModel):
     name: str
-    type: Optional[str]
+    type: Optional[str] = None
     hidden: Optional[bool] = False
 
     class Config:
@@ -20,7 +20,7 @@ class CreateFavorite(BaseModel):
 
 class ViewFavorite(BaseModel):
     name: str
-    type: Optional[str]
+    type: str | None = None
     hidden: bool = False
 
     class Config:
@@ -33,10 +33,10 @@ class CreateUser(BaseModel):
     """
 
     email: str
-    name: Optional[str]
-    status: Optional[str]
-    groups: Optional[list[ViewGroup]]
-    favorites: Optional[list[ViewFavorite]]
+    name: Optional[str] = None
+    status: Optional[str] = None
+    groups: Optional[list[ViewGroup]] = Field(default_factory=list)
+    favorites: Optional[list[ViewFavorite]] = Field(default_factory=list)
 
 
 class ViewUser(BaseModel):
@@ -45,8 +45,8 @@ class ViewUser(BaseModel):
     """
 
     email: str
-    name: Optional[str]
-    status: Optional[str]
+    name: Optional[str] = None
+    status: Optional[str] = None
     groups: list[ViewGroup] = Field(default_factory=list)
     favorites: list[ViewFavorite] = Field(default_factory=list)
 
