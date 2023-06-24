@@ -4,7 +4,7 @@ version = "0.1.0"
 description = ""
 authors = ["Ruslan Bel'kov <ruslan.belckov@yandex.ru>"]
 readme = "README.md"
-packages = [{ include = "innohassle_events" }]
+packages = []
 
 [tool.poetry.dependencies]
 python = "^3.10,<3.12"

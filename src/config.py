@@ -23,6 +23,7 @@ class Settings(BaseSettings):
     # You can run 'openssl rand -hex 32' to generate keys
     SESSION_SECRET_KEY: SecretStr
     JWT_SECRET_KEY: SecretStr
+    DB_URL: SecretStr
 
     AUTH_REDIRECT_URI_PREFIX: str = (
         "https://innohassle.campus.innopolis.university/oauth2/callback"

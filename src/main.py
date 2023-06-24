@@ -7,6 +7,7 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from src.app.routers import routers
 from src.config import settings
+from src.storages.sqlalchemy.storage import SQLAlchemyStorage
 
 
 def generate_unique_operation_id(route: APIRoute) -> str:
@@ -42,6 +43,13 @@ app.add_middleware(
 app.add_middleware(
     SessionMiddleware, secret_key=settings.SESSION_SECRET_KEY.get_secret_value()
 )
+
+
+@app.on_event("startup")
+async def init_tables():
+    app.storage = SQLAlchemyStorage.from_url(settings.DB_URL.get_secret_value())
+    await app.storage.create_all()
+
 
 for router in routers:
     app.include_router(router)
