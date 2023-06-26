@@ -5,7 +5,7 @@ from starlette import status
 from src.app.auth.jwt import verify_token
 
 bearer_scheme = HTTPBearer(
-    scheme_name="Bearer token",
+    scheme_name="Bearer",
     description="Your JSON Web Token (JWT)",
 )
 

@@ -1,9 +1,22 @@
+import re
 from fastapi import FastAPI
+from fastapi.routing import APIRoute
 from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 
 from src.app.routers import routers
 from src.config import settings
+
+
+def generate_unique_operation_id(route: APIRoute) -> str:
+    # Better names for operationId in OpenAPI schema.
+    # It is needed because clients generate code based on these names.
+    # Requires pair (tag name + function name) to be unique.
+    # See fastapi.utils:generate_unique_id (default implementation).
+    operation_id = f"{route.tags[0]}_{route.name}".lower()
+    operation_id = re.sub(r"\W+", "_", operation_id)
+    return operation_id
+
 
 app = FastAPI(
     title=settings.APP_TITLE,
@@ -14,6 +27,7 @@ app = FastAPI(
         {"url": "https://api.innohassle.ru", "description": "Production environment"},
     ],
     root_path_in_servers=False,
+    generate_unique_id_function=generate_unique_operation_id,
 )
 
 app.add_middleware(
@@ -30,6 +44,6 @@ class VersionInfo(BaseModel):
     version = settings.APP_VERSION
 
 
-@app.get("/", tags=["Root"])
+@app.get("/", tags=["System"])
 async def version() -> VersionInfo:
     return VersionInfo()

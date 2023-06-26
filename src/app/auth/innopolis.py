@@ -37,7 +37,7 @@ if enabled:
         return await oauth.innopolis.authorize_redirect(request, redirect_uri)
 
     @router.get("/innopolis/token")
-    async def auth_via_innopolis(
+    async def get_token_via_innopolis(
         request: Request,
         user_repository: Annotated[UserRepository, Depends(get_user_repository)],
     ) -> Token:

@@ -27,6 +27,6 @@ if enabled:
         return RedirectResponse(redirect_uri, status_code=302)
 
     @router.get("/dev/token")
-    async def auth_via_dev(email: Optional[str] = None) -> Token:
+    async def get_token_via_dev(email: Optional[str] = None) -> Token:
         email = email or settings.DEV_AUTH_EMAIL
         return create_access_token(email)
