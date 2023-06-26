@@ -2,6 +2,7 @@ import re
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from pydantic import BaseModel
+from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from src.app.routers import routers
@@ -28,6 +29,14 @@ app = FastAPI(
     ],
     root_path_in_servers=False,
     generate_unique_id_function=generate_unique_operation_id,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.add_middleware(
