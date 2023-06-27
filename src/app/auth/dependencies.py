@@ -9,14 +9,15 @@ bearer_scheme = HTTPBearer(
     description="Your JSON Web Token (JWT)",
 )
 
+credentials_exception = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Could not validate credentials",
+    headers={"WWW-Authenticate": "Bearer"},
+)
+
 
 def get_current_user_email(
     auth: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ) -> str:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
     token_data = verify_token(auth.credentials, credentials_exception)
     return token_data.email

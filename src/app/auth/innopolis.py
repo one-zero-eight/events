@@ -7,10 +7,11 @@ from pydantic import BaseModel, Field
 from starlette.requests import Request
 
 from src.app.auth import router, oauth
-from src.app.dependencies import get_user_repository
-from src.repositories import UserRepository
+from src.repositories.dependencies import Dependencies
 from src.app.auth.jwt import create_access_token, Token
+from src.app.users.schemas import CreateUser
 from src.config import settings
+from src.repositories.users.abc import AbstractUserRepository
 
 
 class UserInfoFromSSO(BaseModel):
@@ -39,13 +40,13 @@ if enabled:
     @router.get("/innopolis/token")
     async def get_token_via_innopolis(
         request: Request,
-        user_repository: Annotated[UserRepository, Depends(get_user_repository)],
+        user_repository: Annotated[
+            AbstractUserRepository, Depends(Dependencies.get_user_repository)
+        ],
     ) -> Token:
         token = await oauth.innopolis.authorize_access_token(request)
         user_info_dict: dict = token["userinfo"]
         user_info = UserInfoFromSSO(**user_info_dict)
         email = user_info.email
-        user_repository.update_or_create_user(
-            email, **user_info.dict(exclude={"email"})
-        )
+        await user_repository.create_user_if_not_exists(CreateUser(**user_info.dict()))
         return create_access_token(email)

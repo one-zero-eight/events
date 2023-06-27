@@ -1,30 +1,8 @@
-from typing import Optional
+from typing import Optional, Collection
 
-from pydantic import Field, BaseModel
+from pydantic import Field, BaseModel, validator
 
-
-class ViewGroup(BaseModel):
-    name: str
-    type: Optional[str] = None
-    hidden: Optional[bool] = False
-
-    class Config:
-        orm_mode = True
-
-
-class CreateFavorite(BaseModel):
-    name: str
-    type: Optional[str] = None
-    hidden: Optional[bool] = False
-
-
-class ViewFavorite(BaseModel):
-    name: str
-    type: str | None = None
-    hidden: bool = False
-
-    class Config:
-        orm_mode = True
+from src.app.event_groups.schemas import UserXGroupView
 
 
 class CreateUser(BaseModel):
@@ -35,8 +13,6 @@ class CreateUser(BaseModel):
     email: str
     name: Optional[str] = None
     status: Optional[str] = None
-    groups: Optional[list[ViewGroup]] = Field(default_factory=list)
-    favorites: Optional[list[ViewFavorite]] = Field(default_factory=list)
 
 
 class ViewUser(BaseModel):
@@ -44,11 +20,18 @@ class ViewUser(BaseModel):
     Represents a user instance from the database excluding sensitive information.
     """
 
+    id: int
     email: str
     name: Optional[str] = None
     status: Optional[str] = None
-    groups: list[ViewGroup] = Field(default_factory=list)
-    favorites: list[ViewFavorite] = Field(default_factory=list)
+    groups_association: list[UserXGroupView] = Field(default_factory=list)
+    favorites_association: list[UserXGroupView] = Field(default_factory=list)
+
+    @validator("groups_association", "favorites_association", pre=True)
+    def groups_to_list(cls, v):
+        if isinstance(v, Collection):
+            return list(v)
+        return v
 
     class Config:
         orm_mode = True

@@ -6,8 +6,11 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from src.app.routers import routers
+from src.app.schemas import CreateUser, ViewUser, CreateEventGroup, ViewEventGroup
 from src.config import settings
-from src.storages.sqlalchemy.storage import SQLAlchemyStorage
+from src.repositories.dependencies import Dependencies
+from src.repositories.users import SqlUserRepository, PredefinedGroupsRepository
+from src.storages.sql import SQLAlchemyStorage
 
 
 def generate_unique_operation_id(route: APIRoute) -> str:
@@ -46,9 +49,36 @@ app.add_middleware(
 
 
 @app.on_event("startup")
-async def init_tables():
-    app.storage = SQLAlchemyStorage.from_url(settings.DB_URL.get_secret_value())
-    await app.storage.create_all()
+async def setup_repositories():
+    storage = SQLAlchemyStorage.from_url(settings.DB_URL.get_secret_value())
+    user_repository = SqlUserRepository(storage)
+    Dependencies.set_storage(storage)
+    Dependencies.set_user_repository(user_repository)
+
+    await storage.create_all()
+
+    groups_repository = PredefinedGroupsRepository(settings.PREDEFINED_GROUPS_FILE)
+    unique_groups = groups_repository.get_unique_groups()
+    db_groups = await user_repository.batch_upsert_groups(
+        [CreateEventGroup(**group.dict()) for group in unique_groups]
+    )
+    name_x_group = {group.name: group for group in db_groups}
+    users = groups_repository.get_users()
+    db_users = await user_repository.batch_upsert_users(
+        [CreateUser(**user.dict()) for user in users]
+    )
+    user_id_x_group_ids = dict()
+    for i, user in enumerate(db_users):
+        schema_user = users[i]
+        user_groups = [name_x_group[group.name].id for group in schema_user.groups]
+        user_id_x_group_ids[user.id] = user_groups
+    await user_repository.batch_setup_groups(user_id_x_group_ids)
+
+
+@app.on_event("shutdown")
+async def close_connection():
+    storage = Dependencies.get_storage()
+    await storage.close_connection()
 
 
 for router in routers:

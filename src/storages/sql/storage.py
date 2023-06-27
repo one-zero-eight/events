@@ -1,3 +1,5 @@
+__all__ = ["SQLAlchemyStorage", "AbstractSQLAlchemyStorage"]
+
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 from abc import ABC, abstractmethod
 
@@ -9,6 +11,10 @@ class AbstractSQLAlchemyStorage(ABC):
 
     @abstractmethod
     async def create_all(self) -> None:
+        ...
+
+    @abstractmethod
+    async def close_connection(self):
         ...
 
 
@@ -34,10 +40,10 @@ class SQLAlchemyStorage(AbstractSQLAlchemyStorage):
         return self.sessionmaker()
 
     async def create_all(self) -> None:
-        from src.storages.sqlalchemy.models import Base
+        from src.storages.sql.models import Base
 
         async with self.engine.begin() as conn:
             await conn.run_sync(Base.metadata.create_all)
 
-
-__all__ = ["SQLAlchemyStorage", "AbstractSQLAlchemyStorage"]
+    async def close_connection(self):
+        await self.engine.dispose()

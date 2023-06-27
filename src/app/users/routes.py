@@ -4,9 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from starlette import status
 
-from src.app.dependencies import get_user_repository, get_current_user_email
-from src.app.users.schemas import ViewUser, CreateFavorite, ViewFavorite
-from src.repositories import UserRepository
+from src.app.auth.dependencies import get_current_user_email
+from src.app.schemas import ViewUser, CreateEventGroup, UserXGroupView
+from src.repositories.dependencies import Dependencies
+from src.repositories.users import AbstractUserRepository
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -25,25 +26,25 @@ auth_responses_schema = {
 )
 async def get_me(
     email: Annotated[str, Depends(get_current_user_email)],
-    user_repository: Annotated[UserRepository, Depends(get_user_repository)],
-):
+    user_repository: Annotated[
+        AbstractUserRepository, Depends(Dependencies.get_user_repository)
+    ],
+) -> ViewUser:
     """
     Get current user info if authenticated
     """
     try:
-        current_user = user_repository.get_user_by_email(email)
-
-        return ViewUser.from_orm(current_user)
-    except ValueError as e:
+        return await user_repository.get_user_by_email(email)
+    except ValueError:
         raise HTTPException(status_code=404, detail="User not found")
 
 
 class ListOfFavorites(BaseModel):
-    favorites: list[ViewFavorite]
+    favorites: list[UserXGroupView]
 
-    def __init__(self, favorites: Iterable[ViewFavorite]):
-        super().__init__()
-        self.favorites = list(favorites)
+    @classmethod
+    def from_iterable(cls, favorites: Iterable[UserXGroupView]) -> "ListOfFavorites":
+        return cls(favorites=list(favorites))
 
 
 @router.post(
@@ -55,15 +56,17 @@ class ListOfFavorites(BaseModel):
 )
 async def add_favorite(
     email: Annotated[str, Depends(get_current_user_email)],
-    user_repository: Annotated[UserRepository, Depends(get_user_repository)],
-    favorite: CreateFavorite,
+    user_repository: Annotated[
+        AbstractUserRepository, Depends(Dependencies.get_user_repository)
+    ],
+    favorite: CreateEventGroup,
 ) -> ListOfFavorites:
     """
     Add favorite to current user
     """
     try:
-        updated_favorites = user_repository.extend_favorites(email, favorite)
-        return ListOfFavorites(ViewFavorite.from_orm(fav) for fav in updated_favorites)
+        updated_favorites = await user_repository.add_favorite(email, favorite)
+        return ListOfFavorites.from_iterable(updated_favorites)
     except ValueError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
@@ -79,15 +82,17 @@ async def add_favorite(
 )
 async def delete_favorite(
     email: Annotated[str, Depends(get_current_user_email)],
-    user_repository: Annotated[UserRepository, Depends(get_user_repository)],
-    favorite: str,
+    user_repository: Annotated[
+        AbstractUserRepository, Depends(Dependencies.get_user_repository)
+    ],
+    favorite: CreateEventGroup,
 ) -> ListOfFavorites:
     """
     Delete favorite from current user
     """
     try:
-        updated_favorites = user_repository.delete_favorites(email, favorite)
-        return ListOfFavorites(ViewFavorite.from_orm(fav) for fav in updated_favorites)
+        updated_favorites = await user_repository.remove_favorite(email, favorite)
+        return ListOfFavorites.from_iterable(updated_favorites)
     except ValueError:
         raise HTTPException(status_code=404, detail="User not found")
 
@@ -101,12 +106,12 @@ async def delete_favorite(
 #         email: Annotated[str, Depends(get_current_user_email)],
 #         user_repository: Annotated[UserRepository, Depends(get_user_repository)],
 #         favorite: str,
-# ) -> list[ViewFavorite]:
+# ) -> list[ViewEventGroup]:
 #     """
 #     Hide favorite from current user
 #     """
 #     try:
 #         updated_favorites = user_repository.hide_favorites(email, favorite)
-#         return [ViewFavorite.from_orm(fav) for fav in updated_favorites]
+#         return [ViewEventGroup.from_orm(fav) for fav in updated_favorites]
 #     except ValueError:
 #         raise HTTPException(status_code=404, detail="User not found")

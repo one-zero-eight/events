@@ -3,11 +3,17 @@ from typing import Any
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from src.app.users.schemas import ViewUser
+from src.app.users.schemas import CreateUser, ViewUser
+from src.app.event_groups.schemas import (
+    CreateEventGroup,
+    ViewEventGroup,
+    UserXGroupView,
+)
 
 # fmt: off
 all_schemas = [
-    ViewUser
+    CreateUser, ViewUser,
+    CreateEventGroup, ViewEventGroup, UserXGroupView,
 ]
 # fmt: on
 
