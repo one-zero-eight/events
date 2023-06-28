@@ -15,6 +15,10 @@ class AbstractUserRepository(metaclass=ABCMeta):
         ...
 
     @abstractmethod
+    async def upsert_user(self, user: CreateUser) -> ViewUser:
+        ...
+
+    @abstractmethod
     async def batch_create_user_if_not_exists(
         self, users: list[CreateUser]
     ) -> list[ViewUser]:

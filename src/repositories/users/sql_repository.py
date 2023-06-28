@@ -68,6 +68,23 @@ class SqlUserRepository(AbstractUserRepository):
             await session.commit()
             return ViewUser.from_orm(user)
 
+    async def upsert_user(self, user: CreateUser) -> ViewUser:
+        async with self.storage.create_session() as session:
+            q = insert(User).values(**user.dict())
+            q = (
+                q.on_conflict_do_update(
+                    index_elements=[User.email], set_={**q.excluded, "id": User.id}
+                )
+                .returning(User)
+                .options(
+                    selectinload(User.favorites_association),
+                    selectinload(User.groups_association),
+                )
+            )
+            user = await session.scalar(q)
+            await session.commit()
+            return ViewUser.from_orm(user)
+
     async def batch_create_user_if_not_exists(
         self, users: list[CreateUser]
     ) -> list[ViewUser]:

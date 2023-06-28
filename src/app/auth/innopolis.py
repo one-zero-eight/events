@@ -48,5 +48,5 @@ if enabled:
         user_info_dict: dict = token["userinfo"]
         user_info = UserInfoFromSSO(**user_info_dict)
         email = user_info.email
-        await user_repository.create_user_if_not_exists(CreateUser(**user_info.dict()))
+        await user_repository.upsert_user(CreateUser(**user_info.dict()))
         return create_access_token(email)
