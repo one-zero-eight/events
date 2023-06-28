@@ -1,10 +1,9 @@
 __all__ = ["AbstractUserRepository", "USER_ID"]
 
 from abc import ABCMeta, abstractmethod
-
-from src.app.schemas import CreateUser, ViewUser, CreateEventGroup, ViewEventGroup
 from typing import Annotated
 
+from src.app.schemas import CreateUser, ViewUser, CreateEventGroup, ViewEventGroup
 from src.storages.sql.models import UserXGroup
 
 USER_ID = Annotated[int, "User ID"]

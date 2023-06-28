@@ -6,7 +6,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from src.app.routers import routers
-from src.app.schemas import CreateUser, ViewUser, CreateEventGroup, ViewEventGroup
+from src.app.schemas import CreateUser, CreateEventGroup
 from src.config import settings
 from src.repositories.dependencies import Dependencies
 from src.repositories.users import SqlUserRepository, PredefinedGroupsRepository
