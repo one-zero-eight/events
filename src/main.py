@@ -59,12 +59,12 @@ async def setup_repositories():
 
     groups_repository = PredefinedGroupsRepository(settings.PREDEFINED_GROUPS_FILE)
     unique_groups = groups_repository.get_unique_groups()
-    db_groups = await user_repository.batch_upsert_groups(
+    db_groups = await user_repository.batch_create_group_if_not_exists(
         [CreateEventGroup(**group.dict()) for group in unique_groups]
     )
     name_x_group = {group.name: group for group in db_groups}
     users = groups_repository.get_users()
-    db_users = await user_repository.batch_upsert_users(
+    db_users = await user_repository.batch_create_user_if_not_exists(
         [CreateUser(**user.dict()) for user in users]
     )
     user_id_x_group_ids = dict()

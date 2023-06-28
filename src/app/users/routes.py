@@ -1,11 +1,11 @@
 from typing import Annotated, Iterable
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from starlette import status
 
 from src.app.auth.dependencies import get_current_user_email
 from src.app.schemas import ViewUser, CreateEventGroup, UserXGroupView
+from src.exceptions import UserNotFoundException
 from src.repositories.dependencies import Dependencies
 from src.repositories.users import AbstractUserRepository
 
@@ -33,10 +33,12 @@ async def get_me(
     """
     Get current user info if authenticated
     """
-    try:
-        return await user_repository.get_user_by_email(email)
-    except ValueError:
-        raise HTTPException(status_code=404, detail="User not found")
+    user_id = await user_repository.get_user_id_by_email(email)
+
+    if user_id is None:
+        raise UserNotFoundException()
+
+    return await user_repository.get_user(user_id)
 
 
 class ListOfFavorites(BaseModel):
@@ -64,13 +66,15 @@ async def add_favorite(
     """
     Add favorite to current user
     """
-    try:
-        updated_favorites = await user_repository.add_favorite(email, favorite)
-        return ListOfFavorites.from_iterable(updated_favorites)
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
+    user_id = await user_repository.get_user_id_by_email(email)
+
+    if user_id is None:
+        raise UserNotFoundException()
+
+    group = await user_repository.create_group_if_not_exists(favorite)
+
+    updated_favorites = await user_repository.add_favorite(user_id, group.id)
+    return ListOfFavorites.from_iterable(updated_favorites)
 
 
 @router.delete(
@@ -85,33 +89,53 @@ async def delete_favorite(
     user_repository: Annotated[
         AbstractUserRepository, Depends(Dependencies.get_user_repository)
     ],
-    favorite: CreateEventGroup,
+    group_id: int,
 ) -> ListOfFavorites:
     """
     Delete favorite from current user
     """
-    try:
-        updated_favorites = await user_repository.remove_favorite(email, favorite)
-        return ListOfFavorites.from_iterable(updated_favorites)
-    except ValueError:
-        raise HTTPException(status_code=404, detail="User not found")
+    user_id = await user_repository.get_user_id_by_email(email)
+
+    if user_id is None:
+        raise UserNotFoundException()
+
+    # check if group exists
+    if await user_repository.get_group(group_id) is None:
+        raise UserNotFoundException()
+
+    updated_favorites = await user_repository.remove_favorite(user_id, group_id)
+    return ListOfFavorites.from_iterable(updated_favorites)
 
 
-# TODO: Implement hiding\unhiding favorites and groups
-# @router.post("/me/favorites/hidden", responses={
-#     200: {"description": "Favorite hidden"},
-#     **auth_responses_schema,
-# })
-# async def hide_favorite(
-#         email: Annotated[str, Depends(get_current_user_email)],
-#         user_repository: Annotated[UserRepository, Depends(get_user_repository)],
-#         favorite: str,
-# ) -> list[ViewEventGroup]:
-#     """
-#     Hide favorite from current user
-#     """
-#     try:
-#         updated_favorites = user_repository.hide_favorites(email, favorite)
-#         return [ViewEventGroup.from_orm(fav) for fav in updated_favorites]
-#     except ValueError:
-#         raise HTTPException(status_code=404, detail="User not found")
+@router.post(
+    "/me/favorites/hide",
+    responses={
+        200: {"description": "Favorite hidden"},
+        **auth_responses_schema,
+    },
+)
+async def hide_favorite(
+    email: Annotated[str, Depends(get_current_user_email)],
+    user_repository: Annotated[
+        AbstractUserRepository, Depends(Dependencies.get_user_repository)
+    ],
+    group_id: int,
+    hide: bool = True,
+) -> ListOfFavorites:
+    """
+    Hide favorite from current user
+    """
+    user_id = await user_repository.get_user_id_by_email(email)
+
+    if user_id is None:
+        raise UserNotFoundException()
+
+    # check if group exists
+    if await user_repository.get_group(group_id) is None:
+        raise UserNotFoundException()
+
+    updated_favorites = await user_repository.set_hidden(
+        user_id=user_id, group_id=group_id, hide=hide, is_favorite=True
+    )
+
+    return ListOfFavorites.from_iterable(updated_favorites)
