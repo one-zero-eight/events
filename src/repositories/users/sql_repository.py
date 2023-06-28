@@ -198,7 +198,7 @@ class SqlUserRepository(AbstractUserRepository):
         async with self.storage.create_session() as session:
             q = insert(EventGroup).values(**group.dict()).returning(EventGroup)
             q = q.on_conflict_do_update(
-                index_elements=[EventGroup.name],
+                index_elements=[EventGroup.path],
                 set_={"id": EventGroup.id},
             )
             group = await session.scalar(q)
@@ -215,7 +215,7 @@ class SqlUserRepository(AbstractUserRepository):
                 .returning(EventGroup)
             )
             q = q.on_conflict_do_update(
-                index_elements=[EventGroup.name],
+                index_elements=[EventGroup.path],
                 set_={"id": EventGroup.id},
             )
             db_groups = await session.scalars(q)

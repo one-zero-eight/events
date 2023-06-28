@@ -8,7 +8,8 @@ class CreateEventGroup(BaseModel):
     Represents a group instance to be created.
     """
 
-    name: str
+    path: str
+    name: Optional[str] = None
     type: Optional[str] = None
 
 
@@ -18,7 +19,8 @@ class ViewEventGroup(BaseModel):
     """
 
     id: int
-    name: str
+    path: str
+    name: Optional[str] = None
     type: Optional[str] = None
 
     class Config:

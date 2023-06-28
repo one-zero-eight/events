@@ -13,8 +13,9 @@ class InJsonEventGroup(BaseModel):
     Represents a group instance from the predefined users json file.
     """
 
-    name: str
+    name: Optional[str]
     type: Optional[str]
+    path: str
 
 
 class InJsonUser(BaseModel):
@@ -68,8 +69,8 @@ class PredefinedGroupsRepository:
         visited = set()
         for user in self.storage.users:
             for group in user.groups:
-                if group.name not in visited:
-                    visited.add(group.name)
+                if group.path not in visited:
+                    visited.add(group.path)
                     groups.append(group)
 
         return groups
