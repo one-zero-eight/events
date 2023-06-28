@@ -1,7 +1,7 @@
 from enum import StrEnum
 from pathlib import Path
 
-from pydantic import BaseSettings, validator, SecretStr
+from pydantic import BaseSettings, SecretStr
 
 
 class Environment(StrEnum):
@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     # You can run 'openssl rand -hex 32' to generate keys
     SESSION_SECRET_KEY: SecretStr
     JWT_SECRET_KEY: SecretStr
+
+    # PostgreSQL database connection URL
     DB_URL: SecretStr
 
     AUTH_REDIRECT_URI_PREFIX: str = (
@@ -36,17 +38,9 @@ class Settings(BaseSettings):
     # Use dev auth while development
     DEV_AUTH_EMAIL: str = ""
 
-    USERS_JSON_PATH: Path = Path("src/repositories/users/users.json")
     PREDEFINED_GROUPS_FILE: Path = Path(
         "src/repositories/users/innopolis_user_data.json"
     )
-
-    @validator("USERS_JSON_PATH", pre=True, always=True)
-    def set_relative_path(cls, v):
-        v = Path(v)
-        if not v.is_absolute():
-            v = Path(__file__).parent.parent / v
-        return v
 
     class Config:
         env_file = ".env.local"
