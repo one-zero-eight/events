@@ -1,27 +1,28 @@
 __all__ = ["AbstractUserRepository", "USER_ID"]
 
 from abc import ABCMeta, abstractmethod
-from typing import Annotated
+from typing import Annotated, TYPE_CHECKING
 
-from src.app.schemas import CreateUser, ViewUser, CreateEventGroup, ViewEventGroup
-from src.storages.sql.models import UserXGroup
+if TYPE_CHECKING:
+    from src.app.schemas import CreateUser, ViewUser, CreateEventGroup, ViewEventGroup
+    from src.storages.sql.models import UserXGroup
 
 USER_ID = Annotated[int, "User ID"]
 
 
 class AbstractUserRepository(metaclass=ABCMeta):
     @abstractmethod
-    async def create_user_if_not_exists(self, user: CreateUser) -> ViewUser:
+    async def create_user_if_not_exists(self, user: "CreateUser") -> "ViewUser":
         ...
 
     @abstractmethod
-    async def upsert_user(self, user: CreateUser) -> ViewUser:
+    async def upsert_user(self, user: "CreateUser") -> "ViewUser":
         ...
 
     @abstractmethod
     async def batch_create_user_if_not_exists(
-        self, users: list[CreateUser]
-    ) -> list[ViewUser]:
+        self, users: list["CreateUser"]
+    ) -> list["ViewUser"]:
         ...
 
     @abstractmethod
@@ -29,11 +30,11 @@ class AbstractUserRepository(metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    async def get_user(self, user_id: USER_ID) -> ViewUser:
+    async def get_user(self, user_id: USER_ID) -> "ViewUser":
         ...
 
     @abstractmethod
-    async def batch_get_user(self, ids: list[USER_ID]) -> list[ViewUser]:
+    async def batch_get_user(self, ids: list[USER_ID]) -> list["ViewUser"]:
         ...
 
     @abstractmethod
@@ -47,33 +48,37 @@ class AbstractUserRepository(metaclass=ABCMeta):
     @abstractmethod
     async def add_favorite(
         self, user_id: USER_ID, favorite_id: int
-    ) -> list[UserXGroup]:
+    ) -> list["UserXGroup"]:
         ...
 
     @abstractmethod
     async def remove_favorite(
         self, user_id: USER_ID, favorite_id: int
-    ) -> list[UserXGroup]:
+    ) -> list["UserXGroup"]:
         ...
 
     @abstractmethod
     async def set_hidden(
         self, user_id: USER_ID, is_favorite: bool, group_id: int, hide: bool = True
-    ) -> list[UserXGroup]:
+    ) -> list["UserXGroup"]:
         ...
 
     @abstractmethod
-    async def get_group(self, group_id: int) -> ViewEventGroup:
+    async def get_group(self, group_id: int) -> "ViewEventGroup":
+        ...
+
+    @abstractmethod
+    async def get_group_by_path(self, path: str) -> "ViewEventGroup":
         ...
 
     @abstractmethod
     async def create_group_if_not_exists(
-        self, group: CreateEventGroup
-    ) -> ViewEventGroup:
+        self, group: "CreateEventGroup"
+    ) -> "ViewEventGroup":
         ...
 
     @abstractmethod
     async def batch_create_group_if_not_exists(
-        self, groups: list[CreateEventGroup]
-    ) -> list[ViewEventGroup]:
+        self, groups: list["CreateEventGroup"]
+    ) -> list["ViewEventGroup"]:
         ...

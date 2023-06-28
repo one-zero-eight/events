@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from src.app.auth.dependencies import get_current_user_email
-from src.app.schemas import ViewUser, CreateEventGroup, UserXGroupView
+from src.app.schemas import ViewUser, UserXGroupView
 from src.exceptions import UserNotFoundException
 from src.repositories.dependencies import Dependencies
 from src.repositories.users import AbstractUserRepository
@@ -61,7 +61,7 @@ async def add_favorite(
     user_repository: Annotated[
         AbstractUserRepository, Depends(Dependencies.get_user_repository)
     ],
-    favorite: CreateEventGroup,
+    group_id: int,
 ) -> ListOfFavorites:
     """
     Add favorite to current user
@@ -71,7 +71,10 @@ async def add_favorite(
     if user_id is None:
         raise UserNotFoundException()
 
-    group = await user_repository.create_group_if_not_exists(favorite)
+    group = await user_repository.get_group(group_id)
+
+    if group is None:
+        raise UserNotFoundException()
 
     updated_favorites = await user_repository.add_favorite(user_id, group.id)
     return ListOfFavorites.from_iterable(updated_favorites)

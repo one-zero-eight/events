@@ -209,6 +209,14 @@ class SqlUserRepository(AbstractUserRepository):
             if group:
                 return ViewEventGroup.from_orm(group)
 
+    async def get_group_by_path(self, path: str) -> ViewEventGroup:
+        async with self.storage.create_session() as session:
+            q = select(EventGroup).where(EventGroup.path == path)
+            group = await session.scalar(q)
+
+            if group:
+                return ViewEventGroup.from_orm(group)
+
     async def create_group_if_not_exists(
         self, group: CreateEventGroup
     ) -> ViewEventGroup:
