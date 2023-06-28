@@ -139,3 +139,37 @@ async def hide_favorite(
     )
 
     return ListOfFavorites.from_iterable(updated_favorites)
+
+
+@router.post(
+    "/me/groups/hide",
+    responses={
+        200: {"description": "Group hidden"},
+        **auth_responses_schema,
+    },
+)
+async def hide_group(
+    email: Annotated[str, Depends(get_current_user_email)],
+    user_repository: Annotated[
+        AbstractUserRepository, Depends(Dependencies.get_user_repository)
+    ],
+    group_id: int,
+    hide: bool = True,
+) -> ListOfFavorites:
+    """
+    Hide group from current user
+    """
+    user_id = await user_repository.get_user_id_by_email(email)
+
+    if user_id is None:
+        raise UserNotFoundException()
+
+    # check if group exists
+    if await user_repository.get_group(group_id) is None:
+        raise UserNotFoundException()
+
+    updated_favorites = await user_repository.set_hidden(
+        user_id=user_id, group_id=group_id, hide=hide, is_favorite=False
+    )
+
+    return ListOfFavorites.from_iterable(updated_favorites)
