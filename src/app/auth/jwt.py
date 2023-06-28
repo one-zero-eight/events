@@ -1,4 +1,4 @@
-__all__ = ["create_access_token", "verify_token", "Token", "TokenData"]
+__all__ = ["create_access_token", "verify_token", "TokenData"]
 
 from datetime import timedelta, datetime
 from typing import Optional
@@ -11,24 +11,19 @@ from src.config import settings
 ALGORITHM = "HS256"
 
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-
 class TokenData(BaseModel):
     email: Optional[str] = None
 
 
-def create_access_token(email: str):
+def create_access_token(email: str) -> str:
     access_token = _create_access_token(
         data={"sub": email},
         expires_delta=timedelta(days=90),
     )
-    return Token(access_token=access_token, token_type="bearer")
+    return access_token
 
 
-def _create_access_token(data: dict, expires_delta: timedelta):
+def _create_access_token(data: dict, expires_delta: timedelta) -> str:
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})

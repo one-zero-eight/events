@@ -27,13 +27,17 @@ class Settings(BaseSettings):
     # PostgreSQL database connection URL
     DB_URL: SecretStr
 
-    AUTH_REDIRECT_URI_PREFIX: str = (
-        "https://innohassle.campus.innopolis.university/oauth2/callback"
+    # Authentication
+    AUTH_COOKIE_DOMAIN: str = (
+        "innohassle.ru" if ENVIRONMENT == Environment.PRODUCTION else "localhost"
     )
 
     # Use these only in production
     INNOPOLIS_SSO_CLIENT_ID: SecretStr = ""
     INNOPOLIS_SSO_CLIENT_SECRET: SecretStr = ""
+    INNOPOLIS_SSO_REDIRECT_URI: str = (
+        "https://innohassle.campus.innopolis.university/oauth2/callback"
+    )
 
     # Use dev auth while development
     DEV_AUTH_EMAIL: str = ""
