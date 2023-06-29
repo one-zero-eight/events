@@ -1,6 +1,7 @@
-from typing import Annotated
+from typing import Annotated, Iterable
 
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 
 from src.app.event_groups.schemas import ViewEventGroup
 from src.exceptions import EventGroupNotFoundException
@@ -56,3 +57,35 @@ async def get_event_group(
         raise EventGroupNotFoundException()
 
     return event_group
+
+
+class ListEventGroupsResponse(BaseModel):
+    """
+    Represents a list of event groups.
+    """
+
+    groups: list[ViewEventGroup]
+
+    @classmethod
+    def from_iterable(
+        cls, groups: Iterable[ViewEventGroup]
+    ) -> "ListEventGroupsResponse":
+        return cls(groups=groups)
+
+
+@router.get(
+    "/",
+    responses={
+        200: {"description": "List of event groups", "model": ListEventGroupsResponse},
+    },
+)
+async def list_event_groups(
+    user_repository: Annotated[
+        AbstractUserRepository, Depends(Dependencies.get_user_repository)
+    ],
+) -> ListEventGroupsResponse:
+    """
+    Get list of event groups
+    """
+    groups = await user_repository.get_all_groups()
+    return ListEventGroupsResponse.from_iterable(groups)

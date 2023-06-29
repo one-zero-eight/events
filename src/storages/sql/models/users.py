@@ -1,4 +1,6 @@
-from sqlalchemy import ForeignKey
+from typing import Any
+
+from sqlalchemy import ForeignKey, JSON
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 
@@ -41,6 +43,7 @@ class EventGroup(Base):
     path: Mapped[str] = mapped_column(unique=True)
     name: Mapped[str] = mapped_column(nullable=True)
     type: Mapped[str] = mapped_column(nullable=True)
+    satellite: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=True)
 
 
 class UserXFavorite(Base):

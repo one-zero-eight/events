@@ -170,4 +170,4 @@ cython_debug/
 
 # Ignore sensitive files
 /src/repositories/users/innopolis_user_data.json
-###
+/src/repositories/users/predefined_groups.json

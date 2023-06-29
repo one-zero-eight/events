@@ -57,21 +57,25 @@ async def setup_repositories():
 
     await storage.create_all()
 
-    groups_repository = PredefinedGroupsRepository(settings.PREDEFINED_GROUPS_FILE)
-    unique_groups = groups_repository.get_unique_groups()
+    groups_repository = PredefinedGroupsRepository(
+        settings.PREDEFINED_USERS_FILE, settings.PREDEFINED_GROUPS_FILE
+    )
+    unique_groups = groups_repository.get_groups()
     db_groups = await user_repository.batch_create_group_if_not_exists(
         [CreateEventGroup(**group.dict()) for group in unique_groups]
     )
-    name_x_group = {group.name: group for group in db_groups}
+    path_x_group = {group.path: group for group in db_groups}
     users = groups_repository.get_users()
     db_users = await user_repository.batch_create_user_if_not_exists(
         [CreateUser(**user.dict()) for user in users]
     )
     user_id_x_group_ids = dict()
-    for i, user in enumerate(db_users):
-        schema_user = users[i]
-        user_groups = [name_x_group[group.name].id for group in schema_user.groups]
-        user_id_x_group_ids[user.id] = user_groups
+    for i, user in enumerate(users):
+        db_user = db_users[i]
+        group_ids = []
+        for group in user.groups:
+            group_ids.append(path_x_group[group.path].id)
+        user_id_x_group_ids[db_user.id] = group_ids
     await user_repository.batch_setup_groups(user_id_x_group_ids)
 
 

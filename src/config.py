@@ -42,9 +42,11 @@ class Settings(BaseSettings):
     # Use dev auth while development
     DEV_AUTH_EMAIL: str = ""
 
-    PREDEFINED_GROUPS_FILE: Path = Path(
+    PREDEFINED_USERS_FILE: Path = Path(
         "src/repositories/users/innopolis_user_data.json"
     )
+
+    PREDEFINED_GROUPS_FILE: Path = Path("src/repositories/users/predefined_groups.json")
 
     class Config:
         env_file = ".env.local"
