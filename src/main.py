@@ -10,6 +10,7 @@ from src.app.schemas import CreateUser, CreateEventGroup
 from src.config import settings
 from src.repositories.dependencies import Dependencies
 from src.repositories.users import SqlUserRepository, PredefinedGroupsRepository
+from src.repositories.event_groups import SqlEventGroupRepository
 from src.storages.sql import SQLAlchemyStorage
 
 
@@ -52,8 +53,10 @@ app.add_middleware(
 async def setup_repositories():
     storage = SQLAlchemyStorage.from_url(settings.DB_URL.get_secret_value())
     user_repository = SqlUserRepository(storage)
+    event_group_repository = SqlEventGroupRepository(storage)
     Dependencies.set_storage(storage)
     Dependencies.set_user_repository(user_repository)
+    Dependencies.set_event_group_repository(event_group_repository)
 
     await storage.create_all()
 
@@ -61,7 +64,7 @@ async def setup_repositories():
         settings.PREDEFINED_USERS_FILE, settings.PREDEFINED_GROUPS_FILE
     )
     unique_groups = groups_repository.get_groups()
-    db_groups = await user_repository.batch_create_group_if_not_exists(
+    db_groups = await event_group_repository.batch_create_group_if_not_exists(
         [CreateEventGroup(**group.dict()) for group in unique_groups]
     )
     path_x_group = {group.path: group for group in db_groups}
@@ -76,7 +79,7 @@ async def setup_repositories():
         for group in user.groups:
             group_ids.append(path_x_group[group.path].id)
         user_id_x_group_ids[db_user.id] = group_ids
-    await user_repository.batch_setup_groups(user_id_x_group_ids)
+    await event_group_repository.batch_setup_groups(user_id_x_group_ids)
 
 
 @app.on_event("shutdown")
