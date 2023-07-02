@@ -1,10 +1,13 @@
-from typing import Any
+from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, JSON
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 
 from src.storages.sql.models.base import Base
+
+if TYPE_CHECKING:
+    from src.storages.sql.models.event_groups import EventGroup
+    from src.storages.sql.models import UserXFavorite, UserXGroup
 
 
 class User(Base):
@@ -17,6 +20,7 @@ class User(Base):
 
     status: Mapped[str] = mapped_column(nullable=True)
     favorites_association: Mapped[list["UserXFavorite"]] = relationship(
+        "UserXFavorite",
         back_populates="user",
         cascade="all, delete-orphan",
     )
@@ -28,6 +32,7 @@ class User(Base):
     )
 
     groups_association: Mapped[list["UserXGroup"]] = relationship(
+        "UserXGroup",
         back_populates="user",
         cascade="all, delete-orphan",
     )
@@ -35,32 +40,3 @@ class User(Base):
     groups: Mapped[list["EventGroup"]] = association_proxy(
         "groups_association", "group", creator=lambda group: UserXGroup(group=group)
     )
-
-
-class EventGroup(Base):
-    __tablename__ = "groups"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    path: Mapped[str] = mapped_column(unique=True)
-    name: Mapped[str] = mapped_column(nullable=True)
-    type: Mapped[str] = mapped_column(nullable=True)
-    satellite: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=True)
-
-
-class UserXFavorite(Base):
-    __tablename__ = "users_x_favorites"
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
-    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), primary_key=True)
-    hidden: Mapped[bool] = mapped_column(default=False)
-
-    user: Mapped[User] = relationship(back_populates="favorites_association")
-    group: Mapped[EventGroup] = relationship(lazy="joined")
-
-
-class UserXGroup(Base):
-    __tablename__ = "users_x_groups"
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
-    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), primary_key=True)
-    hidden: Mapped[bool] = mapped_column(default=False)
-
-    user: Mapped[User] = relationship(back_populates="groups_association")
-    group: Mapped[EventGroup] = relationship(lazy="joined")
