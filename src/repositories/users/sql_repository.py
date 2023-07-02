@@ -1,6 +1,6 @@
 __all__ = ["SqlUserRepository"]
 
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload
 
@@ -10,8 +10,9 @@ from src.app.event_groups.schemas import (
 )
 from src.app.users.schemas import CreateUser, ViewUser
 from src.repositories.users.abc import AbstractUserRepository, USER_ID
-from src.storages.sql.models import User, EventGroup
+from src.storages.sql.models import User, EventGroup, UserXGroup, UserXFavorite
 from src.storages.sql.storage import AbstractSQLAlchemyStorage
+from src.exceptions import DBEventGroupDoesNotExistInDb
 
 
 def SELECT_USER_BY_ID(id_: USER_ID):
@@ -112,17 +113,27 @@ class SqlUserRepository(AbstractUserRepository):
         self, user_id: USER_ID, favorite_id: int
     ) -> list[ViewEventGroup]:
         async with self.storage.create_session() as session:
-            # select user
-            user = await session.scalar(SELECT_USER_BY_ID(user_id))
-            user: User
-            # select favorite by id
-            favorite_group = await session.scalar(
+            # check if favorite exists
+            favorite = await session.scalar(
                 select(EventGroup).where(EventGroup.id == favorite_id)
             )
-            # add favorite
-            if favorite_group not in user.favorites:
-                user.favorites.append(favorite_group)
+            if not favorite:
+                raise DBEventGroupDoesNotExistInDb(id=favorite_id)
+
+            q = (
+                insert(UserXFavorite)
+                .values(
+                    user_id=user_id,
+                    group_id=favorite_id,
+                )
+                .on_conflict_do_nothing(
+                    index_elements=[UserXFavorite.user_id, UserXFavorite.group_id]
+                )
+            )
+            await session.execute(q)
             await session.commit()
+
+            user = await session.scalar(SELECT_USER_BY_ID(user_id))
 
             return [
                 UserXGroupView.from_orm(group) for group in user.favorites_association
@@ -132,16 +143,18 @@ class SqlUserRepository(AbstractUserRepository):
         self, user_id: USER_ID, favorite_id: int
     ) -> list[UserXGroupView]:
         async with self.storage.create_session() as session:
-            # select user
-            user = await session.scalar(SELECT_USER_BY_ID(user_id))
-            user: User
-            # select favorite
-            favorite_group = await session.scalar(
-                select(EventGroup).where(EventGroup.id == favorite_id)
+            # check if favorite exists and belongs to user, then remove
+            q = (
+                delete(UserXFavorite)
+                .where(
+                    UserXFavorite.user_id == user_id,
+                )
+                .where(
+                    UserXFavorite.group_id == favorite_id,
+                )
             )
-            # remove favorite
-            if favorite_group and favorite_group in user.favorites:
-                user.favorites.remove(favorite_group)
+            await session.execute(q)
+            user = await session.scalar(SELECT_USER_BY_ID(user_id))
             await session.commit()
             # from association
             return [

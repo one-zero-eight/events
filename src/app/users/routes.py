@@ -9,13 +9,17 @@ from src.app.dependencies import (
     CURRENT_USER_EMAIL_DEPENDENCY,
 )
 from src.app.schemas import ViewUser, UserXGroupView
-from src.exceptions import UserNotFoundException
+from src.exceptions import (
+    UserNotFoundException,
+    DBEventGroupDoesNotExistInDb,
+    EventGroupNotFoundException,
+)
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 auth_responses_schema = {
-    401: {"description": "User is not authenticated"},
-    404: {"description": "User not found"},
+    401: {"description": "No credentials provided"},
+    403: {"description": "Could not validate credentials"},
 }
 
 
@@ -53,13 +57,13 @@ class ListOfFavorites(BaseModel):
     "/me/favorites",
     responses={
         200: {"description": "Favorite added successfully"},
+        404: {"description": "Event group not found"},
         **auth_responses_schema,
     },
 )
 async def add_favorite(
     email: CURRENT_USER_EMAIL_DEPENDENCY,
     user_repository: USER_REPOSITORY_DEPENDENCY,
-    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
     group_id: int,
 ) -> ListOfFavorites:
     """
@@ -69,14 +73,11 @@ async def add_favorite(
 
     if user_id is None:
         raise UserNotFoundException()
-
-    group = await event_group_repository.get_group(group_id)
-
-    if group is None:
-        raise UserNotFoundException()
-
-    updated_favorites = await user_repository.add_favorite(user_id, group.id)
-    return ListOfFavorites.from_iterable(updated_favorites)
+    try:
+        updated_favorites = await user_repository.add_favorite(user_id, group_id)
+        return ListOfFavorites.from_iterable(updated_favorites)
+    except DBEventGroupDoesNotExistInDb as e:
+        raise EventGroupNotFoundException() from e
 
 
 @router.delete(
@@ -89,7 +90,6 @@ async def add_favorite(
 async def delete_favorite(
     email: CURRENT_USER_EMAIL_DEPENDENCY,
     user_repository: USER_REPOSITORY_DEPENDENCY,
-    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
     group_id: int,
 ) -> ListOfFavorites:
     """
@@ -99,11 +99,6 @@ async def delete_favorite(
 
     if user_id is None:
         raise UserNotFoundException()
-
-    # check if group exists
-    if await event_group_repository.get_group(group_id) is None:
-        raise UserNotFoundException()
-
     updated_favorites = await user_repository.remove_favorite(user_id, group_id)
     return ListOfFavorites.from_iterable(updated_favorites)
 

@@ -27,23 +27,14 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
     async def setup_groups(self, user_id: USER_ID, groups: list[int]):
         async with self.storage.create_session() as session:
             q = (
-                select(User)
-                .where(User.id == user_id)
-                .options(
-                    selectinload(User.favorites_association),
-                    selectinload(User.groups_association),
+                insert(UserXGroup)
+                .values(
+                    [{"user_id": user_id, "group_id": group_id} for group_id in groups]
+                )
+                .on_conflict_do_nothing(
+                    index_elements=[UserXGroup.user_id, UserXGroup.group_id]
                 )
             )
-
-            user = await session.scalar(q)
-            user: User
-
-            group_objs = await session.execute(
-                select(EventGroup).where(EventGroup.id.in_(groups))
-            )
-
-            group_scalars = group_objs.scalars().all()
-            user.groups = group_scalars
             await session.commit()
 
     async def batch_setup_groups(self, groups_mapping: dict[USER_ID, list[int]]):
