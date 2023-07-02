@@ -1,0 +1,17 @@
+version: "3"
+
+services:
+  db:
+    image: "postgres:15.3"
+    restart: always
+    volumes:
+      - "postgres:/var/lib/postgresql/data"
+    env_file: .env.local
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+    postgres:
