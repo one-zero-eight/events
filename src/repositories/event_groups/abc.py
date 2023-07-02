@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Annotated, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from src.app.schemas import CreateEventGroup, ViewEventGroup
+    from src.app.schemas import CreateEventGroup, ViewEventGroup, UserXGroupView
 
 USER_ID = Annotated[int, "User ID"]
 
@@ -40,4 +40,10 @@ class AbstractEventGroupRepository(metaclass=ABCMeta):
 
     @abstractmethod
     async def get_all_groups(self) -> list["ViewEventGroup"]:
+        ...
+
+    @abstractmethod
+    async def set_hidden(
+        self, user_id: USER_ID, is_favorite: bool, group_id: int, hide: bool = True
+    ) -> list["UserXGroupView"]:
         ...
