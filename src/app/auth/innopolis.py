@@ -49,9 +49,8 @@ if enabled:
         token = await oauth.innopolis.authorize_access_token(request)
         user_info_dict: dict = token["userinfo"]
         user_info = UserInfoFromSSO(**user_info_dict)
-        email = user_info.email
-        await user_repository.upsert_user(CreateUser(**user_info.dict()))
+        user = await user_repository.upsert_user(CreateUser(**user_info.dict()))
 
         return_to = request.session.pop("return_to")
-        token = create_access_token(email)
+        token = create_access_token(user.id)
         return redirect_with_token(return_to, token)
