@@ -30,7 +30,10 @@ app = FastAPI(
     version=settings.APP_VERSION,
     servers=[
         {"url": settings.APP_ROOT_PATH, "description": "Current"},
-        {"url": "https://api.innohassle.ru/events/v0", "description": "Production environment"},
+        {
+            "url": "https://api.innohassle.ru/events/v0",
+            "description": "Production environment",
+        },
     ],
     root_path=settings.APP_ROOT_PATH,
     root_path_in_servers=False,

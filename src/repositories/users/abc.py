@@ -1,11 +1,12 @@
-__all__ = ["AbstractUserRepository"]
+__all__ = ["AbstractUserRepository", "USER_ID"]
 
 from abc import ABCMeta, abstractmethod
 from typing import Annotated, TYPE_CHECKING
 
+from src.storages.sql.models import UserXGroup
+
 if TYPE_CHECKING:
     from src.app.schemas import CreateUser, ViewUser
-    from src.storages.sql.models import UserXGroup
 
 USER_ID = Annotated[int, "User ID"]
 
