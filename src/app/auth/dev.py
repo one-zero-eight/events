@@ -9,7 +9,7 @@ from src.app.auth.common import redirect_with_token
 from src.app.auth.jwt import create_access_token
 from src.app.users.schemas import CreateUser
 from src.config import settings, Environment
-from src.repositories.dependencies import Dependencies
+from src.app.dependencies import Dependencies
 from src.repositories.users import AbstractUserRepository
 
 enabled = (

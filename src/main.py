@@ -8,7 +8,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from src.app.routers import routers
 from src.app.schemas import CreateUser, CreateEventGroup
 from src.config import settings
-from src.repositories.dependencies import Dependencies
+from src.app.dependencies import Dependencies
 from src.repositories.users import SqlUserRepository, PredefinedGroupsRepository
 from src.repositories.event_groups import SqlEventGroupRepository
 from src.storages.sql import SQLAlchemyStorage

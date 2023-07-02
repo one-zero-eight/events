@@ -1,3 +1,5 @@
+__all__ = ["get_current_user_email"]
+
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, APIKeyCookie
 
