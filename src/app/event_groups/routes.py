@@ -1,12 +1,8 @@
-from typing import Annotated, Iterable
+from fastapi import APIRouter
 
-from fastapi import APIRouter, Depends
-from pydantic import BaseModel
-
-from src.app.event_groups.schemas import ViewEventGroup
+from src.app.dependencies import EVENT_GROUP_REPOSITORY_DEPENDENCY
+from src.app.event_groups.schemas import ViewEventGroup, ListEventGroupsResponse
 from src.exceptions import EventGroupNotFoundException
-from src.repositories.dependencies import Dependencies
-from src.repositories.users import AbstractUserRepository
 
 router = APIRouter(prefix="/event-groups", tags=["Event Groups"])
 
@@ -20,15 +16,13 @@ router = APIRouter(prefix="/event-groups", tags=["Event Groups"])
 )
 async def find_event_group_by_path(
     path: str,
-    user_repository: Annotated[
-        AbstractUserRepository, Depends(Dependencies.get_user_repository)
-    ],
+    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
 ) -> ViewEventGroup:
     """
     Get event group info by path
     """
 
-    event_group = await user_repository.get_group_by_path(path)
+    event_group = await event_group_repository.get_group_by_path(path)
 
     if event_group is None:
         raise EventGroupNotFoundException()
@@ -44,33 +38,17 @@ async def find_event_group_by_path(
 )
 async def get_event_group(
     event_group_id: int,
-    user_repository: Annotated[
-        AbstractUserRepository, Depends(Dependencies.get_user_repository)
-    ],
+    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
 ) -> ViewEventGroup:
     """
     Get event group info by id
     """
-    event_group = await user_repository.get_group(event_group_id)
+    event_group = await event_group_repository.get_group(event_group_id)
 
     if event_group is None:
         raise EventGroupNotFoundException()
 
     return event_group
-
-
-class ListEventGroupsResponse(BaseModel):
-    """
-    Represents a list of event groups.
-    """
-
-    groups: list[ViewEventGroup]
-
-    @classmethod
-    def from_iterable(
-        cls, groups: Iterable[ViewEventGroup]
-    ) -> "ListEventGroupsResponse":
-        return cls(groups=groups)
 
 
 @router.get(
@@ -80,12 +58,10 @@ class ListEventGroupsResponse(BaseModel):
     },
 )
 async def list_event_groups(
-    user_repository: Annotated[
-        AbstractUserRepository, Depends(Dependencies.get_user_repository)
-    ],
+    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
 ) -> ListEventGroupsResponse:
     """
-    Get list of event groups
+    Get a list of all event groups
     """
-    groups = await user_repository.get_all_groups()
+    groups = await event_group_repository.get_all_groups()
     return ListEventGroupsResponse.from_iterable(groups)

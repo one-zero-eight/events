@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Iterable
 
 from pydantic import BaseModel, Json, validator
 import json
@@ -53,3 +53,17 @@ class UserXGroupView(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class ListEventGroupsResponse(BaseModel):
+    """
+    Represents a list of event groups.
+    """
+
+    groups: list[ViewEventGroup]
+
+    @classmethod
+    def from_iterable(
+        cls, groups: Iterable[ViewEventGroup]
+    ) -> "ListEventGroupsResponse":
+        return cls(groups=groups)

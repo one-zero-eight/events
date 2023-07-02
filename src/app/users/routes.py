@@ -1,13 +1,15 @@
-from typing import Annotated, Iterable
+from typing import Iterable
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from pydantic import BaseModel
 
-from src.app.auth.dependencies import get_current_user_email
+from src.app.dependencies import (
+    EVENT_GROUP_REPOSITORY_DEPENDENCY,
+    USER_REPOSITORY_DEPENDENCY,
+    CURRENT_USER_EMAIL_DEPENDENCY,
+)
 from src.app.schemas import ViewUser, UserXGroupView
 from src.exceptions import UserNotFoundException
-from src.repositories.dependencies import Dependencies
-from src.repositories.users import AbstractUserRepository
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -25,10 +27,8 @@ auth_responses_schema = {
     },
 )
 async def get_me(
-    email: Annotated[str, Depends(get_current_user_email)],
-    user_repository: Annotated[
-        AbstractUserRepository, Depends(Dependencies.get_user_repository)
-    ],
+    email: CURRENT_USER_EMAIL_DEPENDENCY,
+    user_repository: USER_REPOSITORY_DEPENDENCY,
 ) -> ViewUser:
     """
     Get current user info if authenticated
@@ -57,10 +57,9 @@ class ListOfFavorites(BaseModel):
     },
 )
 async def add_favorite(
-    email: Annotated[str, Depends(get_current_user_email)],
-    user_repository: Annotated[
-        AbstractUserRepository, Depends(Dependencies.get_user_repository)
-    ],
+    email: CURRENT_USER_EMAIL_DEPENDENCY,
+    user_repository: USER_REPOSITORY_DEPENDENCY,
+    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
     group_id: int,
 ) -> ListOfFavorites:
     """
@@ -71,7 +70,7 @@ async def add_favorite(
     if user_id is None:
         raise UserNotFoundException()
 
-    group = await user_repository.get_group(group_id)
+    group = await event_group_repository.get_group(group_id)
 
     if group is None:
         raise UserNotFoundException()
@@ -88,10 +87,9 @@ async def add_favorite(
     },
 )
 async def delete_favorite(
-    email: Annotated[str, Depends(get_current_user_email)],
-    user_repository: Annotated[
-        AbstractUserRepository, Depends(Dependencies.get_user_repository)
-    ],
+    email: CURRENT_USER_EMAIL_DEPENDENCY,
+    user_repository: USER_REPOSITORY_DEPENDENCY,
+    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
     group_id: int,
 ) -> ListOfFavorites:
     """
@@ -103,7 +101,7 @@ async def delete_favorite(
         raise UserNotFoundException()
 
     # check if group exists
-    if await user_repository.get_group(group_id) is None:
+    if await event_group_repository.get_group(group_id) is None:
         raise UserNotFoundException()
 
     updated_favorites = await user_repository.remove_favorite(user_id, group_id)
@@ -118,10 +116,9 @@ async def delete_favorite(
     },
 )
 async def hide_favorite(
-    email: Annotated[str, Depends(get_current_user_email)],
-    user_repository: Annotated[
-        AbstractUserRepository, Depends(Dependencies.get_user_repository)
-    ],
+    email: CURRENT_USER_EMAIL_DEPENDENCY,
+    user_repository: USER_REPOSITORY_DEPENDENCY,
+    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
     group_id: int,
     hide: bool = True,
 ) -> ListOfFavorites:
@@ -134,10 +131,10 @@ async def hide_favorite(
         raise UserNotFoundException()
 
     # check if group exists
-    if await user_repository.get_group(group_id) is None:
+    if await event_group_repository.get_group(group_id) is None:
         raise UserNotFoundException()
 
-    updated_favorites = await user_repository.set_hidden(
+    updated_favorites = await event_group_repository.set_hidden(
         user_id=user_id, group_id=group_id, hide=hide, is_favorite=True
     )
 
@@ -152,10 +149,9 @@ async def hide_favorite(
     },
 )
 async def hide_group(
-    email: Annotated[str, Depends(get_current_user_email)],
-    user_repository: Annotated[
-        AbstractUserRepository, Depends(Dependencies.get_user_repository)
-    ],
+    email: CURRENT_USER_EMAIL_DEPENDENCY,
+    user_repository: USER_REPOSITORY_DEPENDENCY,
+    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
     group_id: int,
     hide: bool = True,
 ) -> ListOfFavorites:
@@ -168,10 +164,10 @@ async def hide_group(
         raise UserNotFoundException()
 
     # check if group exists
-    if await user_repository.get_group(group_id) is None:
+    if await event_group_repository.get_group(group_id) is None:
         raise UserNotFoundException()
 
-    updated_favorites = await user_repository.set_hidden(
+    updated_favorites = await event_group_repository.set_hidden(
         user_id=user_id, group_id=group_id, hide=hide, is_favorite=False
     )
 
