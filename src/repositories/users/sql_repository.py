@@ -111,13 +111,14 @@ class SqlUserRepository(AbstractUserRepository):
 
     async def add_favorite(
         self, user_id: USER_ID, favorite_id: int
-    ) -> list[ViewEventGroup]:
+    ) -> list[UserXGroupView]:
         async with self.storage.create_session() as session:
             # check if favorite exists
-            favorite = await session.scalar(
-                select(EventGroup).where(EventGroup.id == favorite_id)
+            favorite_exists = await session.scalar(
+                exists(EventGroup.id).where(EventGroup.id == favorite_id).select()
             )
-            if not favorite:
+
+            if not favorite_exists:
                 raise DBEventGroupDoesNotExistInDb(id=favorite_id)
 
             q = (

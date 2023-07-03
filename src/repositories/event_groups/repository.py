@@ -1,10 +1,9 @@
 __all__ = ["SqlEventGroupRepository"]
 
-from typing import Annotated
+from typing import Annotated, Type
 
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.orm import selectinload
 
 from src.app.event_groups.schemas import (
     UserXGroupView,
@@ -13,7 +12,7 @@ from src.app.event_groups.schemas import (
 )
 from src.repositories.event_groups.abc import AbstractEventGroupRepository
 from src.storages.sql import AbstractSQLAlchemyStorage
-from src.storages.sql.models import UserXFavorite, UserXGroup, EventGroup, User
+from src.storages.sql.models import UserXFavorite, UserXGroup, EventGroup
 
 USER_ID = Annotated[int, "User ID"]
 
@@ -35,6 +34,7 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
                     index_elements=[UserXGroup.user_id, UserXGroup.group_id]
                 )
             )
+            await session.execute(q)
             await session.commit()
 
     async def batch_setup_groups(self, groups_mapping: dict[USER_ID, list[int]]):
@@ -58,7 +58,6 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
     ) -> list[UserXGroupView]:
         async with self.storage.create_session() as session:
             table = UserXFavorite if is_favorite else UserXGroup
-            table: UserXFavorite | UserXGroup
 
             query = (
                 update(table)

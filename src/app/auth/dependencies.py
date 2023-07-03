@@ -27,7 +27,7 @@ cookie_scheme = APIKeyCookie(
 def get_current_user_id(
     bearer: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     cookie: str = Depends(cookie_scheme),
-) -> str:
+) -> int:
     # Prefer header to cookie
     token = (bearer and bearer.credentials) or cookie
     if not token:
