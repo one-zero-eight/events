@@ -2,17 +2,17 @@ __all__ = ["SqlUserRepository"]
 
 from sqlalchemy import select, delete
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, joinedload
+from sqlalchemy.sql.expression import exists
 
 from src.app.event_groups.schemas import (
-    ViewEventGroup,
     UserXGroupView,
 )
 from src.app.users.schemas import CreateUser, ViewUser
-from src.repositories.users.abc import AbstractUserRepository, USER_ID
-from src.storages.sql.models import User, EventGroup, UserXGroup, UserXFavorite
-from src.storages.sql.storage import AbstractSQLAlchemyStorage
 from src.exceptions import DBEventGroupDoesNotExistInDb
+from src.repositories.users.abc import AbstractUserRepository, USER_ID
+from src.storages.sql.models import User, EventGroup, UserXFavorite
+from src.storages.sql.storage import AbstractSQLAlchemyStorage
 
 
 def SELECT_USER_BY_ID(id_: USER_ID):
