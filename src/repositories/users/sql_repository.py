@@ -20,8 +20,8 @@ def SELECT_USER_BY_ID(id_: USER_ID):
         select(User)
         .where(User.id == id_)
         .options(
-            selectinload(User.favorites_association),
-            selectinload(User.groups_association),
+            joinedload(User.favorites_association),
+            joinedload(User.groups_association),
         )
     )
 
