@@ -109,9 +109,7 @@ class SqlUserRepository(AbstractUserRepository):
             user_id = await session.scalar(select(User.id).where(User.email == email))
             return user_id
 
-    async def add_favorite(
-        self, user_id: USER_ID, favorite_id: int
-    ) -> list[UserXGroupView]:
+    async def add_favorite(self, user_id: USER_ID, favorite_id: int) -> ViewUser:
         async with self.storage.create_session() as session:
             # check if favorite exists
             favorite_exists = await session.scalar(
@@ -134,13 +132,9 @@ class SqlUserRepository(AbstractUserRepository):
             await session.execute(q)
             user = await session.scalar(SELECT_USER_BY_ID(user_id))
             await session.commit()
-            return [
-                UserXGroupView.from_orm(group) for group in user.favorites_association
-            ]
+            return ViewUser.from_orm(user)
 
-    async def remove_favorite(
-        self, user_id: USER_ID, favorite_id: int
-    ) -> list[UserXGroupView]:
+    async def remove_favorite(self, user_id: USER_ID, favorite_id: int) -> ViewUser:
         async with self.storage.create_session() as session:
             q = (
                 delete(UserXFavorite)
@@ -154,6 +148,4 @@ class SqlUserRepository(AbstractUserRepository):
             await session.execute(q)
             user = await session.scalar(SELECT_USER_BY_ID(user_id))
             await session.commit()
-            return [
-                UserXGroupView.from_orm(group) for group in user.favorites_association
-            ]
+            return ViewUser.from_orm(user)

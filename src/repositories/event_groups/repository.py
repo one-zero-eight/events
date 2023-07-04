@@ -4,15 +4,17 @@ from typing import Annotated, Type
 
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import joinedload
 
 from src.app.event_groups.schemas import (
     UserXGroupView,
     ViewEventGroup,
     CreateEventGroup,
 )
+from src.app.users.schemas import ViewUser
 from src.repositories.event_groups.abc import AbstractEventGroupRepository
 from src.storages.sql import AbstractSQLAlchemyStorage
-from src.storages.sql.models import UserXFavorite, UserXGroup, EventGroup
+from src.storages.sql.models import UserXFavorite, UserXGroup, EventGroup, User
 
 USER_ID = Annotated[int, "User ID"]
 
@@ -55,7 +57,7 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
 
     async def set_hidden(
         self, user_id: USER_ID, is_favorite: bool, group_id: int, hide: bool = True
-    ) -> list[UserXGroupView]:
+    ) -> "ViewUser":
         async with self.storage.create_session() as session:
             table = UserXFavorite if is_favorite else UserXGroup
 
@@ -66,13 +68,19 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
                 .values(hidden=hide)
             )
             await session.execute(query)
-            await session.commit()
 
             # from table
-            q = select(table).where(table.user_id == user_id)
-
-            groups = await session.execute(q)
-            return [UserXGroupView.from_orm(group) for group in groups.scalars().all()]
+            q = (
+                select(User)
+                .where(User.id == user_id)
+                .options(
+                    joinedload(User.favorites_association),
+                    joinedload(User.groups_association),
+                )
+            )
+            user = await session.scalar(q)
+            await session.commit()
+            return ViewUser.from_orm(user)
 
     async def get_group(self, group_id: int) -> ViewEventGroup:
         async with self.storage.create_session() as session:
