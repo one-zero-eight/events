@@ -45,7 +45,7 @@ def verify_token(token: str, credentials_exception) -> TokenData:
             token, settings.JWT_SECRET_KEY.get_secret_value(), algorithms=[ALGORITHM]
         )
         user_id: str = payload.get("sub")
-        if user_id is None:
+        if user_id is None or not user_id.isdigit():
             raise credentials_exception
         token_data = TokenData(user_id=int(user_id))
         return token_data
