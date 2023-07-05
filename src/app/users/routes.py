@@ -1,18 +1,15 @@
-from fastapi import APIRouter
-
 from src.app.dependencies import (
     EVENT_GROUP_REPOSITORY_DEPENDENCY,
     USER_REPOSITORY_DEPENDENCY,
     CURRENT_USER_ID_DEPENDENCY,
 )
-from src.app.schemas import ViewUser
+from src.schemas.users import ViewUser
+from src.app.users import router
 from src.exceptions import (
     UserNotFoundException,
     DBEventGroupDoesNotExistInDb,
     EventGroupNotFoundException,
 )
-
-router = APIRouter(prefix="/users", tags=["Users"])
 
 auth_responses_schema = {
     401: {"description": "No credentials provided"},

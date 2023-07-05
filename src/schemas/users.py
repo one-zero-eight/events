@@ -1,3 +1,5 @@
+__all__ = ["CreateUser", "ViewUser"]
+
 from typing import Optional, Collection
 
 from pydantic import Field, BaseModel, validator
@@ -36,6 +38,6 @@ class ViewUser(BaseModel):
 
 
 # fix circular import
-from src.app.event_groups.schemas import UserXGroupView  # noqa: E402
+from src.schemas.event_groups import UserXGroupView  # noqa: E402
 
 ViewUser.update_forward_refs()

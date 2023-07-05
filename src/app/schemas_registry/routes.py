@@ -1,23 +1,17 @@
 from typing import Any
 
-from fastapi import APIRouter
 from pydantic import BaseModel
 
-from src.app.event_groups.schemas import (
-    CreateEventGroup,
-    ViewEventGroup,
-    UserXGroupView,
-)
-from src.app.users.schemas import CreateUser, ViewUser
+from src.app.schemas_registry import router
+from src.schemas import CreateEventGroup, ViewEventGroup, UserXGroupView, ListEventGroupsResponse, CreateUser, ViewUser
 
 # fmt: off
 all_schemas = [
     CreateUser, ViewUser,
-    CreateEventGroup, ViewEventGroup, UserXGroupView,
+    CreateEventGroup, ViewEventGroup, UserXGroupView, ListEventGroupsResponse
 ]
 # fmt: on
 
-router = APIRouter(tags=["System"])
 schema_dict = {schema.__name__: schema.schema(ref_template="#/components/schemas/{model}") for schema in all_schemas}
 
 
@@ -30,7 +24,7 @@ class Schemas(BaseModel):
 
 
 @router.get(
-    "/schemas",
+    "/",
     response_model=Schemas,
     responses={
         200: {
@@ -40,7 +34,10 @@ class Schemas(BaseModel):
     },
 )
 async def schemas():
+    """
+    Get a list of all schemas
+    """
     return {"schemas": schema_dict}
 
 
-__all__ = [*all_schemas, "BaseModel", "router"]
+__all__ = ["all_schemas", "router"]

@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Annotated, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from src.app.schemas import CreateEventGroup, ViewEventGroup, ViewUser
+    from src.schemas import CreateEventGroup, ViewEventGroup, ViewUser
 
 USER_ID = Annotated[int, "User ID"]
 

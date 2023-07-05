@@ -6,12 +6,8 @@ from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import joinedload
 
-from src.app.event_groups.schemas import (
-    ViewEventGroup,
-    CreateEventGroup,
-)
-from src.app.users.schemas import ViewUser
 from src.repositories.event_groups.abc import AbstractEventGroupRepository
+from src.schemas import ViewEventGroup, CreateEventGroup, ViewUser
 from src.storages.sql import AbstractSQLAlchemyStorage
 from src.storages.sql.models import UserXFavorite, UserXGroup, EventGroup, User
 

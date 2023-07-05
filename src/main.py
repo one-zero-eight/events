@@ -1,4 +1,5 @@
 import re
+
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from pydantic import BaseModel
@@ -6,12 +7,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from src.app.routers import routers
-from src.app.schemas import CreateUser, CreateEventGroup
 from src.config import settings
-from src.app.dependencies import Dependencies
-from src.repositories.users import SqlUserRepository, PredefinedGroupsRepository
-from src.repositories.event_groups import SqlEventGroupRepository
-from src.storages.sql import SQLAlchemyStorage
 
 
 def generate_unique_operation_id(route: APIRoute) -> str:
@@ -53,6 +49,12 @@ app.add_middleware(SessionMiddleware, secret_key=settings.SESSION_SECRET_KEY.get
 
 @app.on_event("startup")
 async def setup_repositories():
+    from src.schemas import CreateEventGroup, CreateUser
+    from src.repositories.event_groups import SqlEventGroupRepository
+    from src.repositories.users import SqlUserRepository, PredefinedGroupsRepository
+    from src.storages.sql import SQLAlchemyStorage
+    from src.app.dependencies import Dependencies
+
     storage = SQLAlchemyStorage.from_url(settings.DB_URL.get_secret_value())
     user_repository = SqlUserRepository(storage)
     event_group_repository = SqlEventGroupRepository(storage)
@@ -82,6 +84,8 @@ async def setup_repositories():
 
 @app.on_event("shutdown")
 async def close_connection():
+    from src.app.dependencies import Dependencies
+
     storage = Dependencies.get_storage()
     await storage.close_connection()
 
