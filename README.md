@@ -47,6 +47,7 @@ Set up pre-commit hooks:
 ```bash
 poetry shell
 pre-commit install
+pre-commit run --all-files
 ```
 
 Set up PyCharm integrations:
