@@ -2,6 +2,7 @@ __all__ = [
     "create_access_token",
     "create_parser_token",
     "verify_user_token",
+    "verify_parser_token",
     "UserTokenData",
 ]
 
@@ -36,7 +37,7 @@ def create_access_token(user_id: int) -> str:
 
 def create_parser_token() -> str:
     access_token = _create_access_token(
-        data={"parser": "parser"},
+        data={"sub": "parser"},
         expires_delta=timedelta(days=365),
     )
     return access_token
@@ -58,5 +59,16 @@ def verify_user_token(token: str, credentials_exception) -> UserTokenData:
             raise credentials_exception
         token_data = UserTokenData(user_id=int(user_id))
         return token_data
+    except JWTError:
+        raise credentials_exception
+
+
+def verify_parser_token(token: str, credentials_exception) -> bool:
+    try:
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY.get_secret_value(), algorithms=[ALGORITHM])
+        parser_data = payload.get("sub")
+        if parser_data == "parser":
+            return True
+        raise credentials_exception
     except JWTError:
         raise credentials_exception

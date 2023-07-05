@@ -6,8 +6,8 @@ from fastapi import Depends
 
 from src.app.auth import router
 from src.app.auth.common import redirect_with_token
-from src.app.auth.jwt import create_access_token
-from src.app.users.schemas import CreateUser
+from src.app.auth.jwt import create_access_token, create_parser_token
+from src.schemas import CreateUser
 from src.config import settings, Environment
 from src.app.dependencies import Dependencies
 from src.repositories.users import AbstractUserRepository
@@ -40,3 +40,7 @@ if enabled:
         email = email or settings.DEV_AUTH_EMAIL
         user = await user_repository.upsert_user(CreateUser(email=email, name="Ivan Petrov", status="Student"))
         return create_access_token(user.id)
+
+    @router.get("/dev/parser-token")
+    async def get_dev_parser_token() -> str:
+        return create_parser_token()

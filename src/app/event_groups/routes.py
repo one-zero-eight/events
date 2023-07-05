@@ -1,10 +1,7 @@
-from fastapi import APIRouter
-
-from src.app.dependencies import EVENT_GROUP_REPOSITORY_DEPENDENCY
-from src.app.event_groups.schemas import ViewEventGroup, ListEventGroupsResponse
+from src.app.dependencies import EVENT_GROUP_REPOSITORY_DEPENDENCY, IS_VERIFIED_PARSER_DEPENDENCY
+from src.app.event_groups import router
+from src.schemas.event_groups import CreateEventGroup, ViewEventGroup, ListEventGroupsResponse
 from src.exceptions import EventGroupNotFoundException
-
-router = APIRouter(prefix="/event-groups", tags=["Event Groups"])
 
 
 @router.get(
@@ -65,3 +62,22 @@ async def list_event_groups(
     """
     groups = await event_group_repository.get_all_groups()
     return ListEventGroupsResponse.from_iterable(groups)
+
+
+@router.post(
+    "/",
+    responses={
+        200: {"description": "Event group info", "model": ViewEventGroup},
+        401: {"description": "No credentials provided"},
+        403: {"description": "Could not validate credentials"},
+    },
+)
+async def create_event_group(
+    _is_verified: IS_VERIFIED_PARSER_DEPENDENCY,
+    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
+    event_group: CreateEventGroup,
+) -> ViewEventGroup:
+    """
+    Create a new event group if it does not exist
+    """
+    return await event_group_repository.create_group_if_not_exists(event_group)
