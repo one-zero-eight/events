@@ -69,7 +69,7 @@ Set up PyCharm integrations:
 |
 +---.run
 |       Dev server.run.xml    # PyCharm run configuration for local development
-|       
+|
 \---src
     |   config.py       # Configuration module for the application (using ENV variables)
     |   dev.py          # Script for local development
@@ -93,14 +93,14 @@ Set up PyCharm integrations:
     |   |   |   schemas.py       # Includes Pydantic schemas for event group-related operations
     |   +---users             # Module for users
     |   |   |   routes.py
-    |   |   \---schemas.py       
+    |   |   \---schemas.py
     |
     +---repositories # Represents repositories layer for data access and manipulation
-    |   |   
+    |   |
     |   +---event_groups
     |   |   |   abc.py  # Abstract base class for event group repository
     |   |   \---repository.py # SQLAlchemy repository for event group connected methods
-    |   |           
+    |   |
     |   +---users
     |   |   |   abc.py  # Abstract base class for user repository
     |   |   |   json_repository.py  # JSON repository for predefined groups and users
@@ -108,7 +108,7 @@ Set up PyCharm integrations:
     |   |   |   (predefined_groups.json)  # Predefined groups data
     |   |   \---(innopolis_user_data.json) # Innopolis users data
     \---storages  # Represents data storage such as databases, third-party APIs, etc.
-        |   
+        |
         \---sql   # SQLAlchemy storage
             |   storage.py    # SQLAlchemy session factory
             |
