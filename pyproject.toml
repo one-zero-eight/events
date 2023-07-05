@@ -17,6 +17,12 @@ python-jose = {extras = ["cryptography"], version = "^3.3.0"}
 [tool.poetry.group.prod.dependencies]
 gunicorn = "20.1.0"
 
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.0.277"
+black = "^23.3.0"
+pre-commit = "^3.3.3"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
