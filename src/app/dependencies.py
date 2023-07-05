@@ -60,7 +60,7 @@ EVENT_GROUP_REPOSITORY_DEPENDENCY = Annotated[
     "AbstractEventGroupRepository", Depends(Dependencies.get_event_group_repository)
 ]
 
-from src.app.auth.dependencies import get_current_user_id
+from src.app.auth.dependencies import get_current_user_id  # noqa: E402
 
 Dependencies.get_current_user_id = get_current_user_id
 

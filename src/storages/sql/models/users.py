@@ -41,4 +41,4 @@ class User(Base):
     )
 
 
-from src.storages.sql.models.event_groups import UserXFavorite, UserXGroup
+from src.storages.sql.models.event_groups import UserXFavorite, UserXGroup  # noqa: E402

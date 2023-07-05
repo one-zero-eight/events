@@ -36,6 +36,6 @@ class ViewUser(BaseModel):
 
 
 # fix circular import
-from src.app.event_groups.schemas import UserXGroupView
+from src.app.event_groups.schemas import UserXGroupView  # noqa: E402
 
 ViewUser.update_forward_refs()

@@ -5,9 +5,6 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import selectinload, joinedload
 from sqlalchemy.sql.expression import exists
 
-from src.app.event_groups.schemas import (
-    UserXGroupView,
-)
 from src.app.users.schemas import CreateUser, ViewUser
 from src.exceptions import DBEventGroupDoesNotExistInDb
 from src.repositories.users.abc import AbstractUserRepository, USER_ID

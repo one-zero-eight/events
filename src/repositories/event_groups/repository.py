@@ -1,13 +1,12 @@
 __all__ = ["SqlEventGroupRepository"]
 
-from typing import Annotated, Type
+from typing import Annotated
 
 from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import joinedload
 
 from src.app.event_groups.schemas import (
-    UserXGroupView,
     ViewEventGroup,
     CreateEventGroup,
 )
