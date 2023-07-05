@@ -34,6 +34,26 @@ using [FastAPI](https://fastapi.tiangolo.com/).
     ```
    OR using 'Dev server' configuration in PyCharm.
 
+## Development
+
+Install dependencies:
+
+```bash
+poetry install
+```
+
+Set up pre-commit hooks:
+
+```bash
+poetry shell
+pre-commit install
+```
+
+Set up PyCharm integrations:
+
+1. Black formatter ([docs](https://black.readthedocs.io/en/stable/integrations/editors.html#pycharm-intellij-idea)).
+2. Ruff ([docs](https://beta.ruff.rs/docs/editor-integrations/#pycharm-unofficial)).
+
 ## Project Structure
 
 ```
