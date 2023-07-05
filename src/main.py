@@ -48,9 +48,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(
-    SessionMiddleware, secret_key=settings.SESSION_SECRET_KEY.get_secret_value()
-)
+app.add_middleware(SessionMiddleware, secret_key=settings.SESSION_SECRET_KEY.get_secret_value())
 
 
 @app.on_event("startup")
@@ -64,18 +62,14 @@ async def setup_repositories():
 
     await storage.create_all()
 
-    groups_repository = PredefinedGroupsRepository(
-        settings.PREDEFINED_USERS_FILE, settings.PREDEFINED_GROUPS_FILE
-    )
+    groups_repository = PredefinedGroupsRepository(settings.PREDEFINED_USERS_FILE, settings.PREDEFINED_GROUPS_FILE)
     unique_groups = groups_repository.get_groups()
     db_groups = await event_group_repository.batch_create_group_if_not_exists(
         [CreateEventGroup(**group.dict()) for group in unique_groups]
     )
     path_x_group = {group.path: group for group in db_groups}
     users = groups_repository.get_users()
-    db_users = await user_repository.batch_create_user_if_not_exists(
-        [CreateUser(**user.dict()) for user in users]
-    )
+    db_users = await user_repository.batch_create_user_if_not_exists([CreateUser(**user.dict()) for user in users])
     user_id_x_group_ids = dict()
     for i, user in enumerate(users):
         db_user = db_users[i]

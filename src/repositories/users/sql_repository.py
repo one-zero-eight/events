@@ -52,9 +52,7 @@ class SqlUserRepository(AbstractUserRepository):
         async with self.storage.create_session() as session:
             q = insert(User).values(**user.dict())
             q = (
-                q.on_conflict_do_update(
-                    index_elements=[User.email], set_={"id": User.id}
-                )
+                q.on_conflict_do_update(index_elements=[User.email], set_={"id": User.id})
                 .returning(User)
                 .options(
                     selectinload(User.favorites_association),
@@ -69,9 +67,7 @@ class SqlUserRepository(AbstractUserRepository):
         async with self.storage.create_session() as session:
             q = insert(User).values(**user.dict())
             q = (
-                q.on_conflict_do_update(
-                    index_elements=[User.email], set_={**q.excluded, "id": User.id}
-                )
+                q.on_conflict_do_update(index_elements=[User.email], set_={**q.excluded, "id": User.id})
                 .returning(User)
                 .options(
                     selectinload(User.favorites_association),
@@ -82,15 +78,11 @@ class SqlUserRepository(AbstractUserRepository):
             await session.commit()
             return ViewUser.from_orm(user)
 
-    async def batch_create_user_if_not_exists(
-        self, users: list[CreateUser]
-    ) -> list[ViewUser]:
+    async def batch_create_user_if_not_exists(self, users: list[CreateUser]) -> list[ViewUser]:
         async with self.storage.create_session() as session:
             q = insert(User).values([user.dict() for user in users])
             q = (
-                q.on_conflict_do_update(
-                    index_elements=[User.email], set_={"id": User.id}
-                )
+                q.on_conflict_do_update(index_elements=[User.email], set_={"id": User.id})
                 .returning(User)
                 .options(
                     selectinload(User.favorites_association),
@@ -109,9 +101,7 @@ class SqlUserRepository(AbstractUserRepository):
     async def add_favorite(self, user_id: USER_ID, favorite_id: int) -> ViewUser:
         async with self.storage.create_session() as session:
             # check if favorite exists
-            favorite_exists = await session.scalar(
-                exists(EventGroup.id).where(EventGroup.id == favorite_id).select()
-            )
+            favorite_exists = await session.scalar(exists(EventGroup.id).where(EventGroup.id == favorite_id).select())
 
             if not favorite_exists:
                 raise DBEventGroupDoesNotExistInDb(id=favorite_id)
@@ -122,9 +112,7 @@ class SqlUserRepository(AbstractUserRepository):
                     user_id=user_id,
                     group_id=favorite_id,
                 )
-                .on_conflict_do_nothing(
-                    index_elements=[UserXFavorite.user_id, UserXFavorite.group_id]
-                )
+                .on_conflict_do_nothing(index_elements=[UserXFavorite.user_id, UserXFavorite.group_id])
             )
             await session.execute(q)
             user = await session.scalar(SELECT_USER_BY_ID(user_id))

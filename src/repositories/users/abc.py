@@ -19,9 +19,7 @@ class AbstractUserRepository(metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    async def batch_create_user_if_not_exists(
-        self, users: list["CreateUser"]
-    ) -> list["ViewUser"]:
+    async def batch_create_user_if_not_exists(self, users: list["CreateUser"]) -> list["ViewUser"]:
         ...
 
     @abstractmethod

@@ -42,20 +42,14 @@ class Dependencies:
         return cls._event_group_repository
 
     @classmethod
-    def set_event_group_repository(
-        cls, event_group_repository: "AbstractEventGroupRepository"
-    ):
+    def set_event_group_repository(cls, event_group_repository: "AbstractEventGroupRepository"):
         cls._event_group_repository = event_group_repository
 
     get_current_user_id: Callable[..., str]
 
 
-STORAGE_DEPENDENCY = Annotated[
-    "AbstractSQLAlchemyStorage", Depends(Dependencies.get_storage)
-]
-USER_REPOSITORY_DEPENDENCY = Annotated[
-    "AbstractUserRepository", Depends(Dependencies.get_user_repository)
-]
+STORAGE_DEPENDENCY = Annotated["AbstractSQLAlchemyStorage", Depends(Dependencies.get_storage)]
+USER_REPOSITORY_DEPENDENCY = Annotated["AbstractUserRepository", Depends(Dependencies.get_user_repository)]
 EVENT_GROUP_REPOSITORY_DEPENDENCY = Annotated[
     "AbstractEventGroupRepository", Depends(Dependencies.get_event_group_repository)
 ]

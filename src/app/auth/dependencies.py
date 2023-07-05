@@ -3,7 +3,7 @@ __all__ = ["get_current_user_id"]
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, APIKeyCookie
 
-from src.app.auth.jwt import verify_token
+from src.app.auth.jwt import verify_user_token
 from src.config import settings
 from src.exceptions import (
     NoCredentialsException,
@@ -33,5 +33,5 @@ def get_current_user_id(
     if not token:
         raise NoCredentialsException()
 
-    token_data = verify_token(token, IncorrectCredentialsException())
+    token_data = verify_user_token(token, IncorrectCredentialsException())
     return token_data.user_id

@@ -43,9 +43,7 @@ if enabled:
     @router.get("/innopolis/callback", include_in_schema=False)
     async def innopolis_callback(
         request: Request,
-        user_repository: Annotated[
-            AbstractUserRepository, Depends(Dependencies.get_user_repository)
-        ],
+        user_repository: Annotated[AbstractUserRepository, Depends(Dependencies.get_user_repository)],
     ):
         token = await oauth.innopolis.authorize_access_token(request)
         user_info_dict: dict = token["userinfo"]

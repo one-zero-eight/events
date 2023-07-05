@@ -30,23 +30,17 @@ class Settings(BaseSettings):
 
     # Authentication
     AUTH_COOKIE_NAME: str = "token"
-    AUTH_COOKIE_DOMAIN: str = (
-        "innohassle.ru" if ENVIRONMENT == Environment.PRODUCTION else "localhost"
-    )
+    AUTH_COOKIE_DOMAIN: str = "innohassle.ru" if ENVIRONMENT == Environment.PRODUCTION else "localhost"
 
     # Use these only in production
     INNOPOLIS_SSO_CLIENT_ID: SecretStr = ""
     INNOPOLIS_SSO_CLIENT_SECRET: SecretStr = ""
-    INNOPOLIS_SSO_REDIRECT_URI: str = (
-        "https://innohassle.campus.innopolis.university/oauth2/callback"
-    )
+    INNOPOLIS_SSO_REDIRECT_URI: str = "https://innohassle.campus.innopolis.university/oauth2/callback"
 
     # Use dev auth while development
     DEV_AUTH_EMAIL: str = ""
 
-    PREDEFINED_USERS_FILE: Path = Path(
-        "src/repositories/users/innopolis_user_data.json"
-    )
+    PREDEFINED_USERS_FILE: Path = Path("src/repositories/users/innopolis_user_data.json")
 
     PREDEFINED_GROUPS_FILE: Path = Path("src/repositories/users/predefined_groups.json")
 

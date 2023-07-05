@@ -18,10 +18,7 @@ all_schemas = [
 # fmt: on
 
 router = APIRouter(tags=["System"])
-schema_dict = {
-    schema.__name__: schema.schema(ref_template="#/components/schemas/{model}")
-    for schema in all_schemas
-}
+schema_dict = {schema.__name__: schema.schema(ref_template="#/components/schemas/{model}") for schema in all_schemas}
 
 
 class Schemas(BaseModel):

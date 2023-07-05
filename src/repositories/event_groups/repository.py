@@ -28,12 +28,8 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
         async with self.storage.create_session() as session:
             q = (
                 insert(UserXGroup)
-                .values(
-                    [{"user_id": user_id, "group_id": group_id} for group_id in groups]
-                )
-                .on_conflict_do_nothing(
-                    index_elements=[UserXGroup.user_id, UserXGroup.group_id]
-                )
+                .values([{"user_id": user_id, "group_id": group_id} for group_id in groups])
+                .on_conflict_do_nothing(index_elements=[UserXGroup.user_id, UserXGroup.group_id])
             )
             await session.execute(q)
             await session.commit()
@@ -48,24 +44,15 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
                     for group_id in group_ids
                 ]
             )
-            q = q.on_conflict_do_nothing(
-                index_elements=[UserXGroup.user_id, UserXGroup.group_id]
-            )
+            q = q.on_conflict_do_nothing(index_elements=[UserXGroup.user_id, UserXGroup.group_id])
             await session.execute(q)
             await session.commit()
 
-    async def set_hidden(
-        self, user_id: USER_ID, is_favorite: bool, group_id: int, hide: bool = True
-    ) -> "ViewUser":
+    async def set_hidden(self, user_id: USER_ID, is_favorite: bool, group_id: int, hide: bool = True) -> "ViewUser":
         async with self.storage.create_session() as session:
             table = UserXFavorite if is_favorite else UserXGroup
 
-            query = (
-                update(table)
-                .where(table.user_id == user_id)
-                .where(table.group_id == group_id)
-                .values(hidden=hide)
-            )
+            query = update(table).where(table.user_id == user_id).where(table.group_id == group_id).values(hidden=hide)
             await session.execute(query)
 
             # from table
@@ -103,9 +90,7 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
             if group:
                 return ViewEventGroup.from_orm(group)
 
-    async def create_group_if_not_exists(
-        self, group: CreateEventGroup
-    ) -> ViewEventGroup:
+    async def create_group_if_not_exists(self, group: CreateEventGroup) -> ViewEventGroup:
         async with self.storage.create_session() as session:
             q = insert(EventGroup).values(**group.dict()).returning(EventGroup)
             q = q.on_conflict_do_update(
@@ -116,15 +101,9 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
             await session.commit()
             return ViewEventGroup.from_orm(group)
 
-    async def batch_create_group_if_not_exists(
-        self, groups: list[CreateEventGroup]
-    ) -> list[ViewEventGroup]:
+    async def batch_create_group_if_not_exists(self, groups: list[CreateEventGroup]) -> list[ViewEventGroup]:
         async with self.storage.create_session() as session:
-            q = (
-                insert(EventGroup)
-                .values([group.dict() for group in groups])
-                .returning(EventGroup)
-            )
+            q = insert(EventGroup).values([group.dict() for group in groups]).returning(EventGroup)
             q = q.on_conflict_do_update(
                 index_elements=[EventGroup.path],
                 set_={"id": EventGroup.id},

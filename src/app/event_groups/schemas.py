@@ -63,7 +63,5 @@ class ListEventGroupsResponse(BaseModel):
     groups: list[ViewEventGroup]
 
     @classmethod
-    def from_iterable(
-        cls, groups: Iterable[ViewEventGroup]
-    ) -> "ListEventGroupsResponse":
+    def from_iterable(cls, groups: Iterable[ViewEventGroup]) -> "ListEventGroupsResponse":
         return cls(groups=groups)
