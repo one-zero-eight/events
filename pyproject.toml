@@ -12,7 +12,6 @@ sqlalchemy = { extras = ["postgresql_asyncpg"], version = "^2.0.17" }
 pydantic = { extras = ["dotenv"], version = "^1.10.11" }
 fastapi = { extras = ["all"], version = "^0.99.1" }
 authlib = "^1.2.1"
-python-jose = { extras = ["cryptography"], version = "^3.3.0" }
 
 [tool.poetry.group.prod.dependencies]
 gunicorn = "20.1.0"

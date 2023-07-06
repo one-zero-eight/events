@@ -9,7 +9,7 @@ __all__ = [
 from datetime import timedelta, datetime
 from typing import Optional
 
-from jose import JWTError, jwt
+from authlib.jose import jwt, JoseError
 from pydantic import BaseModel, validator
 
 from src.config import settings
@@ -44,31 +44,31 @@ def create_parser_token() -> str:
 
 
 def _create_access_token(data: dict, expires_delta: timedelta) -> str:
-    to_encode = data.copy()
+    payload = data.copy()
     expire = datetime.utcnow() + expires_delta
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET_KEY.get_secret_value(), algorithm=ALGORITHM)
-    return encoded_jwt
+    payload.update({"exp": expire})
+    encoded_jwt = jwt.encode({"alg": ALGORITHM}, payload, settings.JWT_SECRET_KEY.get_secret_value())
+    return str(encoded_jwt, "utf-8")
 
 
 def verify_user_token(token: str, credentials_exception) -> UserTokenData:
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY.get_secret_value(), algorithms=[ALGORITHM])
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY.get_secret_value())
         user_id: str = payload.get("sub")
         if user_id is None or not user_id.isdigit():
             raise credentials_exception
         token_data = UserTokenData(user_id=int(user_id))
         return token_data
-    except JWTError:
+    except JoseError:
         raise credentials_exception
 
 
 def verify_parser_token(token: str, credentials_exception) -> bool:
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY.get_secret_value(), algorithms=[ALGORITHM])
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY.get_secret_value())
         parser_data = payload.get("sub")
         if parser_data == "parser":
             return True
         raise credentials_exception
-    except JWTError:
+    except JoseError:
         raise credentials_exception
