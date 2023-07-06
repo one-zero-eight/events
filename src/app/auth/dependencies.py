@@ -13,6 +13,7 @@ from src.exceptions import (
 bearer_scheme = HTTPBearer(
     scheme_name="Bearer",
     description="Your JSON Web Token (JWT)",
+    bearerFormat="JWT",
     auto_error=False,  # We'll handle error manually
 )
 
