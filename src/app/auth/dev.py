@@ -5,7 +5,7 @@ from typing import Optional, Annotated
 from fastapi import Depends
 
 from src.app.auth import router
-from src.app.auth.common import redirect_with_token
+from src.app.auth.common import redirect_with_token, ensure_allowed_return_to
 from src.app.auth.jwt import create_access_token, create_parser_token
 from src.schemas import CreateUser
 from src.config import settings, Environment
@@ -27,6 +27,7 @@ if enabled:
         return_to: str = "/",
         email: Optional[str] = None,
     ):
+        ensure_allowed_return_to(return_to)
         email = email or settings.DEV_AUTH_EMAIL
         user = await user_repository.upsert_user(CreateUser(email=email, name="Ivan Petrov", status="Student"))
         token = create_access_token(user.id)

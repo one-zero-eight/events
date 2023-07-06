@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     # Authentication
     AUTH_COOKIE_NAME: str = "token"
     AUTH_COOKIE_DOMAIN: str = "innohassle.ru" if ENVIRONMENT == Environment.PRODUCTION else "localhost"
+    AUTH_ALLOWED_DOMAINS: list[str] = ["innohassle.ru", "api.innohassle.ru", "localhost"]
 
     # Use these only in production
     INNOPOLIS_SSO_CLIENT_ID: SecretStr = ""

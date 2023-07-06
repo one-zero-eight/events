@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from starlette.requests import Request
 
 from src.app.auth import router, oauth
-from src.app.auth.common import redirect_with_token
+from src.app.auth.common import redirect_with_token, ensure_allowed_return_to
 from src.app.dependencies import Dependencies
 from src.app.auth.jwt import create_access_token
 from src.schemas.users import CreateUser
@@ -36,6 +36,7 @@ if enabled:
 
     @router.get("/innopolis/login", include_in_schema=False)
     async def innopolis_login(return_to: str, request: Request):
+        ensure_allowed_return_to(return_to)
         request.session.clear()  # Clear session cookie as it is used only during auth
         request.session["return_to"] = return_to
         return await oauth.innopolis.authorize_redirect(request, redirect_uri)
@@ -51,6 +52,7 @@ if enabled:
         user = await user_repository.upsert_user(CreateUser(**user_info.dict()))
 
         return_to = request.session.pop("return_to")
+        ensure_allowed_return_to(return_to)
         request.session.clear()  # Clear session cookie as it is used only during auth
         token = create_access_token(user.id)
         return redirect_with_token(return_to, token)
