@@ -19,8 +19,7 @@ def redirect_with_token(return_to: str, token: str):
     return response
 
 
-@router.get("/logout", include_in_schema=False)
-async def innopolis_logout(return_to: str):
+def redirect_deleting_token(return_to: str):
     response = RedirectResponse(return_to, status_code=302)
     response.delete_cookie(
         key=settings.AUTH_COOKIE_NAME,
@@ -29,3 +28,8 @@ async def innopolis_logout(return_to: str):
         domain=settings.AUTH_COOKIE_DOMAIN,
     )
     return response
+
+
+@router.get("/logout", include_in_schema=False)
+async def logout(return_to: str):
+    return redirect_deleting_token(return_to)
