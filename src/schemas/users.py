@@ -1,4 +1,4 @@
-__all__ = ["CreateUser", "ViewUser"]
+__all__ = ["CreateUser", "ViewUser", "ViewUserApp"]
 
 from typing import Optional, Collection
 
@@ -37,7 +37,17 @@ class ViewUser(BaseModel):
         orm_mode = True
 
 
+class ViewUserApp(BaseModel):
+    id: int
+    email: str
+    name: Optional[str] = None
+    status: Optional[str] = None
+
+    favorites: list["UserXGroupViewApp"] = Field(default_factory=list)
+
+
 # fix circular import
-from src.schemas.event_groups import UserXGroupView  # noqa: E402
+from src.schemas.event_groups import UserXGroupView, UserXGroupViewApp  # noqa: E402
 
 ViewUser.update_forward_refs()
+ViewUserApp.update_forward_refs()

@@ -2,7 +2,7 @@ __all__ = ["SqlEventGroupRepository"]
 
 from typing import Annotated
 
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import joinedload
 
@@ -44,12 +44,22 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
             await session.execute(q)
             await session.commit()
 
-    async def set_hidden(self, user_id: USER_ID, is_favorite: bool, group_id: int, hide: bool = True) -> "ViewUser":
+    async def set_hidden(self, user_id: USER_ID, group_id: int, hide: bool = True) -> "ViewUser":
         async with self.storage.create_session() as session:
-            table = UserXFavorite if is_favorite else UserXGroup
+            # find favorite where user_id and group_id
+            q = select(UserXFavorite).where(UserXFavorite.user_id == user_id).where(UserXFavorite.group_id == group_id)
 
-            query = update(table).where(table.user_id == user_id).where(table.group_id == group_id).values(hidden=hide)
-            await session.execute(query)
+            event_group = await session.scalar(q)
+
+            # if not found, then it should be in groups
+
+            if not event_group:
+                q = select(UserXGroup).where(UserXGroup.user_id == user_id).where(UserXGroup.group_id == group_id)
+                event_group = await session.scalar(q)
+
+            # set hidden
+            if event_group:
+                event_group.hidden = hide
 
             # from table
             q = (

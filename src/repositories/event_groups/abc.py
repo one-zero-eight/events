@@ -39,5 +39,5 @@ class AbstractEventGroupRepository(metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    async def set_hidden(self, user_id: USER_ID, is_favorite: bool, group_id: int, hide: bool = True) -> "ViewUser":
+    async def set_hidden(self, user_id: USER_ID, group_id: int, hide: bool = True) -> "ViewUser":
         ...

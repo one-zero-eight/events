@@ -1,4 +1,4 @@
-__all__ = ["CreateEventGroup", "ViewEventGroup", "ListEventGroupsResponse", "UserXGroupView"]
+__all__ = ["CreateEventGroup", "ViewEventGroup", "ListEventGroupsResponse", "UserXGroupView", "UserXGroupViewApp"]
 
 from typing import Optional, Iterable
 
@@ -67,3 +67,14 @@ class ListEventGroupsResponse(BaseModel):
     @classmethod
     def from_iterable(cls, groups: Iterable[ViewEventGroup]) -> "ListEventGroupsResponse":
         return cls(groups=groups)
+
+
+class UserXGroupViewApp(BaseModel):
+    """
+    Represents a group instance from the database excluding sensitive information.
+    """
+
+    user_id: int
+    group: ViewEventGroup
+    hidden: bool
+    predefined: bool = False
