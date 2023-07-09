@@ -62,10 +62,9 @@ jobs:
           auth: ${{ secrets.COVERAGE_GIST_ACCESS_TOKEN }}
           gistID: 075e30f7e4a7e9a28e40aa614db5445e
           filename: pytest-coverage-comment__main.json
-          label: Coverage Report
+          label: Coverage
           message: ${{ steps.coverageComment.outputs.coverage }}
           color: ${{ steps.coverageComment.outputs.color }}
-          namedLogo: python
       - name: Job result
         run: |
           [[ ${{ steps.coverageComment.outputs.failures }} -eq 0 ]] || { echo >&2 "Some tests failed"; exit 1; }
