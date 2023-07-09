@@ -2,6 +2,8 @@
 
 > Trust the system more than the memory
 
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ArtemSBulgakov/075e30f7e4a7e9a28e40aa614db5445e/raw/pytest-coverage-comment__main.json)](https://github.com/one-zero-eight/InNoHassle-Events/actions)
+
 ## Table of contents
 
 - [Description](#description)
