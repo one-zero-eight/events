@@ -29,7 +29,7 @@ if enabled:
     ):
         ensure_allowed_return_to(return_to)
         email = email or settings.DEV_AUTH_EMAIL
-        user = await user_repository.upsert_user(CreateUser(email=email, name="Ivan Petrov", status="Student"))
+        user = await user_repository.upsert_user(CreateUser(email=email, name="Ivan Petrov"))
         token = create_access_token(user.id)
         return redirect_with_token(return_to, token)
 
