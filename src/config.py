@@ -7,6 +7,7 @@ from pydantic import BaseSettings, SecretStr
 class Environment(StrEnum):
     DEVELOPMENT = "development"
     PRODUCTION = "production"
+    TESTING = "testing"
 
 
 class Settings(BaseSettings):
