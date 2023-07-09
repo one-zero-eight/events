@@ -56,6 +56,16 @@ jobs:
           echo "Coverage Tests - ${{ steps.coverageComment.outputs.tests }}"
           echo "Coverage Time - ${{ steps.coverageComment.outputs.time }}"
           echo "Not Success Test Info - ${{ steps.coverageComment.outputs.notSuccessTestInfo }}"
+      - name: Create the Badge
+        uses: schneegans/dynamic-badges-action@v1.6.0
+        with:
+          auth: ${{ secrets.COVERAGE_GIST_ACCESS_TOKEN }}
+          gistID: 075e30f7e4a7e9a28e40aa614db5445e
+          filename: pytest-coverage-comment__main.json
+          label: Coverage Report
+          message: ${{ steps.coverageComment.outputs.coverage }}
+          color: ${{ steps.coverageComment.outputs.color }}
+          namedLogo: python
       - name: Job result
         run: |
           [[ ${{ steps.coverageComment.outputs.failures }} -eq 0 ]] || { echo >&2 "Some tests failed"; exit 1; }
