@@ -1,4 +1,11 @@
-__all__ = ["PredefinedGroupsRepository"]
+__all__ = [
+    "PredefinedGroupsRepository",
+    "PredefinedGroup",
+    "InJsonUser",
+    "InJsonEventGroup",
+    "JsonUserStorage",
+    "JsonGroupStorage",
+]
 
 import json
 from pathlib import Path
@@ -58,9 +65,15 @@ class PredefinedGroupsRepository:
     user_storage: JsonUserStorage
     event_group_storage: JsonGroupStorage
 
-    def __init__(self, user_file: Path, event_group_file: Path):
-        self.user_storage = self._load_users(user_file)
-        self.event_group_storage = self._load_groups(event_group_file)
+    def __init__(self, user_storage: JsonUserStorage, event_group_storage: JsonGroupStorage):
+        self.user_storage = user_storage
+        self.event_group_storage = event_group_storage
+
+    @classmethod
+    def from_files(cls, user_file: Path, event_group_file: Path):
+        user_storage = cls._load_users(user_file)
+        event_group_storage = cls._load_groups(event_group_file)
+        return cls(user_storage, event_group_storage)
 
     @staticmethod
     def _load_users(file_path: Path) -> JsonUserStorage:

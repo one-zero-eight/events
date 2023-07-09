@@ -65,7 +65,9 @@ async def setup_repositories():
 
     await storage.create_all()
 
-    groups_repository = PredefinedGroupsRepository(settings.PREDEFINED_USERS_FILE, settings.PREDEFINED_GROUPS_FILE)
+    groups_repository = PredefinedGroupsRepository.from_files(
+        settings.PREDEFINED_USERS_FILE, settings.PREDEFINED_GROUPS_FILE
+    )
     unique_groups = groups_repository.get_groups()
     db_groups = await event_group_repository.batch_create_group_if_not_exists(
         [CreateEventGroup(**group.dict()) for group in unique_groups]
