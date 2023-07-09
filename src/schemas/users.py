@@ -12,7 +12,6 @@ class CreateUser(BaseModel):
 
     email: str
     name: Optional[str] = None
-    status: Optional[str] = None
 
 
 class ViewUser(BaseModel):
@@ -23,7 +22,6 @@ class ViewUser(BaseModel):
     id: int
     email: str
     name: Optional[str] = None
-    status: Optional[str] = None
     groups_association: list["UserXGroupView"] = Field(default_factory=list)
     favorites_association: list["UserXGroupView"] = Field(default_factory=list)
 
@@ -41,7 +39,6 @@ class ViewUserApp(BaseModel):
     id: int
     email: str
     name: Optional[str] = None
-    status: Optional[str] = None
 
     favorites: list["UserXGroupViewApp"] = Field(default_factory=list)
 
