@@ -5,6 +5,18 @@ on: [ push, pull_request ]
 jobs:
   pytest:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - uses: actions/checkout@v3
       - run: pip install poetry
@@ -14,3 +26,8 @@ jobs:
           cache: 'poetry'
       - run: poetry install --only main,test
       - run: poetry run pytest
+        env:
+          ENVIRONMENT: 'testing'
+          SESSION_SECRET_KEY: 'this is secret key'
+          JWT_SECRET_KEY: 'this is another secret key'
+          DB_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/postgres
