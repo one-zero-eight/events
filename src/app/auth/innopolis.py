@@ -18,7 +18,6 @@ from src.repositories.users.abc import AbstractUserRepository
 class UserInfoFromSSO(BaseModel):
     email: str
     name: str | None = Field(alias="commonname")
-    status: str | None = Field(alias="Status")
 
 
 enabled = bool(settings.INNOPOLIS_SSO_CLIENT_ID.get_secret_value())

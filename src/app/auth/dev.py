@@ -39,7 +39,7 @@ if enabled:
         email: Optional[str] = None,
     ) -> str:
         email = email or settings.DEV_AUTH_EMAIL
-        user = await user_repository.upsert_user(CreateUser(email=email, name="Ivan Petrov", status="Student"))
+        user = await user_repository.upsert_user(CreateUser(email=email, name="Ivan Petrov"))
         return create_access_token(user.id)
 
     @router.get("/dev/parser-token")
