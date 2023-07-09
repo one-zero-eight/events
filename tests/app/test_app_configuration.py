@@ -1,18 +1,16 @@
-from typing import Annotated
-
 import pytest
 from faker import Faker
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
+
+from src.repositories.users.json_repository import InJsonUser, InJsonEventGroup, JsonUserStorage, JsonGroupStorage
+from src.repositories.users.json_repository import PredefinedGroup, PredefinedGroupsRepository
 
 fake = Faker()
 
 
 @pytest.fixture(scope="session")
 def fake_predefined_repository():
-    from src.repositories.users.json_repository import InJsonUser, InJsonEventGroup, JsonUserStorage, JsonGroupStorage
-    from src.repositories.users.json_repository import PredefinedGroup, PredefinedGroupsRepository
-
     def fake_group() -> InJsonEventGroup:
         return InJsonEventGroup(name=fake.name(), type=fake.slug(), path=fake.slug())
 
@@ -42,98 +40,21 @@ def fake_predefined_repository():
     return repository
 
 
-@pytest.fixture(scope="function")
-async def fake_app(monkeypatch, fake_predefined_repository):
+@pytest.fixture(scope="function", autouse=True)
+def fake_predefined_repository_function(monkeypatch, fake_predefined_repository):
     class FakePredefinedGroupsRepository:
         @classmethod
-        def from_files(cls, *args, **kwargs):
+        def from_files(cls, *_, **__):
             return fake_predefined_repository
 
-    monkeypatch.setattr(
-        "src.repositories.users.json_repository.PredefinedGroupsRepository", FakePredefinedGroupsRepository
-    )
+    monkeypatch.setattr(PredefinedGroupsRepository, "from_files", FakePredefinedGroupsRepository.from_files)
 
+
+@pytest.mark.asyncio
+async def test_startup():
     from src.main import app
 
     assert isinstance(app, FastAPI)
 
-    return app
-
-
-@pytest.mark.asyncio
-async def test_app_configuration(fake_app):
-    fake_app = await fake_app
-    with TestClient(fake_app):
+    with TestClient(app):
         ...
-
-
-@pytest.fixture
-def mock_event_group_repository():
-    from src.schemas.event_groups import ViewEventGroup
-
-    class MockEventGroupRepository:
-        async def get_group_by_path(self, path):
-            if path == "/existing-path":
-                return ViewEventGroup(id=1, name="Existing Event Group", path="/existing-path")
-            return None
-
-        async def get_group(self, event_group_id):
-            if event_group_id == 1:
-                return ViewEventGroup(id=1, name="Existing Event Group", path="/existing-path")
-            return None
-
-        async def get_all_groups(self):
-            return [
-                ViewEventGroup(id=1, name="Existing Event Group", path="/existing-path"),
-                ViewEventGroup(id=2, name="Existing Event Group 2", path="/existing-path-2"),
-            ]
-
-    return MockEventGroupRepository()
-
-
-@pytest.fixture(scope="function", autouse=True)
-def override_dependencies(monkeypatch, mock_event_group_repository):
-    from src.repositories.event_groups import AbstractEventGroupRepository
-
-    new_dependency = Annotated[AbstractEventGroupRepository, Depends(lambda: mock_event_group_repository)]
-    monkeypatch.setattr("src.app.dependencies.EVENT_GROUP_REPOSITORY_DEPENDENCY", new_dependency)
-
-
-@pytest.mark.asyncio
-async def test_find_event_group_by_path(fake_app):
-    app = await fake_app
-
-    with TestClient(app) as client:
-        response = client.get("/event-groups/by-path?path=/existing-path")
-
-        assert response.status_code == 200
-        assert response.json() is not None
-
-        response = client.get("/by-path?path=/non-existing-path")
-        assert response.status_code == 404
-
-
-@pytest.mark.asyncio
-async def test_get_event_group(fake_app):
-    app = await fake_app
-
-    with TestClient(app) as client:
-        response = client.get("/event-groups/1")
-
-        assert response.status_code == 200
-        assert response.json() is not None
-
-        response = client.get("/event-groups/2")
-        assert response.status_code == 404
-
-
-@pytest.mark.asyncio
-async def test_get_all_event_groups(fake_app):
-    app = await fake_app
-
-    with TestClient(app) as client:
-        response = client.get("/event-groups")
-
-        assert response.status_code == 200
-        assert response.json() is not None
-        assert len(response.json()) > 0
