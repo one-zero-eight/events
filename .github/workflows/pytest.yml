@@ -16,6 +16,8 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
       - uses: actions/checkout@v3
@@ -30,4 +32,4 @@ jobs:
           ENVIRONMENT: 'testing'
           SESSION_SECRET_KEY: 'this is secret key'
           JWT_SECRET_KEY: 'this is another secret key'
-          DB_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/postgres
+          DB_URL: 'postgresql+asyncpg://postgres:postgres@localhost:5432/postgres'
