@@ -1,3 +1,5 @@
+__all__ = ["app", "setup_repositories"]
+
 import re
 
 from fastapi import FastAPI
@@ -47,7 +49,6 @@ app.add_middleware(
 app.add_middleware(SessionMiddleware, secret_key=settings.SESSION_SECRET_KEY.get_secret_value())
 
 
-@app.on_event("startup")
 async def setup_repositories():
     from src.schemas import CreateEventGroup, CreateUser
     from src.repositories.event_groups import SqlEventGroupRepository
@@ -80,6 +81,11 @@ async def setup_repositories():
             group_ids.append(path_x_group[group.path].id)
         user_id_x_group_ids[db_user.id] = group_ids
     await event_group_repository.batch_setup_groups(user_id_x_group_ids)
+
+
+@app.on_event("startup")
+async def startup_event():
+    await setup_repositories()
 
 
 @app.on_event("shutdown")
