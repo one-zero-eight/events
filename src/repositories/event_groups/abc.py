@@ -35,7 +35,7 @@ class AbstractEventGroupRepository(metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    async def get_all_groups(self) -> "ViewUser":
+    async def get_all_groups(self) -> list["ViewEventGroup"]:
         ...
 
     @abstractmethod
