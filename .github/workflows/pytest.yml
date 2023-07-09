@@ -39,6 +39,7 @@ jobs:
           JWT_SECRET_KEY: 'this is another secret key'
           DB_URL: 'postgresql+asyncpg://postgres:postgres@localhost:5432/postgres'
       - uses: MishaKav/pytest-coverage-comment@main
+        id: coverageComment
         with:
           pytest-coverage-path: ./pytest-coverage.txt
           junitxml-path: ./pytest.xml
