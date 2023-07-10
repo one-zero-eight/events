@@ -84,7 +84,7 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
 
     async def get_all_groups(self) -> list["ViewEventGroup"]:
         async with self.storage.create_session() as session:
-            q = select(EventGroup)
+            q = select(EventGroup).order_by(EventGroup.path)
             r = await session.execute(q)
             return [ViewEventGroup.from_orm(group) for group in r.scalars().all()]
 
