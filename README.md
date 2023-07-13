@@ -38,6 +38,24 @@ using [FastAPI](https://fastapi.tiangolo.com/).
     ```
    OR using 'Dev server' configuration in PyCharm.
 
+
+## Features list
+1. Import any events to your calendar
+    - Easily import events from various sources and add them to your personal calendar
+    - Supports popular calendar file format .ics for easy integration with different applications
+    - Intuitive import process with step-by-step instruction
+2. Integrated Calendar Dashboard
+    - View your events in the integrated calendar within the dashboard and schedule         
+    - Choose between day, week, or month views to suit your preference
+3. Group Visibility Control
+    - Hide or unhide your groups based on your preference
+    - Hidden groups are not visible in the dashboard calendar
+4. Favourites Management
+    - Add events to your favorites for easy tracking and quick access
+    - Delete outdated events from you favourites list
+    - Effortlessly manage your favorite events and keep track of them
+
+
 ## Development
 
 Install dependencies:
