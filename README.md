@@ -45,7 +45,7 @@ using [FastAPI](https://fastapi.tiangolo.com/).
     - Supports popular calendar file format .ics for easy integration with different applications
     - Intuitive import process with step-by-step instruction
 2. Integrated Calendar Dashboard
-    - View your events in the integrated calendar within the dashboard and schedule         
+    - View your events in the integrated calendar within the dashboard and schedule
     - Choose between day, week, or month views to suit your preference
 3. Group Visibility Control
     - Hide or unhide your groups based on your preference
