@@ -23,7 +23,8 @@ using [FastAPI](https://fastapi.tiangolo.com/).
 You can test our product here [InNoHassle](https://innohassle.ru/schedule).
 
 The background part of our API:
-![API](https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/c34bd413-8218-4c7b-b551-0f783d3042fc)
+
+https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/85b5f726-016b-41fc-811a-1c1057bf8d96
 
 ## How to use
 
