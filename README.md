@@ -24,7 +24,7 @@ You can test our product here [InNoHassle](https://innohassle.ru/schedule).
 
 The background part of our API:
 
-https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/85b5f726-016b-41fc-811a-1c1057bf8d96
+https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/8e519e69-7a2e-4507-9087-6b4e81e5266d
 
 ## How to use
 
