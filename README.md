@@ -8,35 +8,24 @@
 
 ## Table of contents
 
-- [Description](#description)
+- [Project Description](#project-description)
 - [How to use](#how-to-use)
+- [Features list](#features-list)
+- [Project Installation](#project-installation)
 - [Project Structure](#project-structure)
 
-## Description
+## Project Description
 
 This is the API for events in InNoHassle ecosystem. It is written in Python 3.11
 using [FastAPI](https://fastapi.tiangolo.com/).
 
-## How to use
+## Demo
+You can test our product here [InNoHassle](https://innohassle.ru/schedule).
 
-1. Install dependencies with [poetry](https://python-poetry.org/docs/).
-    ```bash
-    poetry install
-    ```
-2. Setup environment variables in `.env.local` file.
-    ```bash
-    cp .env.example .env.local
-    ```
-3. Run the ASGI server using src/dev.py script
-    ```bash
-    poetry shell
-    python -m src.dev
-    ```
-   OR using uvicorn directly
-    ```bash
-    poetry run uvicorn src.main:app --reload
-    ```
-   OR using 'Dev server' configuration in PyCharm.
+The background part of our API:
+![API](https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/c34bd413-8218-4c7b-b551-0f783d3042fc)
+
+## How to use
 
 
 ## Features list
@@ -56,21 +45,36 @@ using [FastAPI](https://fastapi.tiangolo.com/).
     - Effortlessly manage your favorite events and keep track of them
 
 
-## Development
+## Project Installation
 
-Install dependencies:
+1. Install dependencies with [poetry](https://python-poetry.org/docs/).
+    ```bash
+    poetry install
+    ```
+2. Set up pre-commit hooks:
 
-```bash
-poetry install
-```
+    ```bash
+    poetry shell
+    pre-commit install
+    pre-commit run --all-files
+    ```
+3. Setup environment variables in `.env.local` file.
+    ```bash
+    cp .env.example .env.local
+    ```
+4. Run the ASGI server using src/dev.py script
+    ```bash
+    poetry shell
+    python -m src.dev
+    ```
+   OR using uvicorn directly
+    ```bash
+    poetry run uvicorn src.main:app --reload
+    ```
+   OR using 'Dev server' configuration in PyCharm.
 
-Set up pre-commit hooks:
 
-```bash
-poetry shell
-pre-commit install
-pre-commit run --all-files
-```
+
 
 Set up PyCharm integrations:
 
