@@ -20,6 +20,7 @@ This is the API for events in InNoHassle ecosystem. It is written in Python 3.11
 using [FastAPI](https://fastapi.tiangolo.com/).
 
 ## Demo
+
 You can test our product here [InNoHassle](https://innohassle.ru/schedule).
 
 The background part of our API:
@@ -28,8 +29,13 @@ https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/8e519e69-7a
 
 ## How to use
 
+1. Run the ASGI server(see [Project Installation](#project-installation)) or use our
+   deployed [version](https://api.innohassle.ru/events/v0/auth/innopolis/login?return_to=/events/v0/docs).
+2. Go to Swagger UI, read the docs, and try API endpoints(`/events/v0/docs`).
+3. Enjoy using our API.
 
 ## Features list
+
 1. Import any events to your calendar
     - Easily import events from various sources and add them to your personal calendar
     - Supports popular calendar file format .ics for easy integration with different applications
@@ -44,7 +50,6 @@ https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/8e519e69-7a
     - Add events to your favorites for easy tracking and quick access
     - Delete outdated events from you favourites list
     - Effortlessly manage your favorite events and keep track of them
-
 
 ## Project Installation
 
@@ -74,9 +79,6 @@ https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/8e519e69-7a
     ```
    OR using 'Dev server' configuration in PyCharm.
 
-
-
-
 Set up PyCharm integrations:
 
 1. Black formatter ([docs](https://black.readthedocs.io/en/stable/integrations/editors.html#pycharm-intellij-idea)).
@@ -86,59 +88,57 @@ Set up PyCharm integrations:
 
 ```
 *
-|   .env.example  # Example of environment variables for local development
-|   (.env.local)  # Environment variables for local development
-|   .gitignore
-|   LICENSE
-|   poetry.lock
-|   pyproject.toml   # Poetry project configuration
-|   README.md
-|
-+---.run
-|       Dev server.run.xml    # PyCharm run configuration for local development
-|
-\---src
-    |   config.py       # Configuration module for the application (using ENV variables)
-    |   dev.py          # Script for local development
-    |   exceptions.py   # Custom exceptions
-    |   main.py         # Represents ASGI application and initializes FastAPI application
-    |
-    +---app       # Represents FastAPI application with routers, dependencies, schemas, etc.
-    |   |   dependencies.py      # Includes FastAPI dependencies for dependency injection
-    |   |   routers.py           # Includes FastAPI routers for API endpoints
-    |   |   schemas.py           # Includes Pydantic schemas for API request and response bodies
-    |   |
-    |   +---auth              # Module for authentication and authorization
-    |   |   |   common.py
-    |   |   |   dependencies.py
-    |   |   |   dev.py
-    |   |   |   innopolis.py
-    |   |   \---jwt.py
-    |   |
-    |   +---event_groups      # Module for event groups
-    |   |   |   routes.py        # Includes API endpoints for event group-related operations
-    |   |   |   schemas.py       # Includes Pydantic schemas for event group-related operations
-    |   +---users             # Module for users
-    |   |   |   routes.py
-    |   |   \---schemas.py
-    |
-    +---repositories # Represents repositories layer for data access and manipulation
-    |   |
-    |   +---event_groups
-    |   |   |   abc.py  # Abstract base class for event group repository
-    |   |   \---repository.py # SQLAlchemy repository for event group connected methods
-    |   |
-    |   +---users
-    |   |   |   abc.py  # Abstract base class for user repository
-    |   |   |   json_repository.py  # JSON repository for predefined groups and users
-    |   |   |   sql_repository.py   # SQLAlchemy repository for user connected methods
-    |   |   |   (predefined_groups.json)  # Predefined groups data
-    |   |   \---(innopolis_user_data.json) # Innopolis users data
-    \---storages  # Represents data storage such as databases, third-party APIs, etc.
-        |
-        \---sql   # SQLAlchemy storage
-            |   storage.py    # SQLAlchemy session factory
-            |
-            \---models  # SQLAlchemy ORM models representing database tables
-
+| - LICENSE
+| - README.md
+| - docker-compose.yml
+| - poetry.lock
+| - pyproject.toml   # dependencies and configuration
++-- deploy           # deployment scripts and dockerfile
+|   - Dockerfile
+|   - docker-entrypoint.sh
++-- src                 # all source code
+|   - config.py         # configuration for the project
+|   - dev.py            # run development server
+|   - exceptions.py     # custom exceptions
+|   - main.py           # entrypoint for the FastAPI
+|   +-- app             # FastAPI application
+|   |   - dependencies.py  # dependencies for the application (Depends)
+|   |   - routers.py       # include all routers for the API
+|   |   +-- auth           # authentication module
+|   |   |   - common.py
+|   |   |   - dependencies.py # dependencies to extract user data from token
+|   |   |   - dev.py          # auth routes for development
+|   |   |   - innopolis.py    # auth routes for Innopolis SSO
+|   |   |   - jwt.py
+|   |   +-- event_groups   # event groups module
+|   |   |   - routes.py       # routes for event groups router
+|   |   +-- users          # users module
+|   |       - routes.py       # routes for users router
+|   +-- repositories    # repositories for data access layer
+|   |   +-- event_groups   # event groups repository
+|   |   |   - abc.py          # abstract base class for event groups repository
+|   |   |   - repository.py   # repository implementation for event groups
+|   |   |
+|   |   +-- users       # users repository
+|   |       - abc.py       # abstract base class for users repository
+|   |       - sql_repository.py        # repository implementation for users
+|   |       - json_repository.py       # temporary repository to extract user data from jsons
+|   |       - (innopolis_user_data.json) # predefined user data from Innopolis official lists
+|   |       - (predefined_groups.json)   # predefined groups for users
+|   +-- schemas         # domain models for the application (pydantic models)
+|   |   - event_groups.py  # schemas for event groups and related models
+|   |   - users.py         # schemas for users
+|   +-- storages        # data access layer
+|       +-- sql            # SQL storages
+|           - storage.py   # class for SQL storage
+|           +-- models        # SQLAlchemy models
+|               - base.py     # base class for SQLAlchemy models
+|               - event_groups.py
+|               - users.py
++-- tests               # tests for the project
+    +-- app
+    |   - test_app_configuration.py
+    +-- repositories
+        - test_event_groups.py
+        - test_users.py
 ```
