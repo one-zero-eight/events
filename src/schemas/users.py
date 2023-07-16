@@ -28,7 +28,7 @@ class ViewUser(BaseModel):
     @validator("groups_association", "favorites_association", pre=True)
     def groups_to_list(cls, v):
         if isinstance(v, Collection):
-            return list(v)
+            v = list(v)
         return v
 
     class Config:

@@ -26,9 +26,6 @@ class SQLAlchemyStorage(AbstractSQLAlchemyStorage):
         self.engine = engine
         self.sessionmaker = async_sessionmaker(engine, expire_on_commit=False)
 
-    def get_path(self) -> str:
-        return self.engine.url.database
-
     @classmethod
     def from_url(cls, url: str) -> "SQLAlchemyStorage":
         from sqlalchemy.ext.asyncio import create_async_engine

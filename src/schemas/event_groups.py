@@ -19,7 +19,7 @@ class CreateEventGroup(BaseModel):
     @validator("satellite", pre=True, always=True)
     def _validate_satellite(cls, v):
         if isinstance(v, dict):
-            return json.dumps(v)
+            v = json.dumps(v)
         return v
 
 
