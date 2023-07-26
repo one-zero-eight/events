@@ -1,10 +1,11 @@
+from pathlib import Path
+
 import pytest
 from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from src.repositories.predefined.repository import (
-    PredefinedRepository,
     JsonGroupStorage,
     JsonUserStorage,
     JsonTagStorage,
@@ -14,6 +15,24 @@ fake = Faker()
 
 
 @pytest.fixture(scope="session")
+def monkeymodule():
+    from _pytest.monkeypatch import MonkeyPatch
+
+    mpatch = MonkeyPatch()
+    yield mpatch
+    mpatch.undo()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def fake_paths(monkeymodule):
+    from src.config import settings
+
+    monkeymodule.setattr(settings, "PREDEFINED_GROUPS_FILE", Path("tests/repositories/temp/test_groups.json.tmp"))
+    monkeymodule.setattr(settings, "PREDEFINED_TAGS_FILE", Path("tests/repositories/temp/test_tags.json.tmp"))
+    monkeymodule.setattr(settings, "PREDEFINED_USERS_FILE", Path("tests/repositories/temp/test_users.json.tmp"))
+
+
+@pytest.fixture(scope="session", autouse=True)
 def fake_predefined_repository():
     def fake_group() -> JsonGroupStorage.PredefinedGroup:
         return JsonGroupStorage.PredefinedGroup(name=fake.name(), description=fake.slug(), path=fake.slug())
@@ -43,19 +62,17 @@ def fake_predefined_repository():
     group_storage = JsonGroupStorage(event_groups=predefined_groups)
     tag_storage = JsonTagStorage(tags=[fake_tag() for _ in range(10)])
 
-    repository = PredefinedRepository(user_storage, group_storage, tag_storage)
+    # save to file
+    from src.config import settings
 
-    return repository
-
-
-@pytest.fixture(scope="function", autouse=True)
-def fake_predefined_repository_function(monkeypatch, fake_predefined_repository):
-    class FakePredefinedGroupsRepository:
-        @classmethod
-        def from_jsons(cls, *_, **__):
-            return fake_predefined_repository
-
-    monkeypatch.setattr(PredefinedRepository, "from_jsons", FakePredefinedGroupsRepository.from_jsons)
+    with (
+        settings.PREDEFINED_GROUPS_FILE.open("w", encoding="utf-8") as groups_file,
+        settings.PREDEFINED_TAGS_FILE.open("w", encoding="utf-8") as tags_file,
+        settings.PREDEFINED_USERS_FILE.open("w", encoding="utf-8") as users_file,
+    ):
+        groups_file.write(group_storage.json())
+        tags_file.write(tag_storage.json())
+        users_file.write(user_storage.json())
 
 
 @pytest.mark.asyncio
