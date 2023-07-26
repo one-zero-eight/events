@@ -50,6 +50,7 @@ app.add_middleware(SessionMiddleware, secret_key=settings.SESSION_SECRET_KEY.get
 
 
 async def setup_repositories():
+    import json
     from src.schemas import CreateEventGroup, CreateUser, CreateTag
     from src.repositories.event_groups import SqlEventGroupRepository
     from src.repositories.users import SqlUserRepository, PredefinedRepository
