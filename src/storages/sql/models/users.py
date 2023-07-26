@@ -27,7 +27,7 @@ class User(Base):
     favorites: Mapped[list["EventGroup"]] = association_proxy(
         "favorites_association",
         "group",
-        creator=lambda group: UserXFavorite(group=group),
+        # creator=lambda group: UserXFavorite(group=group),
     )
 
     groups_association: Mapped[list["UserXGroup"]] = relationship(

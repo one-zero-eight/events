@@ -5,23 +5,21 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.config import Settings, settings as config_settings
 from src.repositories.event_groups import AbstractEventGroupRepository, SqlEventGroupRepository
 from src.repositories.users import AbstractUserRepository, SqlUserRepository
+from src.repositories.tags import AbstractTagRepository, SqlTagRepository
 from src.storages.sql import AbstractSQLAlchemyStorage, SQLAlchemyStorage
 
 
+# --- Settings Fixtures --- #
 @pytest.fixture(scope="package")
-def user_repository(storage) -> "AbstractUserRepository":
-    return SqlUserRepository(storage)
+def settings() -> "Settings":
+    return config_settings
 
 
+# --- Storage Fixtures --- #
 @pytest.fixture(scope="package")
 def storage(settings: "Settings") -> "AbstractSQLAlchemyStorage":
     _storage = SQLAlchemyStorage.from_url(settings.DB_URL.get_secret_value())
     return _storage
-
-
-@pytest.fixture(scope="package")
-def event_group_repository(storage) -> "AbstractEventGroupRepository":
-    return SqlEventGroupRepository(storage)
 
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
@@ -55,6 +53,19 @@ async def _restore_session(session: AsyncSession):
             await session.execute(table.delete())
 
 
+# --- Repository Fixtures --- #
+
+
 @pytest.fixture(scope="package")
-def settings() -> "Settings":
-    return config_settings
+def user_repository(storage) -> "AbstractUserRepository":
+    return SqlUserRepository(storage)
+
+
+@pytest.fixture(scope="package")
+def event_group_repository(storage) -> "AbstractEventGroupRepository":
+    return SqlEventGroupRepository(storage)
+
+
+@pytest.fixture(scope="package")
+def tag_repository(storage) -> "AbstractTagRepository":
+    return SqlTagRepository(storage)
