@@ -1,8 +1,14 @@
 from src.storages.sql.models.base import Base
 
 from src.storages.sql.models.users import User
-from src.storages.sql.models.event_groups import EventGroup, UserXFavorite, UserXGroup
+from src.storages.sql.models.event_groups import EventGroup, UserXFavoriteEventGroup
+from src.storages.sql.models.tags import Tag, TagOwnership
 
-all_models = [User, EventGroup, UserXFavorite, UserXGroup]
-
-__all__ = [*all_models, Base]
+__all__ = [
+    "Base",
+    "User",
+    "EventGroup",
+    "UserXFavoriteEventGroup",
+    "Tag",
+    "TagOwnership",
+]

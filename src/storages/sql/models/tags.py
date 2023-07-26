@@ -1,7 +1,9 @@
+__all__ = ["Tag", "TagOwnership"]
+
 from enum import StrEnum
 from typing import Any, TYPE_CHECKING
 
-from sqlalchemy import JSON, ForeignKey, Enum as SQLAlchemyEnum
+from sqlalchemy import JSON, ForeignKey, Enum as SQLAlchemyEnum, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.storages.sql.models import Base
@@ -13,8 +15,16 @@ if TYPE_CHECKING:
 class Tag(Base):
     __tablename__ = "tags"
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(unique=True, nullable=False)
+
+    # parent_id: Mapped[int] = mapped_column(ForeignKey("tags.id"), nullable=True)
+    # parent: Mapped["Tag"] = relationship("Tag", remote_side=[id], lazy="selectin")
+    # children: Mapped[list["Tag"]] = relationship("Tag", remote_side=[parent_id], lazy="selectin")
+
+    alias: Mapped[str] = mapped_column(nullable=False)
     type: Mapped[str] = mapped_column(nullable=True)
+    # constraint on pair (alias, type)
+    comb_alias_type_cnst = UniqueConstraint(alias, type)
+    name: Mapped[str] = mapped_column(nullable=True)
     satellite: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=True)
 
     ownership_association: Mapped[list["TagOwnership"]] = relationship(
@@ -40,16 +50,3 @@ class TagOwnership(Base):
     ownership_enum: Mapped[OwnershipEnum] = mapped_column(
         SQLAlchemyEnum(OwnershipEnum, name="ownership_type"), default=OwnershipEnum.default
     )
-
-
-class EventGroupXTag(Base):
-    __tablename__ = "event_group_x_tag"
-
-    group_id: Mapped[int] = mapped_column(ForeignKey("groups.id"), primary_key=True)
-    tag_id: Mapped[int] = mapped_column(ForeignKey("tags.id"), primary_key=True)
-
-    event_group: Mapped["EventGroup"] = relationship("EventGroup", back_populates="tags_association")
-    tag: Mapped["Tag"] = relationship(lazy="joined")
-
-
-from src.storages.sql.models.event_groups import EventGroup  # noqa: E402

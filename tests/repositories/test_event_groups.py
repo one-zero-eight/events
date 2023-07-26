@@ -12,10 +12,8 @@ fake = Faker()
 
 
 def get_fake_event_group() -> "CreateEventGroup":
-    fake_json = fake.json(num_rows=1)
     fake_path = fake.slug()
-    fake_type = fake.slug()
-    return CreateEventGroup(name=fake.name(), type=fake_type, path=fake_path, satellite=fake_json)
+    return CreateEventGroup(name=fake.name(), path=fake_path, description=fake.slug())
 
 
 async def _create_event_group(event_group_repository: "AbstractEventGroupRepository") -> "ViewEventGroup":
@@ -26,7 +24,6 @@ async def _create_event_group(event_group_repository: "AbstractEventGroupReposit
     assert event_group.id is not None
     assert event_group.name == event_group_schema.name
     assert event_group.path == event_group_schema.path
-    assert event_group.satellite == event_group_schema.satellite
     return event_group
 
 
@@ -44,8 +41,6 @@ async def _batch_create_event_group(event_group_repository: "AbstractEventGroupR
         assert event_group.id is not None
         assert event_group.name == event_group_schema.name
         assert event_group.path == event_group_schema.path
-        assert event_group.type == event_group_schema.type
-        assert event_group.satellite == event_group_schema.satellite
 
     return event_groups
 

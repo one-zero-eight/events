@@ -35,3 +35,15 @@ class AbstractTagRepository(metaclass=ABCMeta):
     @abstractmethod
     async def setup_ownership(self, tag_id: int, user_id: int, ownership_enum: "OwnershipEnum") -> None:
         ...
+
+    @abstractmethod
+    async def add_tags_to_event_group(self, event_group_id: int, tag_ids: list[int]) -> None:
+        ...
+
+    @abstractmethod
+    async def batch_add_tags_to_event_group(self, tags_mapping: dict[int, list[int]]) -> None:
+        ...
+
+    @abstractmethod
+    async def remove_tags_from_event_group(self, event_group_id: int, tag_ids: list[int]) -> None:
+        ...

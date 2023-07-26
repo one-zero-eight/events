@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 import pytest
 from faker import Faker
 
-from src.schemas.event_groups import UserXGroupView
+from src.schemas.event_groups import UserXFavoriteGroupView
 from src.schemas.users import ViewUser
 from tests.repositories.test_event_groups import _create_event_group, _batch_create_event_group
 from tests.repositories.test_users import _create_user, _batch_create_user_if_not_exists
@@ -26,17 +26,12 @@ async def test_setup_groups(
     await event_group_repository.setup_groups(user.id, [event_group.id])
 
     updated_user = await user_repository.get_user(user.id)
-    assert updated_user is not None
-    assert isinstance(updated_user, ViewUser)
-    assert updated_user.id == user.id
-    assert updated_user.email == user.email
-    assert updated_user.name == user.name
-    assert updated_user.groups_association is not None
-    assert len(updated_user.groups_association) == 1
-    user_x_group = updated_user.groups_association[0]
-    assert isinstance(user_x_group, UserXGroupView)
+    assert len(updated_user.favorites_association) == 1
+    user_x_group = updated_user.favorites_association[0]
+    assert isinstance(user_x_group, UserXFavoriteGroupView)
+    assert user_x_group.predefined is True
     assert user_x_group.user_id == user.id
-    assert user_x_group.group.id == event_group.id
+    assert user_x_group.event_group.id == event_group.id
 
 
 @pytest.mark.asyncio
@@ -61,12 +56,13 @@ async def test_batch_setup_groups(
         assert updated_user.id in [user.id for user in users]
         assert updated_user.email in [user.email for user in users]
         assert updated_user.name in [user.name for user in users]
-        assert updated_user.groups_association is not None
-        assert len(updated_user.groups_association) in [1, 2, 3, 4, 5]
-        for user_x_group in updated_user.groups_association:
-            assert isinstance(user_x_group, UserXGroupView)
+        assert updated_user.favorites_association is not None
+        assert len(updated_user.favorites_association) in [1, 2, 3, 4, 5]
+        for user_x_group in updated_user.favorites_association:
+            assert isinstance(user_x_group, UserXFavoriteGroupView)
+            assert user_x_group.predefined is True
             assert user_x_group.user_id == updated_user.id
-            assert user_x_group.group.id in mapping[updated_user.id]
+            assert user_x_group.event_group.id in mapping[updated_user.id]
 
 
 @pytest.mark.asyncio
@@ -79,33 +75,23 @@ async def test_set_hidden(
     await event_group_repository.setup_groups(user.id, [event_group.id])
 
     updated_user = await user_repository.get_user(user.id)
-    assert updated_user is not None
-    assert isinstance(updated_user, ViewUser)
-    assert updated_user.id == user.id
-    assert updated_user.email == user.email
-    assert updated_user.name == user.name
-    assert updated_user.groups_association is not None
-    assert len(updated_user.groups_association) == 1
-    user_x_group = updated_user.groups_association[0]
-    assert isinstance(user_x_group, UserXGroupView)
+    assert updated_user.favorites_association is not None
+    assert len(updated_user.favorites_association) == 1
+    user_x_group = updated_user.favorites_association[0]
+    assert isinstance(user_x_group, UserXFavoriteGroupView)
     assert user_x_group.user_id == user.id
-    assert user_x_group.group.id == event_group.id
+    assert user_x_group.event_group.id == event_group.id
     assert user_x_group.hidden is False
 
     await event_group_repository.set_hidden(user.id, event_group.id, True)
 
     updated_user = await user_repository.get_user(user.id)
-    assert updated_user is not None
-    assert isinstance(updated_user, ViewUser)
-    assert updated_user.id == user.id
-    assert updated_user.email == user.email
-    assert updated_user.name == user.name
-    assert updated_user.groups_association is not None
-    assert len(updated_user.groups_association) == 1
-    user_x_group = updated_user.groups_association[0]
-    assert isinstance(user_x_group, UserXGroupView)
+    assert updated_user.favorites_association is not None
+    assert len(updated_user.favorites_association) == 1
+    user_x_group = updated_user.favorites_association[0]
+    assert isinstance(user_x_group, UserXFavoriteGroupView)
     assert user_x_group.user_id == user.id
-    assert user_x_group.group.id == event_group.id
+    assert user_x_group.event_group.id == event_group.id
     assert user_x_group.hidden is True
 
 
@@ -125,9 +111,10 @@ async def test_add_favorite(
     assert updated_user.favorites_association is not None
     assert len(updated_user.favorites_association) == 1
     user_x_group = updated_user.favorites_association[0]
-    assert isinstance(user_x_group, UserXGroupView)
+    assert isinstance(user_x_group, UserXFavoriteGroupView)
     assert user_x_group.user_id == user.id
-    assert user_x_group.group.id == event_group.id
+    assert user_x_group.event_group.id == event_group.id
+    assert user_x_group.predefined is False
 
 
 @pytest.mark.asyncio

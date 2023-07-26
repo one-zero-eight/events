@@ -12,7 +12,7 @@ fake = Faker()
 
 
 def get_fake_tag() -> "CreateTag":
-    return CreateTag(name=fake.name(), type=fake.slug(), satellite=fake.json(num_rows=1))
+    return CreateTag(alias=fake.slug(), name=fake.name(), type=fake.slug(), satellite=fake.json(num_rows=1))
 
 
 async def _create_tag(tag_repository: "AbstractTagRepository") -> "ViewTag":
@@ -103,7 +103,6 @@ async def test_setup_ownership(tag_repository, user_repository):
     user = await _create_user(user_repository)
     tag = await _create_tag(tag_repository)
     await tag_repository.setup_ownership(tag.id, user.id, OwnershipEnum.owner)
-    print(await tag_repository.get_all_tags())
     tag_ownership = await tag_repository.get_tag(tag.id)
     assert tag_ownership is not None
     assert isinstance(tag_ownership, ViewTag)

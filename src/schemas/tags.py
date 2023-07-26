@@ -8,8 +8,9 @@ from pydantic import BaseModel, validator, Json, Field
 
 
 class CreateTag(BaseModel):
-    name: str = None
+    alias: str
     type: str
+    name: Optional[str] = None
     satellite: Optional[Json] = None
 
     @validator("satellite", pre=True, always=True)
@@ -41,8 +42,9 @@ class TagOwnership(BaseModel):
 
 class ViewTag(BaseModel):
     id: int
-    name: str
+    alias: str
     type: Optional[str] = None
+    name: Optional[str] = None
     satellite: Optional[dict] = None
 
     ownership_association: list[TagOwnership] = Field(default_factory=list)

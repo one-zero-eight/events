@@ -1,9 +1,8 @@
-__all__ = ["CreateEventGroup", "ViewEventGroup", "ListEventGroupsResponse", "UserXGroupView", "UserXGroupViewApp"]
+__all__ = ["CreateEventGroup", "ViewEventGroup", "ListEventGroupsResponse", "UserXFavoriteGroupView"]
 
 from typing import Optional, Iterable
 
-from pydantic import BaseModel, Json, validator
-import json
+from pydantic import BaseModel, Field
 
 
 class CreateEventGroup(BaseModel):
@@ -13,14 +12,7 @@ class CreateEventGroup(BaseModel):
 
     path: str
     name: Optional[str] = None
-    type: Optional[str] = None
-    satellite: Optional[Json] = None
-
-    @validator("satellite", pre=True, always=True)
-    def _validate_satellite(cls, v):
-        if isinstance(v, dict):
-            v = json.dumps(v)
-        return v
+    description: Optional[str] = None
 
 
 class ViewEventGroup(BaseModel):
@@ -31,27 +23,22 @@ class ViewEventGroup(BaseModel):
     id: int
     path: str
     name: Optional[str] = None
-    type: Optional[str] = None
-    satellite: Optional[dict] = None
-
-    @validator("satellite", pre=True, always=True)
-    def _validate_satellite(cls, v):
-        if isinstance(v, str):
-            return json.loads(v)
-        return v
+    description: Optional[str] = None
+    tags: list["ViewTag"] = Field(default_factory=list)
 
     class Config:
         orm_mode = True
 
 
-class UserXGroupView(BaseModel):
+class UserXFavoriteGroupView(BaseModel):
     """
     Represents a group instance from the database excluding sensitive information.
     """
 
     user_id: int
-    group: ViewEventGroup
+    event_group: ViewEventGroup
     hidden: bool
+    predefined: bool = False
 
     class Config:
         orm_mode = True
@@ -69,12 +56,6 @@ class ListEventGroupsResponse(BaseModel):
         return cls(groups=groups)
 
 
-class UserXGroupViewApp(BaseModel):
-    """
-    Represents a group instance from the database excluding sensitive information.
-    """
+from src.schemas.tags import ViewTag  # noqa E402
 
-    user_id: int
-    group: ViewEventGroup
-    hidden: bool
-    predefined: bool = False
+ViewEventGroup.update_forward_refs()

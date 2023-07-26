@@ -7,7 +7,7 @@ from sqlalchemy.orm import selectinload
 from src.repositories.tags.abc import AbstractTagRepository
 from src.schemas import CreateTag, ViewTag, OwnershipEnum
 from src.storages.sql import AbstractSQLAlchemyStorage
-from src.storages.sql.models import Tag, TagOwnership
+from src.storages.sql.models import Tag, TagOwnership, EventGroup
 
 
 class SqlTagRepository(AbstractTagRepository):
@@ -44,7 +44,7 @@ class SqlTagRepository(AbstractTagRepository):
     async def create_tag_if_not_exists(self, tag: "CreateTag") -> ViewTag:
         async with self.storage.create_session() as session:
             q = insert(Tag).values(**tag.dict()).returning(Tag)
-            q = q.on_conflict_do_update(index_elements=[Tag.name], set_={"id": Tag.id})
+            q = q.on_conflict_do_update(index_elements=[Tag.alias, Tag.type], set_={"id": Tag.id})
 
             tag = await session.scalar(q)
             await session.commit()
@@ -55,7 +55,7 @@ class SqlTagRepository(AbstractTagRepository):
             q = (
                 insert(Tag)
                 .on_conflict_do_update(
-                    index_elements=[Tag.name],
+                    index_elements=[Tag.alias, Tag.type],
                     set_={"id": Tag.id},
                 )
                 .values([tag.dict() for tag in tags])
@@ -87,4 +87,42 @@ class SqlTagRepository(AbstractTagRepository):
                     set_={"ownership_enum": ownership_enum.value},
                 )
                 await session.execute(q)
+            await session.commit()
+
+    async def add_tags_to_event_group(self, event_group_id: int, tag_ids: list[int]) -> None:
+        async with self.storage.create_session() as session:
+            table = EventGroup.__tags_mixin_table__
+            q = (
+                insert(table)
+                .values([{"event_group_id": event_group_id, "tag_id": tag_id} for tag_id in tag_ids])
+                .on_conflict_do_nothing()
+            )
+            await session.execute(q)
+            await session.commit()
+
+    async def batch_add_tags_to_event_group(self, tags_mapping: dict[int, list[int]]) -> None:
+        async with self.storage.create_session() as session:
+            table = EventGroup.__tags_mixin_table__
+            q = (
+                insert(table)
+                .values(
+                    [
+                        {
+                            "event_groups_id": event_group_id,
+                            "tag_id": tag_id,
+                        }
+                        for event_group_id, tag_ids in tags_mapping.items()
+                        for tag_id in tag_ids
+                    ]
+                )
+                .on_conflict_do_nothing()
+            )
+            await session.execute(q)
+            await session.commit()
+
+    async def remove_tags_from_event_group(self, event_group_id: int, tag_ids: list[int]) -> None:
+        async with self.storage.create_session() as session:
+            table = EventGroup.__tags_mixin_table__
+            q = delete(table).where(table.c.event_group_id == event_group_id).where(table.c.tag_id.in_(tag_ids))
+            await session.execute(q)
             await session.commit()

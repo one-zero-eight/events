@@ -170,4 +170,5 @@ cython_debug/
 
 # Ignore sensitive files
 innopolis_user_data.json
-predefined_groups.json
+predefined_event_groups.json
+predefined_tags.json
