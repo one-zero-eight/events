@@ -8,7 +8,7 @@ from sqlalchemy.sql.expression import exists
 from src.exceptions import DBEventGroupDoesNotExistInDb
 from src.repositories.users.abc import AbstractUserRepository, USER_ID
 from src.schemas.users import CreateUser, ViewUser
-from src.storages.sql.models import User, EventGroup, UserXFavorite
+from src.storages.sql.models import User, EventGroup, UserXFavoriteEventGroup
 from src.storages.sql.storage import AbstractSQLAlchemyStorage
 
 
@@ -18,7 +18,6 @@ def SELECT_USER_BY_ID(id_: USER_ID):
         .where(User.id == id_)
         .options(
             joinedload(User.favorites_association),
-            joinedload(User.groups_association),
         )
     )
 
@@ -42,7 +41,6 @@ class SqlUserRepository(AbstractUserRepository):
                 .where(User.id.in_(ids))
                 .options(
                     selectinload(User.favorites_association),
-                    selectinload(User.groups_association),
                 )
             )
             r = await session.execute(q)
@@ -56,7 +54,6 @@ class SqlUserRepository(AbstractUserRepository):
                 .returning(User)
                 .options(
                     selectinload(User.favorites_association),
-                    selectinload(User.groups_association),
                 )
             )
             user = await session.scalar(q)
@@ -71,7 +68,6 @@ class SqlUserRepository(AbstractUserRepository):
                 .returning(User)
                 .options(
                     selectinload(User.favorites_association),
-                    selectinload(User.groups_association),
                 )
             )
             user = await session.scalar(q)
@@ -86,7 +82,6 @@ class SqlUserRepository(AbstractUserRepository):
                 .returning(User)
                 .options(
                     selectinload(User.favorites_association),
-                    selectinload(User.groups_association),
                 )
             )
             db_users = await session.scalars(q)
@@ -107,12 +102,14 @@ class SqlUserRepository(AbstractUserRepository):
                 raise DBEventGroupDoesNotExistInDb(id=favorite_id)
 
             q = (
-                insert(UserXFavorite)
+                insert(UserXFavoriteEventGroup)
                 .values(
                     user_id=user_id,
                     group_id=favorite_id,
                 )
-                .on_conflict_do_nothing(index_elements=[UserXFavorite.user_id, UserXFavorite.group_id])
+                .on_conflict_do_nothing(
+                    index_elements=[UserXFavoriteEventGroup.user_id, UserXFavoriteEventGroup.group_id]
+                )
             )
             await session.execute(q)
             user = await session.scalar(SELECT_USER_BY_ID(user_id))
@@ -122,13 +119,14 @@ class SqlUserRepository(AbstractUserRepository):
     async def remove_favorite(self, user_id: USER_ID, favorite_id: int) -> ViewUser:
         async with self.storage.create_session() as session:
             q = (
-                delete(UserXFavorite)
+                delete(UserXFavoriteEventGroup)
                 .where(
-                    UserXFavorite.user_id == user_id,
+                    UserXFavoriteEventGroup.user_id == user_id,
                 )
                 .where(
-                    UserXFavorite.group_id == favorite_id,
+                    UserXFavoriteEventGroup.group_id == favorite_id,
                 )
+                .where(UserXFavoriteEventGroup.predefined.is_(False))
             )
             await session.execute(q)
             user = await session.scalar(SELECT_USER_BY_ID(user_id))

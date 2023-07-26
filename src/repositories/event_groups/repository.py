@@ -9,7 +9,7 @@ from sqlalchemy.orm import joinedload
 from src.repositories.event_groups.abc import AbstractEventGroupRepository
 from src.schemas import ViewEventGroup, CreateEventGroup, ViewUser
 from src.storages.sql import AbstractSQLAlchemyStorage
-from src.storages.sql.models import UserXFavorite, UserXGroup, EventGroup, User
+from src.storages.sql.models import UserXFavoriteEventGroup, EventGroup, User
 
 USER_ID = Annotated[int, "User ID"]
 
@@ -23,9 +23,12 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
     async def setup_groups(self, user_id: USER_ID, groups: list[int]):
         async with self.storage.create_session() as session:
             q = (
-                insert(UserXGroup)
-                .values([{"user_id": user_id, "group_id": group_id} for group_id in groups])
-                .on_conflict_do_nothing(index_elements=[UserXGroup.user_id, UserXGroup.group_id])
+                insert(UserXFavoriteEventGroup)
+                .values([{"user_id": user_id, "group_id": group_id, "predefined": True} for group_id in groups])
+                .on_conflict_do_update(
+                    index_elements=[UserXFavoriteEventGroup.user_id, UserXFavoriteEventGroup.group_id],
+                    set_={"predefined": True},
+                )
             )
             await session.execute(q)
             await session.commit()
@@ -33,29 +36,30 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
     async def batch_setup_groups(self, groups_mapping: dict[USER_ID, list[int]]):
         async with self.storage.create_session() as session:
             # in one query
-            q = insert(UserXGroup).values(
+            q = insert(UserXFavoriteEventGroup).values(
                 [
-                    {"user_id": user_id, "group_id": group_id}
+                    {"user_id": user_id, "group_id": group_id, "predefined": True}
                     for user_id, group_ids in groups_mapping.items()
                     for group_id in group_ids
                 ]
             )
-            q = q.on_conflict_do_nothing(index_elements=[UserXGroup.user_id, UserXGroup.group_id])
+            q = q.on_conflict_do_update(
+                index_elements=[UserXFavoriteEventGroup.user_id, UserXFavoriteEventGroup.group_id],
+                set_={"predefined": True},
+            )
             await session.execute(q)
             await session.commit()
 
     async def set_hidden(self, user_id: USER_ID, group_id: int, hide: bool = True) -> "ViewUser":
         async with self.storage.create_session() as session:
             # find favorite where user_id and group_id
-            q = select(UserXFavorite).where(UserXFavorite.user_id == user_id).where(UserXFavorite.group_id == group_id)
+            q = (
+                select(UserXFavoriteEventGroup)
+                .where(UserXFavoriteEventGroup.user_id == user_id)
+                .where(UserXFavoriteEventGroup.group_id == group_id)
+            )
 
             event_group = await session.scalar(q)
-
-            # if not found, then it should be in groups
-
-            if not event_group:
-                q = select(UserXGroup).where(UserXGroup.user_id == user_id).where(UserXGroup.group_id == group_id)
-                event_group = await session.scalar(q)
 
             # set hidden
             if event_group:
@@ -67,7 +71,6 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
                 .where(User.id == user_id)
                 .options(
                     joinedload(User.favorites_association),
-                    joinedload(User.groups_association),
                 )
             )
             user = await session.scalar(q)

@@ -20,29 +20,17 @@ class User(Base):
     email: Mapped[str] = mapped_column(unique=True)
 
     status: Mapped[str] = mapped_column(nullable=True)
-    favorites_association: Mapped[list["UserXFavorite"]] = relationship(
-        "UserXFavorite",
+
+    favorites_association: Mapped[list["UserXFavoriteEventGroup"]] = relationship(
+        "UserXFavoriteEventGroup",
         back_populates="user",
         cascade="all, delete-orphan",
     )
 
     favorites: Mapped[list["EventGroup"]] = association_proxy(
         "favorites_association",
-        "group",
-        # creator=lambda group: UserXFavorite(group=group),
-    )
-
-    groups_association: Mapped[list["UserXGroup"]] = relationship(
-        "UserXGroup",
-        back_populates="user",
-        cascade="all, delete-orphan",
-    )
-
-    groups: Mapped[list["EventGroup"]] = association_proxy(
-        "groups_association",
-        "group",
-        # creator=lambda group: UserXGroup(group=group)
+        "event_group",
     )
 
 
-from src.storages.sql.models.event_groups import UserXFavorite, UserXGroup  # noqa: E402
+from src.storages.sql.models.event_groups import UserXFavoriteEventGroup  # noqa: E402

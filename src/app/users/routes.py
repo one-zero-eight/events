@@ -4,7 +4,7 @@ from src.app.dependencies import (
     CURRENT_USER_ID_DEPENDENCY,
 )
 
-from src.schemas import UserXGroupViewApp, ViewUser, ViewUserApp
+from src.schemas import ViewUser
 from src.app.users import router
 from src.exceptions import (
     UserNotFoundException,
@@ -28,13 +28,13 @@ auth_responses_schema = {
 async def get_me(
     user_id: CURRENT_USER_ID_DEPENDENCY,
     user_repository: USER_REPOSITORY_DEPENDENCY,
-) -> ViewUserApp:
+) -> ViewUser:
     """
     Get current user info if authenticated
     """
     user = await user_repository.get_user(user_id)
     user: ViewUser
-    return cast_user_to_app(user)
+    return user
 
 
 @router.post(
@@ -49,14 +49,14 @@ async def add_favorite(
     user_id: CURRENT_USER_ID_DEPENDENCY,
     user_repository: USER_REPOSITORY_DEPENDENCY,
     group_id: int,
-) -> ViewUserApp:
+) -> ViewUser:
     """
     Add favorite to current user
     """
     try:
         updated_user = await user_repository.add_favorite(user_id, group_id)
         updated_user: ViewUser
-        return cast_user_to_app(updated_user)
+        return updated_user
     except DBEventGroupDoesNotExistInDb as e:
         raise EventGroupNotFoundException() from e
 
@@ -72,13 +72,13 @@ async def delete_favorite(
     user_id: CURRENT_USER_ID_DEPENDENCY,
     user_repository: USER_REPOSITORY_DEPENDENCY,
     group_id: int,
-) -> ViewUserApp:
+) -> ViewUser:
     """
     Delete favorite from current user
     """
     updated_user = await user_repository.remove_favorite(user_id, group_id)
     updated_user: ViewUser
-    return cast_user_to_app(updated_user)
+    return updated_user
 
 
 @router.post(
@@ -93,7 +93,7 @@ async def hide_favorite(
     event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
     group_id: int,
     hide: bool = True,
-) -> ViewUserApp:
+) -> ViewUser:
     """
     Hide favorite from current user
     """
@@ -103,18 +103,4 @@ async def hide_favorite(
 
     updated_user = await event_group_repository.set_hidden(user_id=user_id, group_id=group_id, hide=hide)
     updated_user: ViewUser
-    return cast_user_to_app(updated_user)
-
-
-def cast_user_to_app(user: ViewUser) -> ViewUserApp:
-    favorites = []
-
-    for favorite in user.favorites_association:
-        favorites.append(UserXGroupViewApp(**favorite.dict(), predefined=False))
-
-    for group in user.groups_association:
-        favorites.append(UserXGroupViewApp(**group.dict(), predefined=True))
-
-    casted_user = ViewUserApp(**user.dict(exclude={"favorites_association", "groups_association"}), favorites=favorites)
-
-    return casted_user
+    return updated_user

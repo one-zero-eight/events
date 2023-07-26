@@ -1,4 +1,4 @@
-__all__ = ["CreateUser", "ViewUser", "ViewUserApp"]
+__all__ = ["CreateUser", "ViewUser"]
 
 from typing import Optional, Collection
 
@@ -22,10 +22,9 @@ class ViewUser(BaseModel):
     id: int
     email: str
     name: Optional[str] = None
-    groups_association: list["UserXGroupView"] = Field(default_factory=list)
-    favorites_association: list["UserXGroupView"] = Field(default_factory=list)
+    favorites_association: list["UserXFavoriteGroupView"] = Field(default_factory=list)
 
-    @validator("groups_association", "favorites_association", pre=True)
+    @validator("favorites_association", pre=True)
     def groups_to_list(cls, v):
         if isinstance(v, Collection):
             v = list(v)
@@ -35,16 +34,7 @@ class ViewUser(BaseModel):
         orm_mode = True
 
 
-class ViewUserApp(BaseModel):
-    id: int
-    email: str
-    name: Optional[str] = None
-
-    favorites: list["UserXGroupViewApp"] = Field(default_factory=list)
-
-
 # fix circular import
-from src.schemas.event_groups import UserXGroupView, UserXGroupViewApp  # noqa: E402
+from src.schemas.event_groups import UserXFavoriteGroupView  # noqa: E402
 
 ViewUser.update_forward_refs()
-ViewUserApp.update_forward_refs()
