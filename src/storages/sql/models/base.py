@@ -1,3 +1,5 @@
+__all__ = ["Base"]
+
 from sqlalchemy.orm import DeclarativeBase
 
 

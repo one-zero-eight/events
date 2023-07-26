@@ -1,3 +1,5 @@
+__all__ = ["EventGroup", "UserXFavorite", "UserXGroup"]
+
 from typing import Any, TYPE_CHECKING
 
 from sqlalchemy import JSON, ForeignKey

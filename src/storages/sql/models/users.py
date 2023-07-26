@@ -1,3 +1,5 @@
+__all__ = ["User"]
+
 from typing import TYPE_CHECKING
 
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -37,7 +39,9 @@ class User(Base):
     )
 
     groups: Mapped[list["EventGroup"]] = association_proxy(
-        "groups_association", "group", creator=lambda group: UserXGroup(group=group)
+        "groups_association",
+        "group",
+        # creator=lambda group: UserXGroup(group=group)
     )
 
 
