@@ -31,6 +31,9 @@ def fake_paths(monkeymodule):
     monkeymodule.setattr(settings, "PREDEFINED_TAGS_FILE", Path("tests/repositories/temp/test_tags.json.tmp"))
     monkeymodule.setattr(settings, "PREDEFINED_USERS_FILE", Path("tests/repositories/temp/test_users.json.tmp"))
 
+    # ensure directory exists
+    settings.PREDEFINED_GROUPS_FILE.parent.mkdir(parents=True, exist_ok=True)
+
 
 @pytest.fixture(scope="session", autouse=True)
 def fake_predefined_repository():
