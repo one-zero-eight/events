@@ -7,7 +7,7 @@ from sqlalchemy.orm import selectinload
 from src.repositories.tags.abc import AbstractTagRepository
 from src.schemas import CreateTag, ViewTag, OwnershipEnum
 from src.storages.sql import AbstractSQLAlchemyStorage
-from src.storages.sql.models import Tag, TagOwnership, EventGroup
+from src.storages.sql.models import Tag, EventGroup
 
 
 class SqlTagRepository(AbstractTagRepository):
@@ -60,7 +60,7 @@ class SqlTagRepository(AbstractTagRepository):
                 )
                 .values([tag.dict() for tag in tags])
                 .options(
-                    selectinload(Tag.ownership_association),
+                    selectinload(Tag.ownerships),
                 )
                 .returning(Tag)
             )
@@ -69,22 +69,24 @@ class SqlTagRepository(AbstractTagRepository):
             await session.commit()
             return [ViewTag.from_orm(tag) for tag in tags]
 
-    async def setup_ownership(self, tag_id: int, user_id: int, ownership_enum: OwnershipEnum) -> None:
+    async def setup_ownership(self, tag_id: int, user_id: int, role_alias: OwnershipEnum) -> None:
         async with self.storage.create_session() as session:
-            if ownership_enum is OwnershipEnum.default:
+            TagOwnership = Tag.Ownership
+
+            if role_alias is OwnershipEnum.default:
                 # just delete row
-                q = delete(TagOwnership).where(TagOwnership.user_id == user_id).where(TagOwnership.tag_id == tag_id)
+                q = delete(TagOwnership).where(TagOwnership.user_id == user_id).where(TagOwnership.object_id == tag_id)
                 await session.execute(q)
             else:
                 # insert or update
                 q = insert(TagOwnership).values(
                     user_id=user_id,
-                    tag_id=tag_id,
-                    ownership_enum=ownership_enum.value,
+                    object_id=tag_id,
+                    role_alias=role_alias,
                 )
                 q = q.on_conflict_do_update(
-                    index_elements=[TagOwnership.user_id, TagOwnership.tag_id],
-                    set_={"ownership_enum": ownership_enum.value},
+                    index_elements=[TagOwnership.user_id, TagOwnership.object_id],
+                    set_={"role_alias": role_alias.value},
                 )
                 await session.execute(q)
             await session.commit()
@@ -102,27 +104,25 @@ class SqlTagRepository(AbstractTagRepository):
 
     async def batch_add_tags_to_event_group(self, tags_mapping: dict[int, list[int]]) -> None:
         async with self.storage.create_session() as session:
-            table = EventGroup.__tags_mixin_table__
-            q = (
-                insert(table)
-                .values(
-                    [
-                        {
-                            "event_groups_id": event_group_id,
-                            "tag_id": tag_id,
-                        }
-                        for event_group_id, tag_ids in tags_mapping.items()
-                        for tag_id in tag_ids
-                    ]
-                )
-                .on_conflict_do_nothing()
-            )
-            await session.execute(q)
-            await session.commit()
+            table = EventGroup.TagAssociation.__table__
+
+            values = [
+                {
+                    "object_id": event_group_id,
+                    "tag_id": tag_id,
+                }
+                for event_group_id, tag_ids in tags_mapping.items()
+                for tag_id in tag_ids
+                if tag_ids
+            ]
+            if values:
+                q = insert(table).values(values).on_conflict_do_nothing()
+                await session.execute(q)
+                await session.commit()
 
     async def remove_tags_from_event_group(self, event_group_id: int, tag_ids: list[int]) -> None:
         async with self.storage.create_session() as session:
-            table = EventGroup.__tags_mixin_table__
-            q = delete(table).where(table.c.event_group_id == event_group_id).where(table.c.tag_id.in_(tag_ids))
+            table = EventGroup.TagAssociation.__table__
+            q = delete(table).where(table.c.object_id == event_group_id).where(table.c.tag_id.in_(tag_ids))
             await session.execute(q)
             await session.commit()

@@ -33,7 +33,7 @@ class AbstractTagRepository(metaclass=ABCMeta):
         ...
 
     @abstractmethod
-    async def setup_ownership(self, tag_id: int, user_id: int, ownership_enum: "OwnershipEnum") -> None:
+    async def setup_ownership(self, tag_id: int, user_id: int, role_alias: "OwnershipEnum") -> None:
         ...
 
     @abstractmethod

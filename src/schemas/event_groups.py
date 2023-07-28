@@ -2,7 +2,7 @@ __all__ = ["CreateEventGroup", "ViewEventGroup", "ListEventGroupsResponse", "Use
 
 from typing import Optional, Iterable
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, validator
 
 
 class CreateEventGroup(BaseModel):
@@ -25,6 +25,13 @@ class ViewEventGroup(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     tags: list["ViewTag"] = Field(default_factory=list)
+
+    @validator("tags", pre=True, always=True)
+    def _validate_tags(cls, v):
+        v = list(v)
+        if not isinstance(v, list):
+            return []
+        return v
 
     class Config:
         orm_mode = True

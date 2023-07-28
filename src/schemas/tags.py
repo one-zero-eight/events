@@ -1,10 +1,11 @@
-__all__ = ["CreateTag", "ViewTag", "TagOwnership", "OwnershipEnum"]
+__all__ = ["CreateTag", "ViewTag"]
 
 import json
-from enum import StrEnum
 from typing import Optional
 
 from pydantic import BaseModel, validator, Json, Field
+
+from src.schemas.ownership import Ownership
 
 
 class CreateTag(BaseModel):
@@ -20,26 +21,6 @@ class CreateTag(BaseModel):
         return v
 
 
-class OwnershipEnum(StrEnum):
-    default = "default"
-    moderator = "moderator"
-    owner = "owner"
-
-
-class TagOwnership(BaseModel):
-    user_id: int
-    tag_id: int
-
-    ownership_enum: OwnershipEnum
-
-    @validator("ownership_enum", pre=True, always=True)
-    def _validate_ownership_enum(cls, v):
-        return OwnershipEnum(v)
-
-    class Config:
-        orm_mode = True
-
-
 class ViewTag(BaseModel):
     id: int
     alias: str
@@ -47,7 +28,7 @@ class ViewTag(BaseModel):
     name: Optional[str] = None
     satellite: Optional[dict] = None
 
-    ownership_association: list[TagOwnership] = Field(default_factory=list)
+    ownerships: list[Ownership] = Field(default_factory=list)
 
     @validator("satellite", pre=True, always=True)
     def _validate_satellite(cls, v):
@@ -58,7 +39,7 @@ class ViewTag(BaseModel):
     # @property
     # def owners(self) -> list[ViewUser]:
     #     _owners = []
-    #     for ownership in self.ownership_association:
+    #     for ownership in self.ownerships:
     #         if ownership.ownership_enum == OwnershipEnum.owner:
     #             _owners.append(ownership.user)
     #     return _owners
@@ -66,7 +47,7 @@ class ViewTag(BaseModel):
     # @property
     # def moderators(self) -> list[ViewUser]:
     #     _moderators = []
-    #     for ownership in self.ownership_association:
+    #     for ownership in self.ownerships:
     #         if ownership.ownership_enum == OwnershipEnum.moderator:
     #             _moderators.append(ownership.user)
     #     return _moderators
@@ -75,4 +56,4 @@ class ViewTag(BaseModel):
         orm_mode = True
 
 
-TagOwnership.update_forward_refs()
+Ownership.update_forward_refs()

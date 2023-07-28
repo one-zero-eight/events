@@ -1,7 +1,8 @@
 import pytest
 from faker import Faker
 
-from src.schemas.tags import CreateTag, ViewTag, OwnershipEnum
+from src.schemas.tags import CreateTag, ViewTag
+from src.schemas import OwnershipEnum
 from tests.repositories.test_users import _create_user
 from typing import TYPE_CHECKING
 
@@ -20,8 +21,8 @@ async def _create_tag(tag_repository: "AbstractTagRepository") -> "ViewTag":
     tag = await tag_repository.create_tag_if_not_exists(tag_schema)
     assert tag is not None
     assert isinstance(tag, ViewTag)
-    assert tag.ownership_association == []
-    assert tag.dict(exclude={"id", "ownership_association"}) == tag_schema.dict()
+    assert tag.ownerships == []
+    assert tag.dict(exclude={"id", "ownerships"}) == tag_schema.dict()
     return tag
 
 
@@ -36,7 +37,7 @@ async def _batch_create_tag(tag_repository: "AbstractTagRepository") -> list["Vi
     for tag, tag_schema in zip(tags, tag_schemas):
         assert tag is not None
         assert isinstance(tag, ViewTag)
-        assert tag.dict(exclude={"id", "ownership_association"}) == tag_schema.dict()
+        assert tag.dict(exclude={"id", "ownerships"}) == tag_schema.dict()
     return tags
 
 
@@ -46,7 +47,7 @@ async def test_get_tag_by_id(tag_repository):
     tag_by_id = await tag_repository.get_tag(tag.id)
     assert tag_by_id is not None
     assert isinstance(tag_by_id, ViewTag)
-    assert tag_by_id.ownership_association == []
+    assert tag_by_id.ownerships == []
     assert tag.dict() == tag_by_id.dict()
 
 
@@ -61,7 +62,7 @@ async def test_get_tags_by_ids(tag_repository):
     for tag_by_id, tag in zip(tags_by_ids, tags):
         assert tag_by_id is not None
         assert isinstance(tag_by_id, ViewTag)
-        assert tag_by_id.ownership_association == []
+        assert tag_by_id.ownerships == []
         assert tag_by_id.dict() == tag.dict()
 
 
@@ -84,7 +85,7 @@ async def test_get_tag_by_name(tag_repository):
     tag_by_name = await tag_repository.get_tag_by_name(tag.name)
     assert tag_by_name is not None
     assert isinstance(tag_by_name, ViewTag)
-    assert tag_by_name.ownership_association == []
+    assert tag_by_name.ownerships == []
     assert tag.dict() == tag_by_name.dict()
 
 
@@ -106,7 +107,7 @@ async def test_setup_ownership(tag_repository, user_repository):
     tag_ownership = await tag_repository.get_tag(tag.id)
     assert tag_ownership is not None
     assert isinstance(tag_ownership, ViewTag)
-    assert len(tag_ownership.ownership_association) == 1
-    assert tag_ownership.ownership_association[0].user_id == user.id
-    assert tag_ownership.ownership_association[0].tag_id == tag.id
-    assert tag_ownership.ownership_association[0].ownership_enum == OwnershipEnum.owner
+    assert len(tag_ownership.ownerships) == 1
+    assert tag_ownership.ownerships[0].user_id == user.id
+    assert tag_ownership.ownerships[0].object_id == tag.id
+    assert tag_ownership.ownerships[0].role_alias == OwnershipEnum.owner

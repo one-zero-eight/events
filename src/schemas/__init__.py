@@ -2,7 +2,7 @@
 __all__ = [
     "CreateEventGroup", "ViewEventGroup", "UserXFavoriteGroupView", "ListEventGroupsResponse",
     "CreateUser", "ViewUser",
-    "CreateTag", "ViewTag", "TagOwnership", "OwnershipEnum"
+    "CreateTag", "ViewTag"
 ]
 
 # fmt: on
@@ -15,4 +15,4 @@ from src.schemas.event_groups import (
     ListEventGroupsResponse,
 )
 from src.schemas.users import CreateUser, ViewUser
-from src.schemas.tags import CreateTag, ViewTag, TagOwnership, OwnershipEnum
+from src.schemas.tags import CreateTag, ViewTag

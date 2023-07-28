@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 
 class User(Base, IdMixin):
+    __ownerships_tables__ = dict()
     __tablename__ = "users"
 
     name: Mapped[str] = mapped_column(nullable=True)
