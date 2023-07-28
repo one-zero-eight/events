@@ -15,7 +15,7 @@ fake = Faker()
 
 
 @pytest.fixture(scope="session")
-def monkeymodule():
+def monkeysession():
     from _pytest.monkeypatch import MonkeyPatch
 
     mpatch = MonkeyPatch()
@@ -24,12 +24,12 @@ def monkeymodule():
 
 
 @pytest.fixture(scope="session", autouse=True)
-def fake_paths(monkeymodule):
+def fake_paths(monkeysession):
     from src.config import settings
 
-    monkeymodule.setattr(settings, "PREDEFINED_GROUPS_FILE", Path("tests/repositories/temp/test_groups.json.tmp"))
-    monkeymodule.setattr(settings, "PREDEFINED_TAGS_FILE", Path("tests/repositories/temp/test_tags.json.tmp"))
-    monkeymodule.setattr(settings, "PREDEFINED_USERS_FILE", Path("tests/repositories/temp/test_users.json.tmp"))
+    monkeysession.setattr(settings, "PREDEFINED_GROUPS_FILE", Path("tests/repositories/temp/test_groups.json.tmp"))
+    monkeysession.setattr(settings, "PREDEFINED_TAGS_FILE", Path("tests/repositories/temp/test_tags.json.tmp"))
+    monkeysession.setattr(settings, "PREDEFINED_USERS_FILE", Path("tests/repositories/temp/test_users.json.tmp"))
 
     # ensure directory exists
     settings.PREDEFINED_GROUPS_FILE.parent.mkdir(parents=True, exist_ok=True)
