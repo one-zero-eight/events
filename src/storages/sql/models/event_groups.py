@@ -5,16 +5,15 @@ from typing import Any, TYPE_CHECKING
 from sqlalchemy import JSON, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.storages.sql.__mixin__ import TagsMixinFactory
+from src.storages.sql.__mixin__ import TagsMixinFactory, IdMixin
 from src.storages.sql.models import Base
 
 if TYPE_CHECKING:
     from src.storages.sql.models.users import User
 
 
-class EventGroup(Base, TagsMixinFactory("event_groups", Base)):
+class EventGroup(Base, IdMixin, TagsMixinFactory("event_groups", Base)):
     __tablename__ = "event_groups"
-    id: Mapped[int] = mapped_column(primary_key=True)
     path: Mapped[str] = mapped_column(unique=True, nullable=True)
     name: Mapped[str] = mapped_column(String(255), nullable=True)
     description: Mapped[str] = mapped_column(Text(), nullable=True)

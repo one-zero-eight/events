@@ -6,15 +6,15 @@ from typing import Any, TYPE_CHECKING
 from sqlalchemy import JSON, ForeignKey, Enum as SQLAlchemyEnum, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.storages.sql.__mixin__ import IdMixin
 from src.storages.sql.models import Base
 
 if TYPE_CHECKING:
     from src.storages.sql.models.users import User
 
 
-class Tag(Base):
+class Tag(Base, IdMixin):
     __tablename__ = "tags"
-    id: Mapped[int] = mapped_column(primary_key=True)
 
     # parent_id: Mapped[int] = mapped_column(ForeignKey("tags.id"), nullable=True)
     # parent: Mapped["Tag"] = relationship("Tag", remote_side=[id], lazy="selectin")
