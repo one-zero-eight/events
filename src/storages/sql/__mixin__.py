@@ -37,7 +37,7 @@ def OwnershipsMixinFactory(tablename: str, Base: type[DeclarativeBase]):
         class Ownership(Base):
             __tablename__ = f"{tablename}_x_ownerships"
             object_id: Mapped[int] = mapped_column(ForeignKey(f"{tablename}.id"), primary_key=True)
-            user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+            user_id: Mapped[int] = mapped_column(ForeignKey(User.id), primary_key=True)
 
             user: Mapped["User"] = relationship("User")
 
