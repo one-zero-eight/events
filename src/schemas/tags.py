@@ -1,4 +1,4 @@
-__all__ = ["CreateTag", "ViewTag"]
+__all__ = ["CreateTag", "ViewTag", "UpdateTag"]
 
 import json
 from typing import Optional
@@ -36,24 +36,21 @@ class ViewTag(BaseModel):
             return json.loads(v)
         return v
 
-    # @property
-    # def owners(self) -> list[ViewUser]:
-    #     _owners = []
-    #     for ownership in self.ownerships:
-    #         if ownership.ownership_enum == OwnershipEnum.owner:
-    #             _owners.append(ownership.user)
-    #     return _owners
-    #
-    # @property
-    # def moderators(self) -> list[ViewUser]:
-    #     _moderators = []
-    #     for ownership in self.ownerships:
-    #         if ownership.ownership_enum == OwnershipEnum.moderator:
-    #             _moderators.append(ownership.user)
-    #     return _moderators
-
     class Config:
         orm_mode = True
+
+
+class UpdateTag(BaseModel):
+    alias: Optional[str] = None
+    type: Optional[str] = None
+    name: Optional[str] = None
+    satellite: Optional[Json] = None
+
+    @validator("satellite", pre=True, always=True)
+    def _validate_satellite(cls, v):
+        if isinstance(v, dict):
+            v = json.dumps(v)
+        return v
 
 
 Ownership.update_forward_refs()
