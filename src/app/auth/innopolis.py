@@ -48,7 +48,7 @@ if enabled:
         token = await oauth.innopolis.authorize_access_token(request)
         user_info_dict: dict = token["userinfo"]
         user_info = UserInfoFromSSO(**user_info_dict)
-        user = await user_repository.upsert_user(CreateUser(**user_info.dict()))
+        user = await user_repository.create_or_update(CreateUser(**user_info.dict()))
 
         return_to = request.session.pop("return_to")
         ensure_allowed_return_to(return_to)

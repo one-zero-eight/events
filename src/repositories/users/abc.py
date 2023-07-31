@@ -1,43 +1,44 @@
-__all__ = ["AbstractUserRepository", "USER_ID"]
+__all__ = ["AbstractUserRepository"]
 
 from abc import ABCMeta, abstractmethod
-from typing import Annotated, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from src.schemas import CreateUser, ViewUser
 
-USER_ID = Annotated[int, "User ID"]
-
 
 class AbstractUserRepository(metaclass=ABCMeta):
+    # ----------------- CRUD ----------------- #
     @abstractmethod
-    async def create_user_if_not_exists(self, user: "CreateUser") -> "ViewUser":
+    async def create_or_read(self, user: "CreateUser") -> "ViewUser":
         ...
 
     @abstractmethod
-    async def upsert_user(self, user: "CreateUser") -> "ViewUser":
+    async def batch_create_or_read(self, users: list["CreateUser"]) -> list["ViewUser"]:
         ...
 
     @abstractmethod
-    async def batch_create_user_if_not_exists(self, users: list["CreateUser"]) -> list["ViewUser"]:
+    async def create_or_update(self, user: "CreateUser") -> "ViewUser":
         ...
 
     @abstractmethod
-    async def get_user_id_by_email(self, email: str) -> USER_ID:
+    async def read(self, user_id: int) -> "ViewUser":
         ...
 
     @abstractmethod
-    async def get_user(self, user_id: USER_ID) -> "ViewUser":
+    async def read_id_by_email(self, email: str) -> int:
         ...
 
     @abstractmethod
-    async def batch_get_user(self, ids: list[USER_ID]) -> list["ViewUser"]:
+    async def batch_read(self, ids: list[int]) -> list["ViewUser"]:
+        ...
+
+    # ^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^^^^^^^^ #
+
+    @abstractmethod
+    async def add_favorite(self, user_id: int, favorite_id: int) -> "ViewUser":
         ...
 
     @abstractmethod
-    async def add_favorite(self, user_id: USER_ID, favorite_id: int) -> "ViewUser":
-        ...
-
-    @abstractmethod
-    async def remove_favorite(self, user_id: USER_ID, favorite_id: int) -> "ViewUser":
+    async def remove_favorite(self, user_id: int, favorite_id: int) -> "ViewUser":
         ...

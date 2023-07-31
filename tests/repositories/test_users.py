@@ -17,7 +17,7 @@ def get_fake_user() -> CreateUser:
 
 async def _create_user(user_repository: "AbstractUserRepository") -> "ViewUser":
     user_schema = get_fake_user()
-    user = await user_repository.create_user_if_not_exists(user_schema)
+    user = await user_repository.create_or_read(user_schema)
     assert user is not None
     assert isinstance(user, ViewUser)
     assert user.id is not None
@@ -29,7 +29,7 @@ async def _create_user(user_repository: "AbstractUserRepository") -> "ViewUser":
 async def _batch_create_user_if_not_exists(user_repository: "AbstractUserRepository") -> list["ViewUser"]:
     # Create a batch of new users
     user_schemas = [get_fake_user() for _ in range(10)]
-    users = await user_repository.batch_create_user_if_not_exists(user_schemas)
+    users = await user_repository.batch_create_or_read(user_schemas)
     assert len(users) == len(user_schemas)
     for user, user_schema in zip(users, user_schemas):
         assert user is not None
@@ -58,7 +58,7 @@ async def test_upsert_user(user_repository):
 
     # Update an existing user
     updated_user_schema = CreateUser(email=user.email, name=fake.name())
-    updated_user = await user_repository.upsert_user(updated_user_schema)
+    updated_user = await user_repository.create_or_update(updated_user_schema)
     assert updated_user is not None
     assert isinstance(updated_user, ViewUser)
     assert updated_user.id == user.id
@@ -71,7 +71,7 @@ async def test_get_user_id_by_email(user_repository):
     # Create a new user
     user = await _create_user(user_repository)
     # Retrieve the user ID by email
-    user_id = await user_repository.get_user_id_by_email(user.email)
+    user_id = await user_repository.read_id_by_email(user.email)
     assert user_id is not None
     assert isinstance(user_id, int)
     assert user_id == user.id
@@ -83,7 +83,7 @@ async def test_get_user(user_repository):
     created_user = await _create_user(user_repository)
 
     # Retrieve the user by ID
-    retrieved_user = await user_repository.get_user(created_user.id)
+    retrieved_user = await user_repository.read(created_user.id)
     assert retrieved_user is not None
     assert isinstance(retrieved_user, ViewUser)
     assert retrieved_user.id == created_user.id
@@ -97,7 +97,7 @@ async def test_batch_get_user(user_repository):
     created_users = await _batch_create_user_if_not_exists(user_repository)
     # Retrieve the users by their IDs
     user_ids = [user.id for user in created_users]
-    retrieved_users = await user_repository.batch_get_user(user_ids)
+    retrieved_users = await user_repository.batch_read(user_ids)
     assert len(retrieved_users) == len(created_users)
     for retrieved_user, created_user in zip(retrieved_users, created_users):
         assert retrieved_user is not None

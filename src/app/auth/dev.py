@@ -29,7 +29,7 @@ if enabled:
     ):
         ensure_allowed_return_to(return_to)
         email = email or settings.DEV_AUTH_EMAIL
-        user = await user_repository.upsert_user(CreateUser(email=email, name="Ivan Petrov"))
+        user = await user_repository.create_or_update(CreateUser(email=email, name="Ivan Petrov"))
         token = create_access_token(user.id)
         return redirect_with_token(return_to, token)
 
@@ -39,7 +39,7 @@ if enabled:
         email: Optional[str] = None,
     ) -> str:
         email = email or settings.DEV_AUTH_EMAIL
-        user = await user_repository.upsert_user(CreateUser(email=email, name="Ivan Petrov"))
+        user = await user_repository.create_or_update(CreateUser(email=email, name="Ivan Petrov"))
         return create_access_token(user.id)
 
     @router.get("/dev/parser-token")

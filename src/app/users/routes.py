@@ -32,7 +32,7 @@ async def get_me(
     """
     Get current user info if authenticated
     """
-    user = await user_repository.get_user(user_id)
+    user = await user_repository.read(user_id)
     user: ViewUser
     return user
 
@@ -98,7 +98,7 @@ async def hide_favorite(
     Hide favorite from current user
     """
     # check if a group exists
-    if await event_group_repository.get_group(group_id) is None:
+    if await event_group_repository.read(group_id) is None:
         raise UserNotFoundException()
 
     updated_user = await event_group_repository.set_hidden(user_id=user_id, group_id=group_id, hide=hide)
