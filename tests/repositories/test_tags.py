@@ -18,7 +18,7 @@ def get_fake_tag() -> "CreateTag":
 
 async def _create_tag(tag_repository: "AbstractTagRepository") -> "ViewTag":
     tag_schema = get_fake_tag()
-    tag = await tag_repository.create_tag_if_not_exists(tag_schema)
+    tag = await tag_repository.create_or_read(tag_schema)
     assert tag is not None
     assert isinstance(tag, ViewTag)
     assert tag.ownerships == []
@@ -28,7 +28,7 @@ async def _create_tag(tag_repository: "AbstractTagRepository") -> "ViewTag":
 
 async def _batch_create_tag(tag_repository: "AbstractTagRepository") -> list["ViewTag"]:
     tag_schemas = [get_fake_tag() for _ in range(10)]
-    tags = await tag_repository.batch_create_tag_if_not_exists(tag_schemas)
+    tags = await tag_repository.batch_create_or_read(tag_schemas)
 
     assert tags is not None
     assert isinstance(tags, list)
@@ -44,7 +44,7 @@ async def _batch_create_tag(tag_repository: "AbstractTagRepository") -> list["Vi
 @pytest.mark.asyncio
 async def test_get_tag_by_id(tag_repository):
     tag = await _create_tag(tag_repository)
-    tag_by_id = await tag_repository.get_tag(tag.id)
+    tag_by_id = await tag_repository.read(tag.id)
     assert tag_by_id is not None
     assert isinstance(tag_by_id, ViewTag)
     assert tag_by_id.ownerships == []
@@ -55,7 +55,7 @@ async def test_get_tag_by_id(tag_repository):
 async def test_get_tags_by_ids(tag_repository):
     tags = await _batch_create_tag(tag_repository)
     tag_ids = [tag.id for tag in tags]
-    tags_by_ids = await tag_repository.get_tags_by_ids(tag_ids)
+    tags_by_ids = await tag_repository.batch_read(tag_ids)
     assert tags_by_ids is not None
     assert isinstance(tags_by_ids, list)
     assert len(tags_by_ids) == len(tags)
@@ -69,7 +69,7 @@ async def test_get_tags_by_ids(tag_repository):
 @pytest.mark.asyncio
 async def test_get_all_tags(tag_repository):
     tags = await _batch_create_tag(tag_repository)
-    all_tags = await tag_repository.get_all_tags()
+    all_tags = await tag_repository.read_all()
     assert all_tags is not None
     assert isinstance(all_tags, list)
     assert len(all_tags) == len(tags)
@@ -82,7 +82,7 @@ async def test_get_all_tags(tag_repository):
 @pytest.mark.asyncio
 async def test_get_tag_by_name(tag_repository):
     tag = await _create_tag(tag_repository)
-    tag_by_name = await tag_repository.get_tag_by_name(tag.name)
+    tag_by_name = await tag_repository.read_by_name(tag.name)
     assert tag_by_name is not None
     assert isinstance(tag_by_name, ViewTag)
     assert tag_by_name.ownerships == []
@@ -104,10 +104,18 @@ async def test_setup_ownership(tag_repository, user_repository):
     user = await _create_user(user_repository)
     tag = await _create_tag(tag_repository)
     await tag_repository.setup_ownership(tag.id, user.id, OwnershipEnum.owner)
-    tag_ownership = await tag_repository.get_tag(tag.id)
+    tag_ownership = await tag_repository.read(tag.id)
     assert tag_ownership is not None
     assert isinstance(tag_ownership, ViewTag)
     assert len(tag_ownership.ownerships) == 1
     assert tag_ownership.ownerships[0].user_id == user.id
     assert tag_ownership.ownerships[0].object_id == tag.id
     assert tag_ownership.ownerships[0].role_alias == OwnershipEnum.owner
+
+
+@pytest.mark.asyncio
+async def test_delete_tag(tag_repository):
+    tag = await _create_tag(tag_repository)
+    await tag_repository.delete(tag.id)
+    tag_by_id = await tag_repository.read(tag.id)
+    assert tag_by_id is None

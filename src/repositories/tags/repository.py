@@ -1,13 +1,17 @@
 __all__ = ["SqlTagRepository"]
 
-from sqlalchemy import select, delete
+from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from src.repositories.crud import CRUDFactory
 from src.repositories.tags.abc import AbstractTagRepository
-from src.schemas import CreateTag, ViewTag, OwnershipEnum
+from src.schemas import CreateTag, ViewTag, OwnershipEnum, UpdateTag
 from src.storages.sql import AbstractSQLAlchemyStorage
 from src.storages.sql.models import Tag, EventGroup
+
+CRUD = CRUDFactory(Tag, CreateTag, ViewTag, UpdateTag)
 
 
 class SqlTagRepository(AbstractTagRepository):
@@ -16,42 +20,19 @@ class SqlTagRepository(AbstractTagRepository):
     def __init__(self, storage: AbstractSQLAlchemyStorage):
         self.storage = storage
 
-    async def get_tag(self, tag_id: int) -> "ViewTag":
-        async with self.storage.create_session() as session:
-            q = select(Tag).where(Tag.id == tag_id)
-            tag = await session.scalar(q)
-            if tag:
-                return ViewTag.from_orm(tag)
+    def _create_session(self) -> AsyncSession:
+        return self.storage.create_session()
 
-    async def get_tags_by_ids(self, tag_ids: list[int]) -> list["ViewTag"]:
-        async with self.storage.create_session() as session:
-            q = select(Tag).where(Tag.id.in_(tag_ids))
-            tags = await session.scalars(q)
-            return [ViewTag.from_orm(tag) for tag in tags]
+    # ------------------ CRUD ------------------ #
+    async def create_or_read(self, tag: "CreateTag") -> ViewTag:
+        async with self._create_session() as session:
+            created = await CRUD.create_if_not_exists(session, tag)
+            if created is None:
+                created = await CRUD.read_by(session, only_first=True, alias=tag.alias, type=tag.type)
+            return created
 
-    async def get_all_tags(self) -> list["ViewTag"]:
-        async with self.storage.create_session() as session:
-            q = select(Tag).order_by(Tag.id)
-            tags = await session.scalars(q)
-            return [ViewTag.from_orm(tag) for tag in tags]
-
-    async def get_tag_by_name(self, name: str) -> "ViewTag":
-        async with self.storage.create_session() as session:
-            q = select(Tag).where(Tag.name == name)
-            tag = await session.scalar(q)
-            return ViewTag.from_orm(tag)
-
-    async def create_tag_if_not_exists(self, tag: "CreateTag") -> ViewTag:
-        async with self.storage.create_session() as session:
-            q = insert(Tag).values(**tag.dict()).returning(Tag)
-            q = q.on_conflict_do_update(index_elements=[Tag.alias, Tag.type], set_={"id": Tag.id})
-
-            tag = await session.scalar(q)
-            await session.commit()
-            return ViewTag.from_orm(tag)
-
-    async def batch_create_tag_if_not_exists(self, tags: list["CreateTag"]) -> list[ViewTag]:
-        async with self.storage.create_session() as session:
+    async def batch_create_or_read(self, tags: list["CreateTag"]) -> list[ViewTag]:
+        async with self._create_session() as session:
             q = (
                 insert(Tag)
                 .on_conflict_do_update(
@@ -69,8 +50,34 @@ class SqlTagRepository(AbstractTagRepository):
             await session.commit()
             return [ViewTag.from_orm(tag) for tag in tags]
 
+    async def read(self, id: int) -> "ViewTag":
+        async with self._create_session() as session:
+            return await CRUD.read(session, id=id)
+
+    async def read_all(self) -> list["ViewTag"]:
+        async with self._create_session() as session:
+            return await CRUD.read_all(session)
+
+    async def batch_read(self, tag_ids: list[int]) -> list["ViewTag"]:
+        async with self._create_session() as session:
+            return await CRUD.batch_read(session, pkeys=[{"id": tag_id} for tag_id in tag_ids])
+
+    async def read_by_name(self, name: str) -> "ViewTag":
+        async with self._create_session() as session:
+            return await CRUD.read_by(session, only_first=True, name=name)
+
+    async def update(self, id: int, tag: "UpdateTag") -> "ViewTag":
+        async with self._create_session() as session:
+            return await CRUD.update(session, data=tag, id=id)
+
+    async def delete(self, id: int) -> None:
+        async with self._create_session() as session:
+            await CRUD.delete(session, id=id)
+
+    # ^^^^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^^^^ #
+
     async def setup_ownership(self, tag_id: int, user_id: int, role_alias: OwnershipEnum) -> None:
-        async with self.storage.create_session() as session:
+        async with self._create_session() as session:
             TagOwnership = Tag.Ownership
 
             if role_alias is OwnershipEnum.default:
@@ -92,7 +99,7 @@ class SqlTagRepository(AbstractTagRepository):
             await session.commit()
 
     async def add_tags_to_event_group(self, event_group_id: int, tag_ids: list[int]) -> None:
-        async with self.storage.create_session() as session:
+        async with self._create_session() as session:
             table = EventGroup.__tags_mixin_table__
             q = (
                 insert(table)
@@ -103,7 +110,7 @@ class SqlTagRepository(AbstractTagRepository):
             await session.commit()
 
     async def batch_add_tags_to_event_group(self, tags_mapping: dict[int, list[int]]) -> None:
-        async with self.storage.create_session() as session:
+        async with self._create_session() as session:
             table = EventGroup.TagAssociation.__table__
 
             values = [
@@ -121,7 +128,7 @@ class SqlTagRepository(AbstractTagRepository):
                 await session.commit()
 
     async def remove_tags_from_event_group(self, event_group_id: int, tag_ids: list[int]) -> None:
-        async with self.storage.create_session() as session:
+        async with self._create_session() as session:
             table = EventGroup.TagAssociation.__table__
             q = delete(table).where(table.c.object_id == event_group_id).where(table.c.tag_id.in_(tag_ids))
             await session.execute(q)
