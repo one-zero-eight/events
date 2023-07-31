@@ -1,43 +1,44 @@
 __all__ = ["AbstractEventGroupRepository"]
 
 from abc import ABCMeta, abstractmethod
-from typing import Annotated, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from src.schemas import CreateEventGroup, ViewEventGroup, ViewUser
 
-USER_ID = Annotated[int, "User ID"]
-
 
 class AbstractEventGroupRepository(metaclass=ABCMeta):
+    # ----------------- CRUD ----------------- #
     @abstractmethod
-    async def setup_groups(self, user_id: USER_ID, groups: list[int]):
+    async def create_or_read(self, group: "CreateEventGroup") -> "ViewEventGroup":
         ...
 
     @abstractmethod
-    async def batch_setup_groups(self, groups_mapping: dict[USER_ID, list[int]]):
+    async def batch_create_or_read(self, groups: list["CreateEventGroup"]) -> list["ViewEventGroup"]:
         ...
 
     @abstractmethod
-    async def get_group(self, group_id: int) -> "ViewEventGroup":
+    async def read(self, group_id: int) -> "ViewEventGroup":
         ...
 
     @abstractmethod
-    async def get_group_by_path(self, path: str) -> "ViewEventGroup":
+    async def read_all(self) -> list["ViewEventGroup"]:
         ...
 
     @abstractmethod
-    async def create_group_if_not_exists(self, group: "CreateEventGroup") -> "ViewEventGroup":
+    async def read_by_path(self, path: str) -> "ViewEventGroup":
+        ...
+
+    # ^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^^^^^^^^ #
+
+    @abstractmethod
+    async def setup_groups(self, user_id: int, groups: list[int]):
         ...
 
     @abstractmethod
-    async def batch_create_group_if_not_exists(self, groups: list["CreateEventGroup"]) -> list["ViewEventGroup"]:
+    async def batch_setup_groups(self, groups_mapping: dict[int, list[int]]):
         ...
 
     @abstractmethod
-    async def get_all_groups(self) -> list["ViewEventGroup"]:
-        ...
-
-    @abstractmethod
-    async def set_hidden(self, user_id: USER_ID, group_id: int, hide: bool = True) -> "ViewUser":
+    async def set_hidden(self, user_id: int, group_id: int, hide: bool = True) -> "ViewUser":
         ...

@@ -18,7 +18,7 @@ def get_fake_event_group() -> "CreateEventGroup":
 
 async def _create_event_group(event_group_repository: "AbstractEventGroupRepository") -> "ViewEventGroup":
     event_group_schema = get_fake_event_group()
-    event_group = await event_group_repository.create_group_if_not_exists(event_group_schema)
+    event_group = await event_group_repository.create_or_read(event_group_schema)
     assert event_group is not None
     assert isinstance(event_group, ViewEventGroup)
     assert event_group.id is not None
@@ -29,7 +29,7 @@ async def _create_event_group(event_group_repository: "AbstractEventGroupReposit
 
 async def _batch_create_event_group(event_group_repository: "AbstractEventGroupRepository") -> list["ViewEventGroup"]:
     event_group_schemas = [get_fake_event_group() for _ in range(10)]
-    event_groups = await event_group_repository.batch_create_group_if_not_exists(event_group_schemas)
+    event_groups = await event_group_repository.batch_create_or_read(event_group_schemas)
 
     assert event_groups is not None
     assert isinstance(event_groups, list)
@@ -48,7 +48,7 @@ async def _batch_create_event_group(event_group_repository: "AbstractEventGroupR
 @pytest.mark.asyncio
 async def test_create_if_not_exists(event_group_repository):
     event_group_schema = get_fake_event_group()
-    event_group = await event_group_repository.create_group_if_not_exists(event_group_schema)
+    event_group = await event_group_repository.create_or_read(event_group_schema)
     assert event_group is not None
     assert isinstance(event_group, ViewEventGroup)
     assert event_group.id is not None
@@ -63,7 +63,7 @@ async def test_batch_create_if_not_exists(event_group_repository):
 @pytest.mark.asyncio
 async def test_get_by_id(event_group_repository):
     event_group = await _create_event_group(event_group_repository)
-    gotten_event_group = await event_group_repository.get_group(event_group.id)
+    gotten_event_group = await event_group_repository.read(event_group.id)
     assert gotten_event_group is not None
     assert isinstance(gotten_event_group, ViewEventGroup)
     assert gotten_event_group.id is not None
@@ -73,7 +73,7 @@ async def test_get_by_id(event_group_repository):
 @pytest.mark.asyncio
 async def test_get_by_path(event_group_repository):
     event_group = await _create_event_group(event_group_repository)
-    gotten_event_group = await event_group_repository.get_group_by_path(event_group.path)
+    gotten_event_group = await event_group_repository.read_by_path(event_group.path)
     assert gotten_event_group is not None
     assert isinstance(gotten_event_group, ViewEventGroup)
     assert gotten_event_group.id is not None
@@ -83,7 +83,7 @@ async def test_get_by_path(event_group_repository):
 @pytest.mark.asyncio
 async def test_get_all(event_group_repository):
     event_groups = await _batch_create_event_group(event_group_repository)
-    gotten_event_groups = await event_group_repository.get_all_groups()
+    gotten_event_groups = await event_group_repository.read_all()
     assert gotten_event_groups is not None
     assert isinstance(gotten_event_groups, list)
     assert len(gotten_event_groups) == len(event_groups)

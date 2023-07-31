@@ -19,7 +19,7 @@ async def find_event_group_by_path(
     Get event group info by path
     """
 
-    event_group = await event_group_repository.get_group_by_path(path)
+    event_group = await event_group_repository.read_by_path(path)
 
     if event_group is None:
         raise EventGroupNotFoundException()
@@ -40,7 +40,7 @@ async def get_event_group(
     """
     Get event group info by id
     """
-    event_group = await event_group_repository.get_group(event_group_id)
+    event_group = await event_group_repository.read(event_group_id)
 
     if event_group is None:
         raise EventGroupNotFoundException()
@@ -60,7 +60,7 @@ async def list_event_groups(
     """
     Get a list of all event groups
     """
-    groups = await event_group_repository.get_all_groups()
+    groups = await event_group_repository.read_all()
     return ListEventGroupsResponse.from_iterable(groups)
 
 
