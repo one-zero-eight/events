@@ -81,13 +81,13 @@ async def setup_repositories():
 
     predefined_repositories = PredefinedRepository.from_jsons(users_json, groups_json, tags_json)
     unique_tags = predefined_repositories.get_tags()
-    db_tags = await tag_repository.batch_create_tag_if_not_exists([CreateTag(**tag.dict()) for tag in unique_tags])
+    db_tags = await tag_repository.batch_create_or_read([CreateTag(**tag.dict()) for tag in unique_tags])
     tags_mappping = {tag.alias: tag for tag in db_tags}
 
     unique_groups = predefined_repositories.get_groups()
     groups_to_create = [CreateEventGroup(**group.dict()) for group in unique_groups]
 
-    db_groups = await event_group_repository.batch_create_group_if_not_exists(groups_to_create)
+    db_groups = await event_group_repository.batch_create_or_read(groups_to_create)
     path_x_group = {group.path: group for group in db_groups}
 
     group_id_x_tag_ids = dict()
@@ -98,7 +98,7 @@ async def setup_repositories():
     await tag_repository.batch_add_tags_to_event_group(group_id_x_tag_ids)
 
     users = predefined_repositories.get_users()
-    db_users = await user_repository.batch_create_user_if_not_exists([CreateUser(**user.dict()) for user in users])
+    db_users = await user_repository.batch_create_or_read([CreateUser(**user.dict()) for user in users])
     user_id_x_group_ids = dict()
     for i, user in enumerate(users):
         user_id = db_users[i].id
