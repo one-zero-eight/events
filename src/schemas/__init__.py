@@ -1,6 +1,8 @@
 # fmt: off
 __all__ = [
-    "CreateEventGroup", "ViewEventGroup", "UserXFavoriteGroupView", "ListEventGroupsResponse",
+    "CreateEventGroup", "ViewEventGroup",
+    "UserXFavoriteGroupView", "ListEventGroupsResponse", "UpdateEventGroup",
+
     "CreateUser", "ViewUser", "UpdateUser",
     "CreateTag", "ViewTag", "UpdateTag",
     "Ownership", "OwnershipEnum",
@@ -12,6 +14,7 @@ __all__ = [
 from src.schemas.event_groups import (
     CreateEventGroup,
     ViewEventGroup,
+    UpdateEventGroup,
     UserXFavoriteGroupView,
     ListEventGroupsResponse,
 )

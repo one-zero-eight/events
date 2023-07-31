@@ -1,4 +1,10 @@
-__all__ = ["CreateEventGroup", "ViewEventGroup", "ListEventGroupsResponse", "UserXFavoriteGroupView"]
+__all__ = [
+    "CreateEventGroup",
+    "ViewEventGroup",
+    "UpdateEventGroup",
+    "ListEventGroupsResponse",
+    "UserXFavoriteGroupView",
+]
 
 from typing import Optional, Iterable
 
@@ -35,6 +41,16 @@ class ViewEventGroup(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class UpdateEventGroup(BaseModel):
+    """
+    Represents a group instance to be updated.
+    """
+
+    name: Optional[str] = None
+    description: Optional[str] = None
+    path: Optional[str] = None
 
 
 class UserXFavoriteGroupView(BaseModel):
