@@ -1,4 +1,4 @@
-__all__ = ["CreateUser", "ViewUser"]
+__all__ = ["CreateUser", "ViewUser", "UpdateUser"]
 
 from typing import Optional, Collection
 
@@ -32,6 +32,15 @@ class ViewUser(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class UpdateUser(BaseModel):
+    """
+    Represents a user instance to be updated.
+    """
+
+    email: Optional[str] = None
+    name: Optional[str] = None
 
 
 # fix circular import
