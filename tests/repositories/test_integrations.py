@@ -25,7 +25,7 @@ async def test_setup_groups(
     event_group = await _create_event_group(event_group_repository)
     await event_group_repository.setup_groups(user.id, [event_group.id])
 
-    updated_user = await user_repository.get_user(user.id)
+    updated_user = await user_repository.read(user.id)
     assert len(updated_user.favorites_association) == 1
     user_x_group = updated_user.favorites_association[0]
     assert isinstance(user_x_group, UserXFavoriteGroupView)
@@ -46,7 +46,7 @@ async def test_batch_setup_groups(
     }
     await event_group_repository.batch_setup_groups(mapping)
 
-    updated_users = await user_repository.batch_get_user([user.id for user in users])
+    updated_users = await user_repository.batch_read([user.id for user in users])
     assert updated_users is not None
     assert isinstance(updated_users, list)
     assert len(updated_users) == 10
@@ -74,7 +74,7 @@ async def test_set_hidden(
 
     await event_group_repository.setup_groups(user.id, [event_group.id])
 
-    updated_user = await user_repository.get_user(user.id)
+    updated_user = await user_repository.read(user.id)
     assert updated_user.favorites_association is not None
     assert len(updated_user.favorites_association) == 1
     user_x_group = updated_user.favorites_association[0]
@@ -85,7 +85,7 @@ async def test_set_hidden(
 
     await event_group_repository.set_hidden(user.id, event_group.id, True)
 
-    updated_user = await user_repository.get_user(user.id)
+    updated_user = await user_repository.read(user.id)
     assert updated_user.favorites_association is not None
     assert len(updated_user.favorites_association) == 1
     user_x_group = updated_user.favorites_association[0]
