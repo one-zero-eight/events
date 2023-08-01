@@ -47,6 +47,17 @@ async def test_create_if_not_exists(user_repository: "AbstractUserRepository"):
 
 
 @pytest.mark.asyncio
+async def test_create_existing(
+    user_repository: "AbstractUserRepository",
+):
+    scheme = get_fake_user()
+    user = await user_repository.create_or_read(scheme)
+    hit = await user_repository.create_or_read(scheme)
+    assert user.id == hit.id
+    assert user.email == hit.email
+
+
+@pytest.mark.asyncio
 async def test_batch_create_user_if_not_exists(user_repository):
     _users = await _batch_create_user_if_not_exists(user_repository)
 
