@@ -6,7 +6,7 @@ __all__ = [
     "DescriptionMixin",
 ]
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import DeclarativeBase, declared_attr, relationship, Mapped, mapped_column
 
 
@@ -63,4 +63,4 @@ class NameMixin:
 
 
 class DescriptionMixin:
-    description: Mapped[str] = mapped_column(String(255), nullable=True)
+    description: Mapped[str] = mapped_column(Text, nullable=True)
