@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from src.schemas import CreateEventGroup, ViewEventGroup, ViewUser
+    from src.schemas import CreateEventGroup, ViewEventGroup
 
 
 class AbstractEventGroupRepository(metaclass=ABCMeta):
@@ -37,8 +37,4 @@ class AbstractEventGroupRepository(metaclass=ABCMeta):
 
     @abstractmethod
     async def batch_setup_groups(self, groups_mapping: dict[int, list[int]]):
-        ...
-
-    @abstractmethod
-    async def set_hidden(self, user_id: int, group_id: int, hide: bool = True) -> "ViewUser":
         ...

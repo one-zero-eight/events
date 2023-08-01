@@ -1,15 +1,13 @@
 __all__ = ["SqlEventGroupRepository"]
 
-from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as postgres_insert
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload
 
 from src.repositories.crud import CRUDFactory
 from src.repositories.event_groups.abc import AbstractEventGroupRepository
-from src.schemas import ViewEventGroup, CreateEventGroup, ViewUser, UpdateEventGroup
+from src.schemas import ViewEventGroup, CreateEventGroup, UpdateEventGroup
 from src.storages.sql import AbstractSQLAlchemyStorage
-from src.storages.sql.models import UserXFavoriteEventGroup, EventGroup, User
+from src.storages.sql.models import UserXFavoriteEventGroup, EventGroup
 
 CRUD = CRUDFactory(
     EventGroup,
@@ -97,30 +95,3 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
             )
             await session.execute(q)
             await session.commit()
-
-    async def set_hidden(self, user_id: int, group_id: int, hide: bool = True) -> "ViewUser":
-        async with self._create_session() as session:
-            # find favorite where user_id and group_id
-            q = (
-                select(UserXFavoriteEventGroup)
-                .where(UserXFavoriteEventGroup.user_id == user_id)
-                .where(UserXFavoriteEventGroup.group_id == group_id)
-            )
-
-            event_group = await session.scalar(q)
-
-            # set hidden
-            if event_group:
-                event_group.hidden = hide
-
-            # from table
-            q = (
-                select(User)
-                .where(User.id == user_id)
-                .options(
-                    joinedload(User.favorites_association),
-                )
-            )
-            user = await session.scalar(q)
-            await session.commit()
-            return ViewUser.from_orm(user)

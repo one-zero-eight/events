@@ -91,6 +91,7 @@ async def delete_favorite(
 async def hide_favorite(
     user_id: CURRENT_USER_ID_DEPENDENCY,
     event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
+    user_repository: USER_REPOSITORY_DEPENDENCY,
     group_id: int,
     hide: bool = True,
 ) -> ViewUser:
@@ -101,6 +102,6 @@ async def hide_favorite(
     if await event_group_repository.read(group_id) is None:
         raise UserNotFoundException()
 
-    updated_user = await event_group_repository.set_hidden(user_id=user_id, group_id=group_id, hide=hide)
+    updated_user = await user_repository.set_hidden(user_id=user_id, group_id=group_id, hide=hide)
     updated_user: ViewUser
     return updated_user

@@ -126,3 +126,30 @@ class SqlUserRepository(AbstractUserRepository):
             user = await session.scalar(SELECT_USER_BY_ID(user_id))
             await session.commit()
             return ViewUser.from_orm(user)
+
+    async def set_hidden(self, user_id: int, group_id: int, hide: bool = True) -> "ViewUser":
+        async with self._create_session() as session:
+            # find favorite where user_id and group_id
+            q = (
+                select(UserXFavoriteEventGroup)
+                .where(UserXFavoriteEventGroup.user_id == user_id)
+                .where(UserXFavoriteEventGroup.group_id == group_id)
+            )
+
+            event_group = await session.scalar(q)
+
+            # set hidden
+            if event_group:
+                event_group.hidden = hide
+
+            # from table
+            q = (
+                select(User)
+                .where(User.id == user_id)
+                .options(
+                    selectinload(User.favorites_association),
+                )
+            )
+            user = await session.scalar(q)
+            await session.commit()
+            return ViewUser.from_orm(user)

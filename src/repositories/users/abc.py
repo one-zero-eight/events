@@ -42,3 +42,7 @@ class AbstractUserRepository(metaclass=ABCMeta):
     @abstractmethod
     async def remove_favorite(self, user_id: int, favorite_id: int) -> "ViewUser":
         ...
+
+    @abstractmethod
+    async def set_hidden(self, user_id: int, group_id: int, hide: bool = True) -> "ViewUser":
+        ...
