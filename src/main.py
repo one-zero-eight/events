@@ -58,6 +58,7 @@ async def setup_repositories():
     from src.storages.sql import SQLAlchemyStorage
     from src.app.dependencies import Dependencies
 
+    # ------------------- Repositories Dependencies -------------------
     storage = SQLAlchemyStorage.from_url(settings.DB_URL.get_secret_value())
     user_repository = SqlUserRepository(storage)
     event_group_repository = SqlEventGroupRepository(storage)
@@ -70,6 +71,7 @@ async def setup_repositories():
 
     await storage.create_all()
 
+    # ------------------- Predefined data -------------------
     with (
         settings.PREDEFINED_TAGS_FILE.open(encoding="utf-8") as tags_file,
         settings.PREDEFINED_GROUPS_FILE.open(encoding="utf-8") as groups_file,
@@ -79,30 +81,35 @@ async def setup_repositories():
         groups_json = json.load(groups_file)
         tags_json = json.load(tags_file)
 
-    predefined_repositories = PredefinedRepository.from_jsons(users_json, groups_json, tags_json)
-    unique_tags = predefined_repositories.get_tags()
-    db_tags = await tag_repository.batch_create_or_read([CreateTag(**tag.dict()) for tag in unique_tags])
-    tags_mappping = {tag.alias: tag for tag in db_tags}
+    predefined_repository = PredefinedRepository.from_jsons(users_json, groups_json, tags_json)
+    predefined_tags = predefined_repository.get_tags()
+    predefined_event_groups = predefined_repository.get_event_groups()
+    predefined_users = predefined_repository.get_users()
 
-    unique_groups = predefined_repositories.get_groups()
-    groups_to_create = [CreateEventGroup(**group.dict()) for group in unique_groups]
+    _create_tags = [CreateTag(**tag.dict()) for tag in predefined_tags]
+    db_tags = await tag_repository.batch_create_or_read(_create_tags)
+    alias_x_tag = {tag.alias: tag for tag in db_tags}
 
-    db_groups = await event_group_repository.batch_create_or_read(groups_to_create)
-    path_x_group = {group.path: group for group in db_groups}
+    _create_event_groups = [CreateEventGroup(**group.dict()) for group in predefined_event_groups]
+    db_event_groups = await event_group_repository.batch_create_or_read(_create_event_groups)
+    alias_x_group = {group.alias: group for group in db_event_groups}
 
-    group_id_x_tag_ids = dict()
-    for i, group in enumerate(unique_groups):
-        group_id = db_groups[i].id
-        group_id_x_tag_ids[group_id] = [tags_mappping[tag].id for tag in group.tags]
+    _create_users = [CreateUser(**user.dict()) for user in predefined_users]
+    db_users = await user_repository.batch_create_or_read(_create_users)
 
-    await tag_repository.batch_add_tags_to_event_group(group_id_x_tag_ids)
+    event_group_id_x_tags_ids = dict()
+    for i, predefined_event_group in enumerate(predefined_event_groups):
+        db_event_group_id = db_event_groups[i].id
+        tag_ids = [alias_x_tag[tag_alias].id for tag_alias in predefined_event_group.tags]
+        event_group_id_x_tags_ids[db_event_group_id] = tag_ids
 
-    users = predefined_repositories.get_users()
-    db_users = await user_repository.batch_create_or_read([CreateUser(**user.dict()) for user in users])
+    await tag_repository.batch_add_tags_to_event_group(event_group_id_x_tags_ids)
+
     user_id_x_group_ids = dict()
-    for i, user in enumerate(users):
+    for i, user in enumerate(predefined_users):
         user_id = db_users[i].id
-        user_id_x_group_ids[user_id] = [path_x_group[group.path].id for group in user.groups]
+        user_id_x_group_ids[user_id] = [alias_x_group[group_alias].id for group_alias in user.groups]
+
     await event_group_repository.batch_setup_groups(user_id_x_group_ids)
 
 

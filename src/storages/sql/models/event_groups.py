@@ -14,7 +14,8 @@ if TYPE_CHECKING:
 
 class EventGroup(Base, IdMixin, TagsMixinFactory("event_groups", Base)):
     __tablename__ = "event_groups"
-    path: Mapped[str] = mapped_column(unique=True, nullable=True)
+    alias: Mapped[str] = mapped_column(String(255), unique=True)
+    path: Mapped[str] = mapped_column(nullable=True)
     name: Mapped[str] = mapped_column(String(255), nullable=True)
     description: Mapped[str] = mapped_column(Text(), nullable=True)
     satellite: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=True)

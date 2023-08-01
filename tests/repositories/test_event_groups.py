@@ -13,7 +13,7 @@ fake = Faker()
 
 def get_fake_event_group() -> "CreateEventGroup":
     fake_path = fake.slug()
-    return CreateEventGroup(name=fake.name(), path=fake_path, description=fake.slug())
+    return CreateEventGroup(alias=fake.slug(), name=fake.name(), path=fake_path, description=fake.slug())
 
 
 async def _create_event_group(event_group_repository: "AbstractEventGroupRepository") -> "ViewEventGroup":

@@ -54,7 +54,7 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
                 postgres_insert(EventGroup)
                 .values([group.dict() for group in groups])
                 .on_conflict_do_update(
-                    index_elements=[EventGroup.path],
+                    index_elements=[EventGroup.alias],
                     set_={"id": EventGroup.id},
                 )
                 .returning(EventGroup)

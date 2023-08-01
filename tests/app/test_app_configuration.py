@@ -1,3 +1,4 @@
+import random
 from pathlib import Path
 
 import pytest
@@ -38,27 +39,28 @@ def fake_paths(monkeysession):
 @pytest.fixture(scope="session", autouse=True)
 def fake_predefined_repository():
     def fake_group() -> JsonGroupStorage.PredefinedGroup:
-        return JsonGroupStorage.PredefinedGroup(name=fake.name(), description=fake.slug(), path=fake.slug())
+        return JsonGroupStorage.PredefinedGroup(
+            alias=fake.slug(), name=fake.name(), description=fake.slug(), path=fake.slug()
+        )
 
     def fake_tag() -> JsonTagStorage.Tag:
         return JsonTagStorage.Tag(alias=fake.slug(), name=fake.slug(), type=fake.slug())
 
     def fake_user() -> JsonUserStorage.InJsonUser:
-        return JsonUserStorage.InJsonUser(email=fake.email(), groups=[fake_group(), fake_group()])
+        return JsonUserStorage.InJsonUser(email=fake.email())
 
     fake_users = [fake_user() for _ in range(10)]
-    groups = list()
-    chosen_groups = set()
+    fake_groups = [fake_group() for _ in range(20)]
 
     for user in fake_users:
-        for group in user.groups:
-            if group.path not in chosen_groups:
-                chosen_groups.add(group.path)
-                groups.append(group)
+        groups_to_add = random.sample(fake_groups, random.randint(0, 5))
+        user.groups = [group.alias for group in groups_to_add]
 
     predefined_groups = []
-    for group in groups:
-        predefined_group = JsonGroupStorage.PredefinedGroup(name=group.name, path=group.path)
+    for group in fake_groups:
+        predefined_group = JsonGroupStorage.PredefinedGroup(
+            alias=group.alias, description=group.description, name=group.name, path=group.path
+        )
         predefined_groups.append(predefined_group)
 
     user_storage = JsonUserStorage(users=fake_users)

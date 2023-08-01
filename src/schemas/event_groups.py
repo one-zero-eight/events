@@ -16,7 +16,8 @@ class CreateEventGroup(BaseModel):
     Represents a group instance to be created.
     """
 
-    path: str
+    alias: str
+    path: Optional[str] = None
     name: Optional[str] = None
     description: Optional[str] = None
 
@@ -27,7 +28,8 @@ class ViewEventGroup(BaseModel):
     """
 
     id: int
-    path: str
+    alias: str
+    path: Optional[str] = None
     name: Optional[str] = None
     description: Optional[str] = None
     tags: list["ViewTag"] = Field(default_factory=list)
@@ -48,6 +50,7 @@ class UpdateEventGroup(BaseModel):
     Represents a group instance to be updated.
     """
 
+    alias: Optional[str] = None
     name: Optional[str] = None
     description: Optional[str] = None
     path: Optional[str] = None
