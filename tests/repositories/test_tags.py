@@ -9,7 +9,14 @@ fake = Faker()
 
 
 def get_fake_tag() -> "CreateTag":
-    return CreateTag(alias=fake.slug(), name=fake.name(), type=fake.slug(), satellite=fake.json(num_rows=1))
+    return CreateTag(
+        alias=fake.slug(),
+        name=fake.name(),
+        type=fake.slug(),
+        satellite={
+            "meta": fake.slug(),
+        },
+    )
 
 
 async def _create_tag(tag_repository) -> "ViewTag":
@@ -98,7 +105,7 @@ async def test_update(tag_repository):
     tag_scheme = get_fake_tag()
     tag = await tag_repository.create_or_read(tag_scheme)
     assert tag is not None
-    update_scheme = UpdateTag(name=fake.slug())
+    update_scheme = UpdateTag(name=fake.slug(), satellite={"metadata": "updated metadata"})
     updated_tag = await tag_repository.update(tag.id, update_scheme)
     assert updated_tag.id == tag.id
     assert updated_tag.name != tag.name
