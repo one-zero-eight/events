@@ -172,6 +172,9 @@ cython_debug/
 innopolis_user_data.json
 predefined_event_groups.json
 predefined_tags.json
+# Ignore predefined files
+src/repositories/predefined/ics/**/*.ics
+src/repositories/predefined/ics/*.json
 
 # Ignore temporary files
 *.tmp

@@ -1,9 +1,11 @@
 __all__ = ["PredefinedRepository", "JsonUserStorage", "JsonGroupStorage", "JsonTagStorage"]
 
+from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseModel, Field, parse_obj_as
 from pydantic import validator
+from src.config import settings
 
 
 class JsonUserStorage(BaseModel):
@@ -79,3 +81,7 @@ class PredefinedRepository:
 
     def get_tags(self) -> list[JsonTagStorage.Tag]:
         return self.tag_storage.tags.copy()
+
+    @staticmethod
+    def locate_ics_by_path(path: str) -> Path:
+        return settings.PREDEFINED_ICS_DIR / path
