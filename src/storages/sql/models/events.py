@@ -1,15 +1,15 @@
-__all__ = ["Event"]
+__all__ = ["Event", "EventPatch"]
 
 import datetime
 
 from sqlalchemy import ForeignKey, Text, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.storages.sql.__mixin__ import IdMixin
+from src.storages.sql.__mixin__ import IdMixin, NameMixin, DescriptionMixin
 from src.storages.sql.models import Base
 
 
-class Event(Base, IdMixin):
+class Event(Base, IdMixin, NameMixin, DescriptionMixin):
     __tablename__ = "events"
 
     patches: Mapped[list["EventPatch"]] = relationship(
