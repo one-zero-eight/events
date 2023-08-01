@@ -50,10 +50,8 @@ app.add_middleware(SessionMiddleware, secret_key=settings.SESSION_SECRET_KEY.get
 
 
 async def setup_repositories():
-    import json
-    from src.schemas import CreateEventGroup, CreateUser, CreateTag
     from src.repositories.event_groups import SqlEventGroupRepository
-    from src.repositories.users import SqlUserRepository, PredefinedRepository
+    from src.repositories.users import SqlUserRepository
     from src.repositories.tags import SqlTagRepository
     from src.storages.sql import SQLAlchemyStorage
     from src.app.dependencies import Dependencies
@@ -70,6 +68,19 @@ async def setup_repositories():
     Dependencies.set_tag_repository(tag_repository)
 
     await storage.create_all()
+
+
+async def setup_predefined_data():
+    import json
+    from src.schemas import CreateEventGroup, CreateUser, CreateTag
+    from src.repositories.predefined import PredefinedRepository
+
+    # get repositories
+    from src.app.dependencies import Dependencies
+
+    tag_repository = Dependencies.get_tag_repository()
+    event_group_repository = Dependencies.get_event_group_repository()
+    user_repository = Dependencies.get_user_repository()
 
     # ------------------- Predefined data -------------------
     with (
@@ -116,6 +127,7 @@ async def setup_repositories():
 @app.on_event("startup")
 async def startup_event():
     await setup_repositories()
+    await setup_predefined_data()
 
 
 @app.on_event("shutdown")
