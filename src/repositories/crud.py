@@ -142,7 +142,7 @@ def CRUDFactory(
         # ^^^^^^^^^^^^^^^^^^ READ ^^^^^^^^^^^^^^^^^^^ #
         @staticmethod
         async def update(session: AsyncSession, data: UpdateScheme, **pkeys) -> ViewScheme:
-            q = update(Model).where(pkey_clause(pkeys)).values(**data.dict()).returning(Model)
+            q = update(Model).where(pkey_clause(pkeys)).values(**data.dict(exclude_none=True)).returning(Model)
             if get_options:
                 q = q.options(*get_options)
             obj = await session.scalar(q)
