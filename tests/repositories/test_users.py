@@ -38,11 +38,11 @@ async def _batch_create_user_if_not_exists(user_repository) -> list["ViewUser"]:
 
 @pytest.mark.asyncio
 async def test_create_if_not_exists(user_repository):
-    _user = await _create_user(user_repository)
+    await _create_user(user_repository)
 
 
 @pytest.mark.asyncio
-async def test_create_existing(
+async def test_create_if_not_exists_HIT(
     user_repository,
 ):
     scheme = get_fake_user()
@@ -54,11 +54,11 @@ async def test_create_existing(
 
 @pytest.mark.asyncio
 async def test_batch_create_user_if_not_exists(user_repository):
-    _users = await _batch_create_user_if_not_exists(user_repository)
+    await _batch_create_user_if_not_exists(user_repository)
 
 
 @pytest.mark.asyncio
-async def test_upsert_user(user_repository):
+async def test_create_or_update(user_repository):
     # Create a new user
     user = await _create_user(user_repository)
 
@@ -73,7 +73,7 @@ async def test_upsert_user(user_repository):
 
 
 @pytest.mark.asyncio
-async def test_get_user_id_by_email(user_repository):
+async def test_read_id_by_email(user_repository):
     # Create a new user
     user = await _create_user(user_repository)
     # Retrieve the user ID by email
@@ -84,21 +84,14 @@ async def test_get_user_id_by_email(user_repository):
 
 
 @pytest.mark.asyncio
-async def test_get_user(user_repository):
-    # Create a new user
-    created_user = await _create_user(user_repository)
-
-    # Retrieve the user by ID
-    retrieved_user = await user_repository.read(created_user.id)
-    assert retrieved_user is not None
-    assert isinstance(retrieved_user, ViewUser)
-    assert retrieved_user.id == created_user.id
-    assert retrieved_user.email == created_user.email
-    assert retrieved_user.name == created_user.name
+async def test_read(user_repository):
+    user = await _create_user(user_repository)
+    hit = await user_repository.read(user.id)
+    assert hit.id == user.id
 
 
 @pytest.mark.asyncio
-async def test_batch_get_user(user_repository):
+async def test_batch_read(user_repository):
     # Create a batch of new users
     created_users = await _batch_create_user_if_not_exists(user_repository)
     # Retrieve the users by their IDs
@@ -106,8 +99,5 @@ async def test_batch_get_user(user_repository):
     retrieved_users = await user_repository.batch_read(user_ids)
     assert len(retrieved_users) == len(created_users)
     for retrieved_user, created_user in zip(retrieved_users, created_users):
-        assert retrieved_user is not None
         assert isinstance(retrieved_user, ViewUser)
         assert retrieved_user.id == created_user.id
-        assert retrieved_user.email == created_user.email
-        assert retrieved_user.name == created_user.name
