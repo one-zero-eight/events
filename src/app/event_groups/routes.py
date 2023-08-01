@@ -1,7 +1,10 @@
+from starlette.responses import FileResponse
+
 from src.app.dependencies import EVENT_GROUP_REPOSITORY_DEPENDENCY
 from src.app.event_groups import router
 from src.exceptions import EventGroupNotFoundException
 from src.schemas.event_groups import ViewEventGroup, ListEventGroupsResponse
+from src.repositories.predefined.repository import PredefinedRepository
 
 
 @router.get(
@@ -46,6 +49,29 @@ async def get_event_group(
         raise EventGroupNotFoundException()
 
     return event_group
+
+
+@router.get(
+    "/{event_group_id}/ics",
+    responses={
+        200: {"description": ".ics file"},
+        404: {"description": "Event group not found"},
+    },
+)
+async def get_event_group_ics(event_group_id: int, event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY):
+    """
+    Get event group .ics file by id
+    """
+    event_group = await event_group_repository.read(event_group_id)
+
+    if event_group is None:
+        raise EventGroupNotFoundException()
+    if event_group.path:
+        ics_path = PredefinedRepository.locate_ics_by_path(event_group.path)
+        return FileResponse(ics_path)
+    else:
+        # TODO: create ics file on the fly from events connected to event group
+        raise NotImplementedError()
 
 
 @router.get(
