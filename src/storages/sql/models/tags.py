@@ -5,11 +5,11 @@ from typing import Any
 from sqlalchemy import JSON, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.storages.sql.__mixin__ import IdMixin, OwnershipsMixinFactory
+from src.storages.sql.__mixin__ import IdMixin, NameMixin, OwnershipsMixinFactory, DescriptionMixin
 from src.storages.sql.models import Base
 
 
-class Tag(Base, IdMixin, OwnershipsMixinFactory("tags", Base)):
+class Tag(Base, IdMixin, NameMixin, DescriptionMixin, OwnershipsMixinFactory("tags", Base)):
     __tags_associations__ = dict()
     __tablename__ = "tags"
 
@@ -21,5 +21,4 @@ class Tag(Base, IdMixin, OwnershipsMixinFactory("tags", Base)):
     type: Mapped[str] = mapped_column(nullable=True)
     # constraint on pair (alias, type)
     comb_alias_type_cnst = UniqueConstraint(alias, type)
-    name: Mapped[str] = mapped_column(nullable=True)
     satellite: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=True)
