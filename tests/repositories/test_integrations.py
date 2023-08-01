@@ -4,15 +4,16 @@ from typing import TYPE_CHECKING
 import pytest
 from faker import Faker
 
-from src.schemas.event_groups import UserXFavoriteGroupView
+from src.schemas import ViewTag
+from src.schemas.event_groups import UserXFavoriteGroupView, ViewEventGroup
 from src.schemas.users import ViewUser
 from tests.repositories.test_event_groups import _create_event_group, _batch_create_event_group
 from tests.repositories.test_users import _create_user, _batch_create_user_if_not_exists
+from tests.repositories.test_tags import _create_tag, _batch_create_tag
 
 if TYPE_CHECKING:
     from src.repositories.users import AbstractUserRepository
     from src.repositories.event_groups import AbstractEventGroupRepository
-
 fake = Faker()
 
 
@@ -146,3 +147,57 @@ async def test_remove_favorite(
     assert updated_user.name == user.name
     assert updated_user.favorites_association is not None
     assert len(updated_user.favorites_association) == 0
+
+
+@pytest.mark.asyncio
+async def test_add_tags_to_event_group(event_group_repository, tag_repository):
+    event_group = await _create_event_group(event_group_repository)
+    tags = await _batch_create_tag(tag_repository)
+    await tag_repository.add_tags_to_event_group(event_group.id, [tag.id for tag in tags])
+
+    updated_event_group = await event_group_repository.read(event_group.id)
+    assert updated_event_group is not None
+    assert isinstance(updated_event_group, ViewEventGroup)
+    assert updated_event_group.id == event_group.id
+    assert updated_event_group.name == event_group.name
+    assert updated_event_group.description == event_group.description
+    assert updated_event_group.tags is not None
+    assert len(updated_event_group.tags) == len(tags)
+    for tag in updated_event_group.tags:
+        assert isinstance(tag, ViewTag)
+        assert tag.id in {tag.id for tag in tags}
+        assert tag.name in {tag.name for tag in tags}
+
+
+@pytest.mark.asyncio
+async def test_batch_add_tags_to_event_group(event_group_repository, tag_repository):
+    event_groups = await _batch_create_event_group(event_group_repository)
+    tags = await _batch_create_tag(tag_repository)
+    mapping = {}
+    for event_group in event_groups:
+        chosen = random.sample(tags, random.randint(0, len(tags) // 2))
+        mapping[event_group.id] = [tag.id for tag in chosen]
+    await tag_repository.batch_add_tags_to_event_group(mapping)
+
+    for event_group in event_groups:
+        updated_event_group = await event_group_repository.read(event_group.id)
+        assert len(updated_event_group.tags) == len(mapping[event_group.id])
+        for tag in updated_event_group.tags:
+            assert isinstance(tag, ViewTag)
+            assert tag.id in mapping[event_group.id]
+            assert tag.name in {tag.name for tag in tags}
+
+
+@pytest.mark.asyncio
+async def test_remove_tags_from_event_group(event_group_repository, tag_repository):
+    event_group = await _create_event_group(event_group_repository)
+    tag = await _create_tag(tag_repository)
+
+    await tag_repository.add_tags_to_event_group(event_group.id, [tag.id])
+    updated_event_group = await event_group_repository.read(event_group.id)
+    assert len(updated_event_group.tags) == 1
+    assert updated_event_group.tags[0].id == tag.id
+
+    await tag_repository.remove_tags_from_event_group(event_group.id, [tag.id])
+    updated_event_group = await event_group_repository.read(event_group.id)
+    assert len(updated_event_group.tags) == 0
