@@ -7,15 +7,14 @@ __all__ = [
     "Dependencies",
 ]
 
-from typing import TYPE_CHECKING, Annotated, Callable
+from typing import Annotated, Callable
 
 from fastapi import Depends
 
-if TYPE_CHECKING:
-    from src.repositories.users import AbstractUserRepository
-    from src.repositories.event_groups import AbstractEventGroupRepository
-    from src.repositories.tags import AbstractTagRepository
-    from src.storages.sql.storage import AbstractSQLAlchemyStorage
+from src.repositories.event_groups import AbstractEventGroupRepository
+from src.repositories.tags import AbstractTagRepository
+from src.repositories.users import AbstractUserRepository
+from src.storages.sql.storage import AbstractSQLAlchemyStorage
 
 
 class Dependencies:
@@ -61,12 +60,12 @@ class Dependencies:
     is_verified_parser: Callable[..., bool]
 
 
-STORAGE_DEPENDENCY = Annotated["AbstractSQLAlchemyStorage", Depends(Dependencies.get_storage)]
-USER_REPOSITORY_DEPENDENCY = Annotated["AbstractUserRepository", Depends(Dependencies.get_user_repository)]
+STORAGE_DEPENDENCY = Annotated[AbstractSQLAlchemyStorage, Depends(Dependencies.get_storage)]
+USER_REPOSITORY_DEPENDENCY = Annotated[AbstractUserRepository, Depends(Dependencies.get_user_repository)]
 EVENT_GROUP_REPOSITORY_DEPENDENCY = Annotated[
-    "AbstractEventGroupRepository", Depends(Dependencies.get_event_group_repository)
+    AbstractEventGroupRepository, Depends(Dependencies.get_event_group_repository)
 ]
-TAG_REPOSITORY_DEPENDENCY = Annotated["AbstractTagRepository", Depends(Dependencies.get_tag_repository)]
+TAG_REPOSITORY_DEPENDENCY = Annotated[AbstractTagRepository, Depends(Dependencies.get_tag_repository)]
 
 from src.app.auth.dependencies import get_current_user_id, is_verified_parser  # noqa: E402
 
