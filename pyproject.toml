@@ -13,6 +13,7 @@ pydantic = { extras = ["dotenv"], version = "^1.10.11" }
 fastapi = { extras = ["all"], version = "^0.99.1" }
 authlib = "^1.2.1"
 cryptography = "^41.0.2"
+icalendar = "^5.0.7"
 
 [tool.poetry.group.prod.dependencies]
 gunicorn = "20.1.0"
