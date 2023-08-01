@@ -4,7 +4,7 @@ import pytest
 from faker import Faker
 
 from src.schemas import AddEventPatch
-from src.schemas.events import CreateEvent, ViewEvent, UpdateEvent, ViewEventPatch
+from src.schemas.events import CreateEvent, ViewEvent, UpdateEvent, ViewEventPatch, UpdateEventPatch
 
 if TYPE_CHECKING:
     from src.repositories.events import AbstractEventRepository
@@ -133,3 +133,15 @@ async def test_delete(event_repository):
     await event_repository.delete(event.id)
     event = await event_repository.read(event.id)
     assert event is None
+
+
+@pytest.mark.asyncio
+async def test_update_patch(event_repository):
+    event = await _create_event(event_repository)
+    event_patch = get_fake_event_patch()
+    event_patch = await event_repository.add_patch(event.id, event_patch)
+    updated_event_patch = await event_repository.update_patch(event_patch.id, UpdateEventPatch(summary=fake.slug()))
+    assert updated_event_patch is not None
+    assert isinstance(updated_event_patch, ViewEventPatch)
+    assert updated_event_patch.id == event_patch.id
+    assert updated_event_patch.summary != event_patch.summary
