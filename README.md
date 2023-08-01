@@ -17,7 +17,6 @@
 - [How to use](#how-to-use)
 - [Features list](#features-list)
 - [Project Installation](#project-installation)
-- [Project Structure](#project-structure)
 
 ## Project Description
 
@@ -88,62 +87,3 @@ Set up PyCharm integrations:
 
 1. Black formatter ([docs](https://black.readthedocs.io/en/stable/integrations/editors.html#pycharm-intellij-idea)).
 2. Ruff ([docs](https://beta.ruff.rs/docs/editor-integrations/#pycharm-unofficial)).
-
-## Project Structure
-
-```
-*
-| - LICENSE
-| - README.md
-| - docker-compose.yml
-| - poetry.lock
-| - pyproject.toml   # dependencies and configuration
-+-- deploy           # deployment scripts and dockerfile
-|   - Dockerfile
-|   - docker-entrypoint.sh
-+-- src                 # all source code
-|   - config.py         # configuration for the project
-|   - dev.py            # run development server
-|   - exceptions.py     # custom exceptions
-|   - main.py           # entrypoint for the FastAPI
-|   +-- app             # FastAPI application
-|   |   - dependencies.py  # dependencies for the application (Depends)
-|   |   - routers.py       # include all routers for the API
-|   |   +-- auth           # authentication module
-|   |   |   - common.py
-|   |   |   - dependencies.py # dependencies to extract user data from token
-|   |   |   - dev.py          # auth routes for development
-|   |   |   - innopolis.py    # auth routes for Innopolis SSO
-|   |   |   - jwt.py
-|   |   +-- event_groups   # event groups module
-|   |   |   - routes.py       # routes for event groups router
-|   |   +-- users          # users module
-|   |       - routes.py       # routes for users router
-|   +-- repositories    # repositories for data access layer
-|   |   +-- event_groups   # event groups repository
-|   |   |   - abc.py          # abstract base class for event groups repository
-|   |   |   - repository.py   # repository implementation for event groups
-|   |   |
-|   |   +-- users       # users repository
-|   |       - abc.py       # abstract base class for users repository
-|   |       - sql_repository.py        # repository implementation for users
-|   |       - json_repository.py       # temporary repository to extract user data from jsons
-|   |       - (innopolis_user_data.json) # predefined user data from Innopolis official lists
-|   |       - (predefined_groups.json)   # predefined groups for users
-|   +-- schemas         # domain models for the application (pydantic models)
-|   |   - event_groups.py  # schemas for event groups and related models
-|   |   - users.py         # schemas for users
-|   +-- storages        # data access layer
-|       +-- sql            # SQL storages
-|           - storage.py   # class for SQL storage
-|           +-- models        # SQLAlchemy models
-|               - base.py     # base class for SQLAlchemy models
-|               - event_groups.py
-|               - users.py
-+-- tests               # tests for the project
-    +-- app
-    |   - test_app_configuration.py
-    +-- repositories
-        - test_event_groups.py
-        - test_users.py
-```
