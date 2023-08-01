@@ -100,10 +100,10 @@ class SqlTagRepository(AbstractTagRepository):
 
     async def add_tags_to_event_group(self, event_group_id: int, tag_ids: list[int]) -> None:
         async with self._create_session() as session:
-            table = EventGroup.__tags_mixin_table__
+            table = Tag.__tags_associations__[EventGroup.__tablename__]
             q = (
                 insert(table)
-                .values([{"event_group_id": event_group_id, "tag_id": tag_id} for tag_id in tag_ids])
+                .values([{"object_id": event_group_id, "tag_id": tag_id} for tag_id in tag_ids])
                 .on_conflict_do_nothing()
             )
             await session.execute(q)
@@ -111,7 +111,7 @@ class SqlTagRepository(AbstractTagRepository):
 
     async def batch_add_tags_to_event_group(self, tags_mapping: dict[int, list[int]]) -> None:
         async with self._create_session() as session:
-            table = EventGroup.TagAssociation.__table__
+            table = Tag.__tags_associations__[EventGroup.__tablename__]
 
             values = [
                 {
@@ -129,7 +129,7 @@ class SqlTagRepository(AbstractTagRepository):
 
     async def remove_tags_from_event_group(self, event_group_id: int, tag_ids: list[int]) -> None:
         async with self._create_session() as session:
-            table = EventGroup.TagAssociation.__table__
-            q = delete(table).where(table.c.object_id == event_group_id).where(table.c.tag_id.in_(tag_ids))
+            table = Tag.__tags_associations__[EventGroup.__tablename__]
+            q = delete(table).where(table.object_id == event_group_id).where(table.tag_id.in_(tag_ids))
             await session.execute(q)
             await session.commit()
