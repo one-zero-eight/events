@@ -1,8 +1,4 @@
-__all__ = [
-    "PredefinedRepository",
-    "JsonUserStorage",
-    "JsonGroupStorage",
-]
+__all__ = ["PredefinedRepository", "JsonUserStorage", "JsonGroupStorage", "JsonTagStorage"]
 
 from typing import Optional
 
