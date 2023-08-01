@@ -1,13 +1,8 @@
-from typing import TYPE_CHECKING
-
 import pytest
 from faker import Faker
 
 from src.schemas import AddEventPatch
 from src.schemas.events import CreateEvent, ViewEvent, UpdateEvent, ViewEventPatch, UpdateEventPatch
-
-if TYPE_CHECKING:
-    from src.repositories.events import AbstractEventRepository
 
 fake = Faker()
 
@@ -30,7 +25,7 @@ def get_fake_event_patch() -> "AddEventPatch":
     )
 
 
-async def _create_event(event_repository: "AbstractEventRepository") -> "ViewEvent":
+async def _create_event(event_repository) -> "ViewEvent":
     event_schema = get_fake_event()
     event = await event_repository.create(event_schema)
     assert event is not None

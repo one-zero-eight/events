@@ -1,13 +1,9 @@
 import pytest
 from faker import Faker
 
-from src.schemas.tags import CreateTag, ViewTag, UpdateTag
 from src.schemas import OwnershipEnum
+from src.schemas.tags import CreateTag, ViewTag, UpdateTag
 from tests.repositories.test_users import _create_user
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from src.repositories.tags import AbstractTagRepository
 
 fake = Faker()
 
@@ -16,7 +12,7 @@ def get_fake_tag() -> "CreateTag":
     return CreateTag(alias=fake.slug(), name=fake.name(), type=fake.slug(), satellite=fake.json(num_rows=1))
 
 
-async def _create_tag(tag_repository: "AbstractTagRepository") -> "ViewTag":
+async def _create_tag(tag_repository) -> "ViewTag":
     tag_schema = get_fake_tag()
     tag = await tag_repository.create_or_read(tag_schema)
     assert tag is not None
@@ -26,7 +22,7 @@ async def _create_tag(tag_repository: "AbstractTagRepository") -> "ViewTag":
     return tag
 
 
-async def _batch_create_tag(tag_repository: "AbstractTagRepository") -> list["ViewTag"]:
+async def _batch_create_tag(tag_repository) -> list["ViewTag"]:
     tag_schemas = [get_fake_tag() for _ in range(10)]
     tags = await tag_repository.batch_create_or_read(tag_schemas)
 

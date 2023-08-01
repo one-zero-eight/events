@@ -1,5 +1,4 @@
 import random
-from typing import TYPE_CHECKING
 
 import pytest
 from faker import Faker
@@ -8,20 +7,15 @@ from src.schemas import ViewTag
 from src.schemas.event_groups import UserXFavoriteGroupView, ViewEventGroup
 from src.schemas.users import ViewUser
 from tests.repositories.test_event_groups import _create_event_group, _batch_create_event_group
-from tests.repositories.test_users import _create_user, _batch_create_user_if_not_exists
 from tests.repositories.test_tags import _create_tag, _batch_create_tag
+from tests.repositories.test_users import _create_user, _batch_create_user_if_not_exists
 
-if TYPE_CHECKING:
-    from src.repositories.users import AbstractUserRepository
-    from src.repositories.event_groups import AbstractEventGroupRepository
 fake = Faker()
 
 
 #   INTEGRATION BETWEEN USERS AND EVENT_GROUPS
 @pytest.mark.asyncio
-async def test_setup_groups(
-    event_group_repository: "AbstractEventGroupRepository", user_repository: "AbstractUserRepository"
-):
+async def test_setup_groups(event_group_repository, user_repository):
     user = await _create_user(user_repository)
     event_group = await _create_event_group(event_group_repository)
     await event_group_repository.setup_groups(user.id, [event_group.id])
@@ -36,9 +30,7 @@ async def test_setup_groups(
 
 
 @pytest.mark.asyncio
-async def test_batch_setup_groups(
-    event_group_repository: "AbstractEventGroupRepository", user_repository: "AbstractUserRepository"
-):
+async def test_batch_setup_groups(event_group_repository, user_repository):
     users = await _batch_create_user_if_not_exists(user_repository)
     event_groups = await _batch_create_event_group(event_group_repository)
     # random mapping
@@ -67,9 +59,7 @@ async def test_batch_setup_groups(
 
 
 @pytest.mark.asyncio
-async def test_set_hidden(
-    event_group_repository: "AbstractEventGroupRepository", user_repository: "AbstractUserRepository"
-):
+async def test_set_hidden(event_group_repository, user_repository):
     user = await _create_user(user_repository)
     event_group = await _create_event_group(event_group_repository)
 
@@ -97,9 +87,7 @@ async def test_set_hidden(
 
 
 @pytest.mark.asyncio
-async def test_add_favorite(
-    event_group_repository: "AbstractEventGroupRepository", user_repository: "AbstractUserRepository"
-):
+async def test_add_favorite(event_group_repository, user_repository):
     user = await _create_user(user_repository)
     event_group = await _create_event_group(event_group_repository)
 
@@ -119,9 +107,7 @@ async def test_add_favorite(
 
 
 @pytest.mark.asyncio
-async def test_add_favorite_with_wrong_group(
-    event_group_repository: "AbstractEventGroupRepository", user_repository: "AbstractUserRepository"
-):
+async def test_add_favorite_with_wrong_group(event_group_repository, user_repository):
     from src.exceptions import DBEventGroupDoesNotExistInDb
 
     user = await _create_user(user_repository)
@@ -131,9 +117,7 @@ async def test_add_favorite_with_wrong_group(
 
 
 @pytest.mark.asyncio
-async def test_remove_favorite(
-    event_group_repository: "AbstractEventGroupRepository", user_repository: "AbstractUserRepository"
-):
+async def test_remove_favorite(event_group_repository, user_repository):
     user = await _create_user(user_repository)
     event_group = await _create_event_group(event_group_repository)
 

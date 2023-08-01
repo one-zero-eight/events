@@ -3,11 +3,6 @@ from faker import Faker
 
 from src.schemas.event_groups import CreateEventGroup, ViewEventGroup
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from src.repositories.event_groups import AbstractEventGroupRepository
-
 fake = Faker()
 
 
@@ -16,7 +11,7 @@ def get_fake_event_group() -> "CreateEventGroup":
     return CreateEventGroup(alias=fake.slug(), name=fake.name(), path=fake_path, description=fake.slug())
 
 
-async def _create_event_group(event_group_repository: "AbstractEventGroupRepository") -> "ViewEventGroup":
+async def _create_event_group(event_group_repository) -> "ViewEventGroup":
     event_group_schema = get_fake_event_group()
     event_group = await event_group_repository.create_or_read(event_group_schema)
     assert event_group is not None
@@ -27,7 +22,7 @@ async def _create_event_group(event_group_repository: "AbstractEventGroupReposit
     return event_group
 
 
-async def _batch_create_event_group(event_group_repository: "AbstractEventGroupRepository") -> list["ViewEventGroup"]:
+async def _batch_create_event_group(event_group_repository) -> list["ViewEventGroup"]:
     event_group_schemas = [get_fake_event_group() for _ in range(10)]
     event_groups = await event_group_repository.batch_create_or_read(event_group_schemas)
 

@@ -3,11 +3,6 @@ from faker import Faker
 
 from src.schemas.users import CreateUser, ViewUser
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from src.repositories.users import AbstractUserRepository
-
 fake = Faker()
 
 
@@ -15,7 +10,7 @@ def get_fake_user() -> CreateUser:
     return CreateUser(email=fake.email(), name=fake.name())
 
 
-async def _create_user(user_repository: "AbstractUserRepository") -> "ViewUser":
+async def _create_user(user_repository) -> "ViewUser":
     user_schema = get_fake_user()
     user = await user_repository.create_or_read(user_schema)
     assert user is not None
@@ -26,7 +21,7 @@ async def _create_user(user_repository: "AbstractUserRepository") -> "ViewUser":
     return user
 
 
-async def _batch_create_user_if_not_exists(user_repository: "AbstractUserRepository") -> list["ViewUser"]:
+async def _batch_create_user_if_not_exists(user_repository) -> list["ViewUser"]:
     # Create a batch of new users
     user_schemas = [get_fake_user() for _ in range(10)]
     users = await user_repository.batch_create_or_read(user_schemas)
@@ -42,13 +37,13 @@ async def _batch_create_user_if_not_exists(user_repository: "AbstractUserReposit
 
 
 @pytest.mark.asyncio
-async def test_create_if_not_exists(user_repository: "AbstractUserRepository"):
+async def test_create_if_not_exists(user_repository):
     _user = await _create_user(user_repository)
 
 
 @pytest.mark.asyncio
 async def test_create_existing(
-    user_repository: "AbstractUserRepository",
+    user_repository,
 ):
     scheme = get_fake_user()
     user = await user_repository.create_or_read(scheme)
