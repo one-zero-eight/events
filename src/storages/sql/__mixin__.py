@@ -2,6 +2,8 @@ __all__ = [
     "TagsMixinFactory",
     "OwnershipsMixinFactory",
     "IdMixin",
+    "NameMixin",
+    "DescriptionMixin",
 ]
 
 from sqlalchemy import ForeignKey, String
@@ -54,3 +56,11 @@ def OwnershipsMixinFactory(tablename: str, Base: type[DeclarativeBase]):
 
 class IdMixin:
     id: Mapped[int] = mapped_column(primary_key=True)
+
+
+class NameMixin:
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+
+
+class DescriptionMixin:
+    description: Mapped[str] = mapped_column(String(255), nullable=True)
