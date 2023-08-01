@@ -37,6 +37,27 @@ async def _batch_create_tag(tag_repository) -> list["ViewTag"]:
     return tags
 
 
+# ----------------- CRUD ----------------- #
+
+
+@pytest.mark.asyncio
+async def test_create_if_not_exists(tag_repository):
+    await _create_tag(tag_repository)
+
+
+@pytest.mark.asyncio
+async def test_create_if_not_exists_HIT(tag_repository):
+    tag_schema = get_fake_tag()
+    tag = await tag_repository.create_or_read(tag_schema)
+    hit = await tag_repository.create_or_read(tag_schema)
+    assert tag.id == hit.id
+
+
+@pytest.mark.asyncio
+async def test_batch_create_tag_if_not_exists(tag_repository):
+    await _batch_create_tag(tag_repository)
+
+
 @pytest.mark.asyncio
 async def test_read(tag_repository):
     tag = await _create_tag(tag_repository)
@@ -73,23 +94,25 @@ async def test_read_by_name(tag_repository):
 
 
 @pytest.mark.asyncio
-async def test_create_if_not_exists(tag_repository):
-    await _create_tag(tag_repository)
+async def test_update(tag_repository):
+    tag_scheme = get_fake_tag()
+    tag = await tag_repository.create_or_read(tag_scheme)
+    assert tag is not None
+    update_scheme = UpdateTag(name=fake.slug())
+    updated_tag = await tag_repository.update(tag.id, update_scheme)
+    assert updated_tag.id == tag.id
+    assert updated_tag.name != tag.name
 
 
 @pytest.mark.asyncio
-async def test_create_if_not_exists_HIT(tag_repository):
-    tag_schema = get_fake_tag()
-    tag = await tag_repository.create_or_read(tag_schema)
-    hit = await tag_repository.create_or_read(tag_schema)
-    assert tag.id == hit.id
+async def test_delete(tag_repository):
+    tag = await _create_tag(tag_repository)
+    await tag_repository.delete(tag.id)
+    tag_by_id = await tag_repository.read(tag.id)
+    assert tag_by_id is None
 
 
-@pytest.mark.asyncio
-async def test_batch_create_tag_if_not_exists(tag_repository):
-    await _batch_create_tag(tag_repository)
-
-
+# ^^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^^ #
 @pytest.mark.asyncio
 async def test_setup_ownership(tag_repository, user_repository):
     user = await _create_user(user_repository)
@@ -106,22 +129,3 @@ async def test_setup_ownership(tag_repository, user_repository):
     updated_tag = await tag_repository.read(tag.id)
     assert updated_tag is not None
     assert len(updated_tag.ownerships) == 0
-
-
-@pytest.mark.asyncio
-async def test_delete(tag_repository):
-    tag = await _create_tag(tag_repository)
-    await tag_repository.delete(tag.id)
-    tag_by_id = await tag_repository.read(tag.id)
-    assert tag_by_id is None
-
-
-@pytest.mark.asyncio
-async def test_update(tag_repository):
-    tag_scheme = get_fake_tag()
-    tag = await tag_repository.create_or_read(tag_scheme)
-    assert tag is not None
-    update_scheme = UpdateTag(name=fake.slug())
-    updated_tag = await tag_repository.update(tag.id, update_scheme)
-    assert updated_tag.id == tag.id
-    assert updated_tag.name != tag.name

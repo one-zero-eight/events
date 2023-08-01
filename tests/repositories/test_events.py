@@ -35,21 +35,12 @@ async def _create_event(event_repository) -> "ViewEvent":
     return event
 
 
+# ------------------- CRUD ------------------- #
+
+
 @pytest.mark.asyncio
 async def test_create(event_repository):
     await _create_event(event_repository)
-
-
-@pytest.mark.asyncio
-async def test_add_patch(event_repository):
-    event = await _create_event(event_repository)
-    event_patch_scheme = get_fake_event_patch()
-    event_patch = await event_repository.add_patch(event.id, event_patch_scheme)
-    assert event_patch is not None
-    assert isinstance(event_patch, ViewEventPatch)
-    assert event_patch.id is not None
-    assert event_patch.summary == event_patch_scheme.summary
-    assert event_patch.parent_id == event.id
 
 
 @pytest.mark.asyncio
@@ -74,23 +65,6 @@ async def test_read(event_repository):
 
 
 @pytest.mark.asyncio
-async def test_read_patches(event_repository):
-    scheme = get_fake_event()
-    scheme.patches = [
-        AddEventPatch(**fake_event_patch.dict()) for fake_event_patch in [get_fake_event_patch() for _ in range(10)]
-    ]
-
-    event = await event_repository.create(scheme)
-    patches = await event_repository.read_patches(event.id)
-    assert isinstance(patches, list)
-    assert len(patches) == len(scheme.patches)
-    for patch in patches:
-        assert isinstance(patch, ViewEventPatch)
-        assert patch.id is not None
-        assert patch.parent_id == event.id
-
-
-@pytest.mark.asyncio
 async def test_update(event_repository):
     event = await _create_event(event_repository)
     updated = await event_repository.update(event.id, UpdateEvent(name=fake.slug(), description=fake.text()))
@@ -108,6 +82,39 @@ async def test_delete(event_repository):
     assert event is None
 
 
+# ^^^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^^^ #
+# ------------------- PATCHES ------------------- #
+
+
+@pytest.mark.asyncio
+async def test_add_patch(event_repository):
+    event = await _create_event(event_repository)
+    event_patch_scheme = get_fake_event_patch()
+    event_patch = await event_repository.add_patch(event.id, event_patch_scheme)
+    assert event_patch is not None
+    assert isinstance(event_patch, ViewEventPatch)
+    assert event_patch.id is not None
+    assert event_patch.summary == event_patch_scheme.summary
+    assert event_patch.parent_id == event.id
+
+
+@pytest.mark.asyncio
+async def test_read_patches(event_repository):
+    scheme = get_fake_event()
+    scheme.patches = [
+        AddEventPatch(**fake_event_patch.dict()) for fake_event_patch in [get_fake_event_patch() for _ in range(10)]
+    ]
+
+    event = await event_repository.create(scheme)
+    patches = await event_repository.read_patches(event.id)
+    assert isinstance(patches, list)
+    assert len(patches) == len(scheme.patches)
+    for patch in patches:
+        assert isinstance(patch, ViewEventPatch)
+        assert patch.id is not None
+        assert patch.parent_id == event.id
+
+
 @pytest.mark.asyncio
 async def test_update_patch(event_repository):
     event = await _create_event(event_repository)
@@ -117,3 +124,6 @@ async def test_update_patch(event_repository):
     assert isinstance(updated_event_patch, ViewEventPatch)
     assert updated_event_patch.id == event_patch.id
     assert updated_event_patch.summary != event_patch.summary
+
+
+# ^^^^^^^^^^^^^^^^^^^ PATCHES ^^^^^^^^^^^^^^^^^^^ #

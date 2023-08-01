@@ -40,6 +40,7 @@ async def _batch_create_event_group(event_group_repository) -> list["ViewEventGr
     return event_groups
 
 
+# ----------------- CRUD ----------------- #
 @pytest.mark.asyncio
 async def test_create_if_not_exists(event_group_repository):
     await _create_event_group(event_group_repository)
@@ -78,3 +79,6 @@ async def test_read_all(event_group_repository):
     gotten_event_groups = await event_group_repository.read_all()
     assert isinstance(gotten_event_groups, list)
     assert len(gotten_event_groups) == len(event_groups)
+
+
+# ^^^^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^^^^ #

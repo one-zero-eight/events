@@ -36,6 +36,7 @@ async def _batch_create_user_if_not_exists(user_repository) -> list["ViewUser"]:
     return users
 
 
+# ----------------- CRUD ----------------- #
 @pytest.mark.asyncio
 async def test_create_if_not_exists(user_repository):
     await _create_user(user_repository)
@@ -73,17 +74,6 @@ async def test_create_or_update(user_repository):
 
 
 @pytest.mark.asyncio
-async def test_read_id_by_email(user_repository):
-    # Create a new user
-    user = await _create_user(user_repository)
-    # Retrieve the user ID by email
-    user_id = await user_repository.read_id_by_email(user.email)
-    assert user_id is not None
-    assert isinstance(user_id, int)
-    assert user_id == user.id
-
-
-@pytest.mark.asyncio
 async def test_read(user_repository):
     user = await _create_user(user_repository)
     hit = await user_repository.read(user.id)
@@ -101,3 +91,17 @@ async def test_batch_read(user_repository):
     for retrieved_user, created_user in zip(retrieved_users, created_users):
         assert isinstance(retrieved_user, ViewUser)
         assert retrieved_user.id == created_user.id
+
+
+@pytest.mark.asyncio
+async def test_read_id_by_email(user_repository):
+    # Create a new user
+    user = await _create_user(user_repository)
+    # Retrieve the user ID by email
+    user_id = await user_repository.read_id_by_email(user.email)
+    assert user_id is not None
+    assert isinstance(user_id, int)
+    assert user_id == user.id
+
+
+# ^^^^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^^^^ #

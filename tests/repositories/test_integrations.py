@@ -13,6 +13,7 @@ from tests.repositories.test_users import _create_user, _batch_create_user_if_no
 fake = Faker()
 
 
+# ------------- User x Event Group ------------- #
 @pytest.mark.asyncio
 async def test_setup_groups(event_group_repository, user_repository):
     user = await _create_user(user_repository)
@@ -101,6 +102,10 @@ async def test_remove_favorite(event_group_repository, user_repository):
     assert len(updated_user.favorites_association) == 0
 
 
+# ^^^^^^^^^^^^^^^^^ User x Event Group ^^^^^^^^^^^^^^^^^ #
+# ------------- Event Group x Tag ------------- #
+
+
 @pytest.mark.asyncio
 async def test_add_tags_to_event_group(event_group_repository, tag_repository):
     event_group = await _create_event_group(event_group_repository)
@@ -144,3 +149,6 @@ async def test_remove_tags_from_event_group(event_group_repository, tag_reposito
     await tag_repository.remove_tags_from_event_group(event_group.id, [tag.id])
     updated_event_group = await event_group_repository.read(event_group.id)
     assert len(updated_event_group.tags) == 0
+
+
+# ^^^^^^^^^^^^^^^^^ Event Group x Tag ^^^^^^^^^^^^^^^^^ #
