@@ -68,9 +68,9 @@ async def test_create_with_patches(event_repository):
 @pytest.mark.asyncio
 async def test_read(event_repository):
     event = await _create_event(event_repository)
-    event = await event_repository.read(event.id)
-    assert isinstance(event, ViewEvent)
-    assert event.id is not None
+    hit = await event_repository.read(event.id)
+    assert isinstance(hit, ViewEvent)
+    assert hit.id == event.id
 
 
 @pytest.mark.asyncio

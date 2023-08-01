@@ -61,15 +61,15 @@ async def test_batch_create_if_not_exists(event_group_repository):
 @pytest.mark.asyncio
 async def test_read(event_group_repository):
     event_group = await _create_event_group(event_group_repository)
-    gotten_event_group = await event_group_repository.read(event_group.id)
-    assert gotten_event_group.id == event_group.id
+    hit = await event_group_repository.read(event_group.id)
+    assert hit.id == event_group.id
 
 
 @pytest.mark.asyncio
 async def test_read_by_path(event_group_repository):
     event_group = await _create_event_group(event_group_repository)
-    gotten_event_group = await event_group_repository.read_by_path(event_group.path)
-    assert gotten_event_group.id == event_group.id
+    hit = await event_group_repository.read_by_path(event_group.path)
+    assert hit.id == event_group.id
 
 
 @pytest.mark.asyncio
