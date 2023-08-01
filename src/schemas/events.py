@@ -83,7 +83,21 @@ class ViewEventPatch(BaseModel):
 
 
 class UpdateEventPatch(BaseModel):
-    ...
+    # --- .ics fields --- #
+    summary: Optional[str] = None
+    description: Optional[str] = None
+    location: Optional[str] = None
+
+    dtstart: Optional[datetime.datetime] = None
+    dtend: Optional[datetime.datetime] = None
+
+    rrule: Optional[vRecur] = None
+
+    @validator("rrule", pre=True)
+    def _validate_rrule(cls, v):
+        if isinstance(v, str):
+            return vRecur.from_ical(v)
+        return v
 
 
 # Update forward refs
