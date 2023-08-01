@@ -4,9 +4,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import Settings, settings as config_settings
 from src.repositories.event_groups import AbstractEventGroupRepository, SqlEventGroupRepository
-from src.repositories.users import AbstractUserRepository, SqlUserRepository
+from src.repositories.events import AbstractEventRepository, SqlEventRepository
 from src.repositories.tags import AbstractTagRepository, SqlTagRepository
+from src.repositories.users import AbstractUserRepository, SqlUserRepository
 from src.storages.sql import AbstractSQLAlchemyStorage, SQLAlchemyStorage
+
+
+# --- Monkey Patching --- #
+@pytest.fixture(scope="session")
+def monkeysession():
+    from _pytest.monkeypatch import MonkeyPatch
+
+    mpatch = MonkeyPatch()
+    yield mpatch
+    mpatch.undo()
 
 
 # --- Settings Fixtures --- #
@@ -69,3 +80,8 @@ def event_group_repository(storage) -> "AbstractEventGroupRepository":
 @pytest.fixture(scope="package")
 def tag_repository(storage) -> "AbstractTagRepository":
     return SqlTagRepository(storage)
+
+
+@pytest.fixture(scope="package")
+def event_repository(storage) -> "AbstractEventRepository":
+    return SqlEventRepository(storage)
