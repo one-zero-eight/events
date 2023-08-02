@@ -8,10 +8,8 @@ from src.schemas import OwnershipEnum
 
 
 async def setup_ownership_method(
-    cls, session: AsyncSession, object_id: int, user_id: int, role_alias: OwnershipEnum
+    OwnershipClass, session: AsyncSession, object_id: int, user_id: int, role_alias: OwnershipEnum
 ) -> None:
-    OwnershipClass = cls.Ownership
-
     if role_alias is OwnershipEnum.delete:
         # just delete row
         q = delete(OwnershipClass).where(OwnershipClass.user_id == user_id).where(OwnershipClass.object_id == object_id)

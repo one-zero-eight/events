@@ -79,7 +79,8 @@ class SqlTagRepository(AbstractTagRepository):
 
     async def setup_ownership(self, tag_id: int, user_id: int, role_alias: OwnershipEnum) -> None:
         async with self._create_session() as session:
-            return await setup_ownership_method(type(self), session, tag_id, user_id, role_alias)
+            OwnershipClass = Tag.Ownership
+            return await setup_ownership_method(OwnershipClass, session, tag_id, user_id, role_alias)
 
     async def add_tags_to_event_group(self, event_group_id: int, tag_ids: list[int]) -> None:
         async with self._create_session() as session:

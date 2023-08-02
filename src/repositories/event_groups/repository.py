@@ -66,7 +66,8 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
 
     async def setup_ownership(self, group_id: int, user_id: int, role_alias: "OwnershipEnum") -> None:
         async with self._create_session() as session:
-            return await setup_ownership_method(type(self), session, group_id, user_id, role_alias)
+            OwnershipClass = EventGroup.Ownership
+            return await setup_ownership_method(OwnershipClass, session, group_id, user_id, role_alias)
 
     async def setup_groups(self, user_id: int, groups: list[int]):
         async with self._create_session() as session:
