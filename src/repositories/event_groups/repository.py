@@ -5,7 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.repositories.crud import CRUDFactory
 from src.repositories.event_groups.abc import AbstractEventGroupRepository
-from src.schemas import ViewEventGroup, CreateEventGroup, UpdateEventGroup
+from src.repositories.ownership import setup_ownership_method
+from src.schemas import ViewEventGroup, CreateEventGroup, UpdateEventGroup, OwnershipEnum
 from src.storages.sql import AbstractSQLAlchemyStorage
 from src.storages.sql.models import UserXFavoriteEventGroup, EventGroup
 
@@ -62,6 +63,10 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
             return [ViewEventGroup.from_orm(group) for group in db_groups]
 
     # ^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^ #
+
+    async def setup_ownership(self, group_id: int, user_id: int, role_alias: "OwnershipEnum") -> None:
+        async with self._create_session() as session:
+            return await setup_ownership_method(type(self), session, group_id, user_id, role_alias)
 
     async def setup_groups(self, user_id: int, groups: list[int]):
         async with self._create_session() as session:

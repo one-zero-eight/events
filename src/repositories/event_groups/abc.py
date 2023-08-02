@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from src.schemas import CreateEventGroup, ViewEventGroup
+    from src.schemas import CreateEventGroup, ViewEventGroup, OwnershipEnum
 
 
 class AbstractEventGroupRepository(metaclass=ABCMeta):
@@ -30,6 +30,10 @@ class AbstractEventGroupRepository(metaclass=ABCMeta):
         ...
 
     # ^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^^^^^^^^ #
+
+    @abstractmethod
+    async def setup_ownership(self, group_id: int, user_id: int, role_alias: "OwnershipEnum") -> None:
+        ...
 
     @abstractmethod
     async def setup_groups(self, user_id: int, groups: list[int]):

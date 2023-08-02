@@ -33,6 +33,7 @@ class ViewEventGroup(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     tags: list["ViewTag"] = Field(default_factory=list)
+    ownerships: list["Ownership"] = Field(default_factory=list)
 
     @validator("tags", pre=True, always=True)
     def _validate_tags(cls, v):
@@ -81,5 +82,6 @@ class ListEventGroupsResponse(BaseModel):
 
 
 from src.schemas.tags import ViewTag  # noqa E402
+from src.schemas.ownership import Ownership  # noqa E402
 
 ViewEventGroup.update_forward_refs()
