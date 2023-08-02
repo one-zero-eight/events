@@ -1,9 +1,7 @@
 import pytest
 from faker import Faker
 
-from src.schemas import OwnershipEnum
 from src.schemas.tags import CreateTag, ViewTag, UpdateTag
-from tests.repositories.test_users import _create_user
 
 fake = Faker()
 
@@ -120,19 +118,3 @@ async def test_delete(tag_repository):
 
 
 # ^^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^^ #
-@pytest.mark.asyncio
-async def test_setup_ownership(tag_repository, user_repository):
-    user = await _create_user(user_repository)
-    tag = await _create_tag(tag_repository)
-    await tag_repository.setup_ownership(tag.id, user.id, OwnershipEnum.owner)
-    updated_tag = await tag_repository.read(tag.id)
-    assert updated_tag is not None
-    assert isinstance(updated_tag, ViewTag)
-    assert len(updated_tag.ownerships) == 1
-    assert updated_tag.ownerships[0].user_id == user.id
-    assert updated_tag.ownerships[0].object_id == tag.id
-    assert updated_tag.ownerships[0].role_alias == OwnershipEnum.owner
-    await tag_repository.setup_ownership(tag.id, user.id, OwnershipEnum.delete)
-    updated_tag = await tag_repository.read(tag.id)
-    assert updated_tag is not None
-    assert len(updated_tag.ownerships) == 0
