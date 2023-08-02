@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from src.repositories.crud import CRUDFactory
+from src.repositories.ownership import setup_ownership_method
 from src.repositories.tags.abc import AbstractTagRepository
 from src.schemas import CreateTag, ViewTag, OwnershipEnum, UpdateTag
 from src.storages.sql import AbstractSQLAlchemyStorage
@@ -78,25 +79,7 @@ class SqlTagRepository(AbstractTagRepository):
 
     async def setup_ownership(self, tag_id: int, user_id: int, role_alias: OwnershipEnum) -> None:
         async with self._create_session() as session:
-            TagOwnership = Tag.Ownership
-
-            if role_alias is OwnershipEnum.default:
-                # just delete row
-                q = delete(TagOwnership).where(TagOwnership.user_id == user_id).where(TagOwnership.object_id == tag_id)
-                await session.execute(q)
-            else:
-                # insert or update
-                q = insert(TagOwnership).values(
-                    user_id=user_id,
-                    object_id=tag_id,
-                    role_alias=role_alias,
-                )
-                q = q.on_conflict_do_update(
-                    index_elements=[TagOwnership.user_id, TagOwnership.object_id],
-                    set_={"role_alias": role_alias.value},
-                )
-                await session.execute(q)
-            await session.commit()
+            return await setup_ownership_method(type(self), session, tag_id, user_id, role_alias)
 
     async def add_tags_to_event_group(self, event_group_id: int, tag_ids: list[int]) -> None:
         async with self._create_session() as session:

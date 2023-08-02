@@ -132,7 +132,7 @@ async def test_setup_ownership(tag_repository, user_repository):
     assert updated_tag.ownerships[0].user_id == user.id
     assert updated_tag.ownerships[0].object_id == tag.id
     assert updated_tag.ownerships[0].role_alias == OwnershipEnum.owner
-    await tag_repository.setup_ownership(tag.id, user.id, OwnershipEnum.default)
+    await tag_repository.setup_ownership(tag.id, user.id, OwnershipEnum.delete)
     updated_tag = await tag_repository.read(tag.id)
     assert updated_tag is not None
     assert len(updated_tag.ownerships) == 0

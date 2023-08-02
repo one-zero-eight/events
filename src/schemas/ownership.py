@@ -7,6 +7,7 @@ class OwnershipEnum(StrEnum):
     default = "default"
     moderator = "moderator"
     owner = "owner"
+    delete = "delete"
 
 
 class Ownership(BaseModel):
