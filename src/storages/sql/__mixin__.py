@@ -7,6 +7,7 @@ __all__ = [
 ]
 
 from sqlalchemy import ForeignKey, String, Text
+from sqlalchemy.ext.associationproxy import association_proxy, AssociationProxy
 from sqlalchemy.orm import DeclarativeBase, declared_attr, relationship, Mapped, mapped_column
 
 
@@ -18,16 +19,25 @@ def TagsMixinFactory(tablename: str, Base: type[DeclarativeBase]):
             __tablename__ = f"{tablename}_x_tags"
             object_id: Mapped[int] = mapped_column(ForeignKey(f"{tablename}.id", ondelete="CASCADE"), primary_key=True)
             tag_id: Mapped[int] = mapped_column(ForeignKey("tags.id", ondelete="CASCADE"), primary_key=True)
+            tag: Mapped[Tag] = relationship(lazy="joined")
 
         Tag.__tags_associations__[tablename] = TagAssociation
 
         @declared_attr
-        def tags(cls) -> Mapped[list["Tag"]]:
-            return relationship(
-                "Tag",
-                lazy="selectin",
-                secondary=Mixin.TagAssociation.__table__,
-            )
+        def tags_association(cls) -> Mapped[TagAssociation]:
+            return relationship(cls.TagAssociation, lazy="selectin")
+
+        @declared_attr
+        def tags(cls) -> AssociationProxy[list[Tag]]:
+            return association_proxy("tags_association", "tag")
+
+        # @declared_attr
+        # def tags(cls) -> Mapped[list["Tag"]]:
+        #     return relationship(
+        #         "Tag",
+        #         lazy="selectin",
+        #         secondary=Mixin.TagAssociation.__table__,
+        #     )
 
     return Mixin
 
