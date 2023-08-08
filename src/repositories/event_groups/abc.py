@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from src.schemas import CreateEventGroup, ViewEventGroup, OwnershipEnum
+    from src.schemas import CreateEventGroup, ViewEventGroup, OwnershipEnum, UpdateEventGroup
 
 
 class AbstractEventGroupRepository(metaclass=ABCMeta):
@@ -27,6 +27,14 @@ class AbstractEventGroupRepository(metaclass=ABCMeta):
 
     @abstractmethod
     async def read_by_path(self, path: str) -> "ViewEventGroup":
+        ...
+
+    @abstractmethod
+    async def read_by_alias(self, alias: str) -> "ViewEventGroup":
+        ...
+
+    @abstractmethod
+    async def update(self, event_group_id: int, event_group: "UpdateEventGroup") -> "ViewEventGroup":
         ...
 
     # ^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^^^^^^^^ #

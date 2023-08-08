@@ -40,6 +40,14 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
         async with self._create_session() as session:
             return await CRUD.read_by(session, only_first=True, path=path)
 
+    async def read_by_alias(self, alias: str) -> ViewEventGroup:
+        async with self._create_session() as session:
+            return await CRUD.read_by(session, only_first=True, alias=alias)
+
+    async def update(self, event_group_id: int, event_group: UpdateEventGroup) -> ViewEventGroup:
+        async with self._create_session() as session:
+            return await CRUD.update(session, data=event_group, id=event_group_id)
+
     async def create_or_read(self, group: CreateEventGroup) -> ViewEventGroup:
         async with self._create_session() as session:
             created = await CRUD.create_if_not_exists(session, group)
