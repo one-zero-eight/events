@@ -1,7 +1,7 @@
 import pytest
 from faker import Faker
 
-from src.schemas.event_groups import CreateEventGroup, ViewEventGroup
+from src.schemas.event_groups import CreateEventGroup, ViewEventGroup, UpdateEventGroup
 
 fake = Faker()
 
@@ -79,6 +79,16 @@ async def test_read_all(event_group_repository):
     gotten_event_groups = await event_group_repository.read_all()
     assert isinstance(gotten_event_groups, list)
     assert len(gotten_event_groups) == len(event_groups)
+
+
+@pytest.mark.asyncio
+async def test_update(event_group_repository):
+    event_group = await _create_event_group(event_group_repository)
+    update_scheme = UpdateEventGroup(path="updated-path", name="updated-name")
+    updated_event_group = await event_group_repository.update(event_group.id, update_scheme)
+    assert updated_event_group.id == event_group.id
+    assert updated_event_group.path == "updated-path"
+    assert updated_event_group.name == "updated-name"
 
 
 # ^^^^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^^^^ #
