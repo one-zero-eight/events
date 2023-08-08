@@ -92,3 +92,19 @@ async def test_update(event_group_repository):
 
 
 # ^^^^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^^^^ #
+@pytest.mark.asyncio
+async def test_path_duplicate(event_group_repository):
+    event_group = await _create_event_group(event_group_repository)
+
+    new_scheme = CreateEventGroup(alias=fake.slug(), name=fake.name(), path=event_group.path)
+    new_event_group = await event_group_repository.create_or_read(new_scheme)
+    assert event_group.id == new_event_group.id
+
+
+@pytest.mark.asyncio
+async def test_null_path(event_group_repository):
+    scheme = CreateEventGroup(alias=fake.slug(), name=fake.name())
+    new_scheme = CreateEventGroup(alias=fake.slug(), name=fake.name())
+    event_group = await event_group_repository.create_or_read(scheme)
+    new_event_group = await event_group_repository.create_or_read(new_scheme)
+    assert event_group.id != new_event_group.id
