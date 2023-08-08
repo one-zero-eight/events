@@ -3,6 +3,10 @@ from starlette import status
 
 
 class NoCredentialsException(HTTPException):
+    """
+    HTTP_401_UNAUTHORIZED
+    """
+
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -12,6 +16,10 @@ class NoCredentialsException(HTTPException):
 
 
 class IncorrectCredentialsException(HTTPException):
+    """
+    HTTP_403_FORBIDDEN
+    """
+
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -20,6 +28,10 @@ class IncorrectCredentialsException(HTTPException):
 
 
 class InvalidReturnToURL(HTTPException):
+    """
+    HTTP_400_BAD_REQUEST
+    """
+
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -28,6 +40,10 @@ class InvalidReturnToURL(HTTPException):
 
 
 class UserNotFoundException(HTTPException):
+    """
+    HTTP_404_NOT_FOUND
+    """
+
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -36,10 +52,50 @@ class UserNotFoundException(HTTPException):
 
 
 class EventGroupNotFoundException(HTTPException):
+    """
+    HTTP_404_NOT_FOUND
+    """
+
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Event group not found",
+        )
+
+
+class EventGroupWithMissingPath(HTTPException):
+    """
+    HTTP_400_BAD_REQUEST
+    """
+
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Path is not defined for this event group",
+        )
+
+
+class IcsFileIsNotModified(HTTPException):
+    """
+    HTTP_304_NOT_MODIFIED
+    """
+
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_304_NOT_MODIFIED,
+            detail="Event group already connected to the same .ics file",
+        )
+
+
+class OperationIsNotAllowed(HTTPException):
+    """
+    HTTP_403_FORBIDDEN
+    """
+
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This user can not execute this operation",
         )
 
 
