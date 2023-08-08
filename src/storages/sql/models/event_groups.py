@@ -22,7 +22,7 @@ class EventGroup(
 ):
     __tablename__ = "event_groups"
     alias: Mapped[str] = mapped_column(String(255), unique=True)
-    path: Mapped[str] = mapped_column(nullable=True)
+    path: Mapped[str] = mapped_column(nullable=True, unique=True)
     satellite: Mapped[dict[str, Any]] = mapped_column(JSON, nullable=True)
 
 
