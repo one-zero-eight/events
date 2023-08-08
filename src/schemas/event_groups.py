@@ -9,6 +9,7 @@ __all__ = [
 from typing import Optional, Iterable
 
 from pydantic import BaseModel, Field, validator
+from urllib.parse import quote
 
 
 class CreateEventGroup(BaseModel):
@@ -17,9 +18,13 @@ class CreateEventGroup(BaseModel):
     """
 
     alias: str
+    name: str
     path: Optional[str] = None
-    name: Optional[str] = None
     description: Optional[str] = None
+
+    @validator("alias", pre=True, always=True)
+    def encode_alias_to_uri(cls, v):
+        return quote(v)
 
 
 class ViewEventGroup(BaseModel):
