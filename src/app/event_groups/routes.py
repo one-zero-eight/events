@@ -1,3 +1,4 @@
+import aiofiles
 from fastapi import UploadFile, HTTPException
 from starlette.responses import FileResponse, JSONResponse
 
@@ -11,8 +12,6 @@ from src.exceptions import (
 )
 from src.repositories.predefined.repository import PredefinedRepository
 from src.schemas import ViewEventGroup, ListEventGroupsResponse, CreateEventGroup, UpdateEventGroup, OwnershipEnum
-
-import aiofiles
 
 
 @router.post(
@@ -171,6 +170,7 @@ async def set_event_group_ics(
     # TODO: compare ics files if one already exists and return 200 if they are the same
     if False:
         return IcsFileIsNotModified()
+
     async with aiofiles.open(ics_path, "wb") as f:
         content = await ics_file.read()
         await f.write(content)
