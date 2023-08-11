@@ -10,7 +10,7 @@ from src.schemas.ownership import Ownership
 
 class CreateTag(BaseModel):
     alias: str
-    type: str
+    type: Optional[str] = None
     name: Optional[str] = None
     satellite: Optional[Json] = None
 
