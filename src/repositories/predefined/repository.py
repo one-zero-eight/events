@@ -24,11 +24,15 @@ class JsonUserStorage(BaseModel):
 
 class JsonGroupStorage(BaseModel):
     class PredefinedGroup(BaseModel):
+        class TagReference(BaseModel):
+            alias: str
+            type: str
+
         alias: str
         name: Optional[str]
         path: Optional[str]
         description: Optional[str]
-        tags: list[str] = Field(default_factory=list)
+        tags: list[TagReference] = Field(default_factory=list)
 
     event_groups: list[PredefinedGroup] = Field(default_factory=list)
 

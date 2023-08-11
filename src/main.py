@@ -99,7 +99,7 @@ async def setup_predefined_data():
 
     _create_tags = [CreateTag(**tag.dict()) for tag in predefined_tags]
     db_tags = await tag_repository.batch_create_or_read(_create_tags)
-    alias_x_tag = {tag.alias: tag for tag in db_tags}
+    alias_x_tag = {(tag.alias, tag.type): tag for tag in db_tags}
 
     _create_event_groups = [CreateEventGroup(**group.dict()) for group in predefined_event_groups]
     db_event_groups = await event_group_repository.batch_create_or_read(_create_event_groups)
@@ -111,7 +111,7 @@ async def setup_predefined_data():
     event_group_id_x_tags_ids = dict()
     for i, predefined_event_group in enumerate(predefined_event_groups):
         db_event_group_id = db_event_groups[i].id
-        tag_ids = [alias_x_tag[tag_alias].id for tag_alias in predefined_event_group.tags]
+        tag_ids = [alias_x_tag[(tag.alias, tag.type)].id for tag in predefined_event_group.tags]
         event_group_id_x_tags_ids[db_event_group_id] = tag_ids
 
     await tag_repository.batch_add_tags_to_event_group(event_group_id_x_tags_ids)
