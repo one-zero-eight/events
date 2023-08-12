@@ -63,6 +63,7 @@ async def client():
     async with httpx.AsyncClient(app=app, base_url="http://127.0.0.1:8000/") as client:
         yield client
 
+
 async def _restore_session(session: AsyncSession):
     from src.storages.sql.models.base import Base
 

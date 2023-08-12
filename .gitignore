@@ -178,3 +178,4 @@ src/repositories/predefined/ics/*.json
 
 # Ignore temporary files
 *.tmp
+/src/repositories/users/predefined_groups.json
