@@ -1,6 +1,6 @@
 from faker import Faker
 
-from src.schemas.event_groups import ListEventGroupsResponse, ViewEventGroup
+from src.schemas.event_groups import ListEventGroupsResponse, ViewEventGroup, CreateEventGroup
 
 fake = Faker()
 i = 0
@@ -10,6 +10,10 @@ def get_fake_event_group():
     global i
     i += 1
     return ViewEventGroup(id=i, alias=fake.slug(), path=fake.word(), name=fake.word(), description=fake.word(), tags=[])
+
+
+def get_fake_create_event_group():
+    return CreateEventGroup(alias=fake.slug(), path=fake.word(), name=fake.word(), description=fake.word(), tags=[])
 
 
 def test_list_event_groups_from_iterable():

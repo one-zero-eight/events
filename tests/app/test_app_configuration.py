@@ -12,6 +12,9 @@ from src.repositories.predefined.repository import (
     JsonTagStorage,
 )
 
+from src.main import app
+from src.main import settings
+
 fake = Faker()
 
 
@@ -82,9 +85,19 @@ def fake_predefined_repository():
 
 @pytest.mark.asyncio
 async def test_startup():
-    from src.main import app
-
     assert isinstance(app, FastAPI)
 
     with TestClient(app):
         ...
+
+
+def test_version():
+    client = TestClient(app)
+
+    response = client.get("/")
+    assert response.status_code == 200
+    assert response.json() == {
+        "title": settings.APP_TITLE,
+        "description": settings.APP_DESCRIPTION,
+        "version": settings.APP_VERSION,
+    }
