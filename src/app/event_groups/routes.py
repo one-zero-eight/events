@@ -185,7 +185,7 @@ async def set_event_group_ics(
         404: {"description": "Event group not found"},
     },
 )
-async def get_event_group_ics(event_group_id: str, event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY):
+async def get_event_group_ics(event_group_id: int, event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY):
     """
     Get event group .ics file by id
     """
