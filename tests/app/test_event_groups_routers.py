@@ -53,6 +53,7 @@ async def test_list_event_groups(client: httpx.AsyncClient, event_group_reposito
     response = await client.get("event-groups/")
     response_from_api = response.json()
     assert response.status_code == 200
+
     for i in range(event_groups_number):
         assert response_from_api["groups"][i]["alias"] == event_groups[i].alias
         assert response_from_api["groups"][i]["name"] == event_groups[i].name
