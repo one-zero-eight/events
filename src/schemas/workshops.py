@@ -2,6 +2,8 @@ __all__ = [
     "CreateWorkshop",
     "ViewWorkshop",
     "CheckIn",
+    "CreateTimeslot",
+    "Timeslot",
 ]
 
 from typing import Optional
@@ -18,7 +20,7 @@ class CreateWorkshop(BaseModel):
     capacity: Optional[int] = None
     comment: Optional[str] = None
     location: Optional[str] = None
-    timeslots: list[tuple[datetime.time, datetime.time]] = Field(..., min_items=1)
+    timeslots: Optional[list["CreateTimeslot"]] = None
 
 
 class ViewWorkshop(BaseModel):
@@ -30,11 +32,41 @@ class ViewWorkshop(BaseModel):
     capacity: Optional[int] = None
     comment: Optional[str] = None
     location: Optional[str] = None
-    timeslots: list[tuple[datetime.time, datetime.time]] = Field(..., min_items=1)
-    checkin_count: int = 0
+    timeslots: list["Timeslot"] = Field(default_factory=list)
+    checkin_count: Optional[int] = Field(None, exclude=True)
 
     class Config:
         orm_mode = True
+
+
+class CreateTimeslot(BaseModel):
+    sequence: Optional[int] = None
+    start: datetime.time
+    end: datetime.time
+
+    class Config:
+        orm_mode = True
+
+
+class Timeslot(BaseModel):
+    workshop_id: int
+    sequence: int
+    start: datetime.time
+    end: datetime.time
+
+    class Config:
+        orm_mode = True
+
+
+class UpdateWorkshop(BaseModel):
+    alias: Optional[str] = None
+    name: Optional[str] = None
+    date: Optional[datetime.date] = None
+    speaker: Optional[str] = None
+    capacity: Optional[int] = None
+    comment: Optional[str] = None
+    location: Optional[str] = None
+    timeslots: Optional[list["CreateTimeslot"]] = None
 
 
 class CheckIn(BaseModel):
@@ -50,3 +82,4 @@ class CheckIn(BaseModel):
 from src.schemas.users import ViewUser  # noqa: E402, F401
 
 ViewWorkshop.update_forward_refs()
+CreateWorkshop.update_forward_refs()

@@ -10,7 +10,7 @@ __all__ = [
     "CreateTag", "ViewTag", "UpdateTag",
     "Ownership", "OwnershipEnum",
 
-    "CreateWorkshop", "ViewWorkshop", "CheckIn",
+    "CreateWorkshop", "ViewWorkshop", "CheckIn", "Timeslot", "CreateTimeslot",
 ]
 # fmt: on
 
@@ -26,4 +26,4 @@ from src.schemas.events import CreateEvent, ViewEvent, UpdateEvent, AddEventPatc
 from src.schemas.users import CreateUser, ViewUser, UpdateUser
 from src.schemas.tags import CreateTag, ViewTag, UpdateTag
 from src.schemas.ownership import Ownership, OwnershipEnum
-from src.schemas.workshops import CreateWorkshop, ViewWorkshop, CheckIn
+from src.schemas.workshops import CreateWorkshop, ViewWorkshop, CheckIn, Timeslot, CreateTimeslot
