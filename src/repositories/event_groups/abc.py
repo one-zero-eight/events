@@ -18,6 +18,10 @@ class AbstractEventGroupRepository(metaclass=ABCMeta):
         ...
 
     @abstractmethod
+    async def batch_create_or_update(self, groups: list["CreateEventGroup"]) -> list["ViewEventGroup"]:
+        ...
+
+    @abstractmethod
     async def read(self, group_id: int) -> "ViewEventGroup":
         ...
 

@@ -102,7 +102,7 @@ async def setup_predefined_data():
     alias_x_tag = {(tag.alias, tag.type): tag for tag in db_tags}
 
     _create_event_groups = [CreateEventGroup(**group.dict()) for group in predefined_event_groups]
-    db_event_groups = await event_group_repository.batch_create_or_read(_create_event_groups)
+    db_event_groups = await event_group_repository.batch_create_or_update(_create_event_groups)
     alias_x_group = {group.alias: group for group in db_event_groups}
 
     _create_users = [CreateUser(**user.dict()) for user in predefined_users]

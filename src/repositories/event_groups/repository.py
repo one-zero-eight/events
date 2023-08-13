@@ -70,6 +70,23 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
             await session.commit()
             return [ViewEventGroup.from_orm(group) for group in db_groups]
 
+    async def batch_create_or_update(self, groups: list["CreateEventGroup"]) -> list["ViewEventGroup"]:
+        async with self._create_session() as session:
+            q = postgres_insert(EventGroup).values([group.dict() for group in groups])
+            set_ = {
+                "id": EventGroup.id,
+                "name": q.excluded.name,
+                "description": q.excluded.description,
+                "path": q.excluded.path,
+            }
+            q = q.on_conflict_do_update(
+                index_elements=[EventGroup.alias],
+                set_=set_,
+            ).returning(EventGroup)
+            db_groups = await session.scalars(q)
+            await session.commit()
+            return [ViewEventGroup.from_orm(group) for group in db_groups]
+
     # ^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^ #
 
     async def setup_ownership(self, group_id: int, user_id: int, role_alias: "OwnershipEnum") -> None:
