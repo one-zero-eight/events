@@ -12,7 +12,7 @@ def get_fake_user() -> CreateUser:
 
 async def _create_user(user_repository) -> "ViewUser":
     user_schema = get_fake_user()
-    user = await user_repository.create_or_read(user_schema)
+    user = await user_repository.create_or_update(user_schema)
     assert user is not None
     assert isinstance(user, ViewUser)
     assert user.id is not None

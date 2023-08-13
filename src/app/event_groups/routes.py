@@ -30,7 +30,7 @@ async def create_event_group(
     event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
     current_user_id: CURRENT_USER_ID_DEPENDENCY,
 ) -> ViewEventGroup:
-    created = await event_group_repository.create_or_read(event_group)
+    created = await event_group_repository.create_or_update(event_group)
     await event_group_repository.setup_ownership(created.id, current_user_id, OwnershipEnum.owner)
     return created
 
