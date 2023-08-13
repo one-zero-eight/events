@@ -10,9 +10,11 @@ class NoCredentialsException(HTTPException):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="No credentials provided",
-            headers={"WWW-Authenticate": "Bearer"},
+            detail=self.responses[401]["description"],
+            headers=self.responses[401]["headers"],
         )
+
+    responses = {401: {"description": "No credentials provided", "headers": {"WWW-Authenticate": "Bearer"}}}
 
 
 class IncorrectCredentialsException(HTTPException):
@@ -23,8 +25,10 @@ class IncorrectCredentialsException(HTTPException):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Could not validate credentials",
+            detail=self.responses[403]["description"],
         )
+
+    responses = {403: {"description": "Could not validate credentials"}}
 
 
 class InvalidReturnToURL(HTTPException):
@@ -35,8 +39,10 @@ class InvalidReturnToURL(HTTPException):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid return_to URL",
+            detail=self.responses[400]["description"],
         )
+
+    responses = {400: {"description": "Invalid return_to URL"}}
 
 
 class UserNotFoundException(HTTPException):
@@ -47,8 +53,10 @@ class UserNotFoundException(HTTPException):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
+            detail=self.responses[404]["description"],
         )
+
+    responses = {404: {"description": "User not found"}}
 
 
 class EventGroupNotFoundException(HTTPException):
@@ -59,8 +67,10 @@ class EventGroupNotFoundException(HTTPException):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Event group not found",
+            detail=self.responses[404]["description"],
         )
+
+    responses = {404: {"description": "Event group not found"}}
 
 
 class EventGroupWithMissingPath(HTTPException):
@@ -71,8 +81,10 @@ class EventGroupWithMissingPath(HTTPException):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Path is not defined for this event group",
+            detail=self.responses[400]["description"],
         )
+
+    responses = {400: {"description": "Path is not defined for this event group"}}
 
 
 class IcsFileIsNotModified(HTTPException):
@@ -83,8 +95,10 @@ class IcsFileIsNotModified(HTTPException):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_304_NOT_MODIFIED,
-            detail="Event group already connected to the same .ics file",
+            detail=self.responses[304]["description"],
         )
+
+    responses = {304: {"description": "Event group already connected to the same .ics file"}}
 
 
 class OperationIsNotAllowed(HTTPException):
@@ -95,8 +109,10 @@ class OperationIsNotAllowed(HTTPException):
     def __init__(self):
         super().__init__(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="This user can not execute this operation",
+            detail=self.responses[403]["description"],
         )
+
+    responses = {403: {"description": "This user can not execute this operation"}}
 
 
 class DBException(Exception):

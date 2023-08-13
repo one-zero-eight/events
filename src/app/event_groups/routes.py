@@ -9,13 +9,21 @@ from src.exceptions import (
     OperationIsNotAllowed,
     EventGroupWithMissingPath,
     IcsFileIsNotModified,
+    IncorrectCredentialsException,
+    NoCredentialsException,
 )
 from src.repositories.predefined.repository import PredefinedRepository
 from src.schemas import ViewEventGroup, ListEventGroupsResponse, CreateEventGroup, UpdateEventGroup, OwnershipEnum
 
 
 @router.post(
-    "/", responses={201: {"description": "Event group created successfully", "model": ViewEventGroup}}, status_code=201
+    "/",
+    responses={
+        201: {"description": "Event group created successfully", "model": ViewEventGroup},
+        **IncorrectCredentialsException.responses,
+        **NoCredentialsException.responses,
+    },
+    status_code=201,
 )
 async def create_event_group(
     event_group: CreateEventGroup,
@@ -28,7 +36,14 @@ async def create_event_group(
 
 
 @router.put(
-    "/{event_group_id}", responses={200: {"description": "Event group updated successfully", "model": ViewEventGroup}}
+    "/{event_group_id}",
+    responses={
+        200: {"description": "Event group updated successfully", "model": ViewEventGroup},
+        **EventGroupNotFoundException.responses,
+        **OperationIsNotAllowed.responses,
+        **IncorrectCredentialsException.responses,
+        **NoCredentialsException.responses,
+    },
 )
 async def update_event_group(
     event_group_id: int,
@@ -37,6 +52,8 @@ async def update_event_group(
     current_user_id: CURRENT_USER_ID_DEPENDENCY,
 ) -> ViewEventGroup:
     event_group = await event_group_repository.read(event_group_id)
+    if event_group is None:
+        raise EventGroupNotFoundException()
     owners_and_moderators = {ownership.user_id for ownership in event_group.ownerships}
 
     if current_user_id not in owners_and_moderators:
@@ -50,7 +67,7 @@ async def update_event_group(
     "/by-path",
     responses={
         200: {"description": "Event group info", "model": ViewEventGroup},
-        404: {"description": "Event group not found"},
+        **EventGroupNotFoundException.responses,
     },
 )
 async def find_event_group_by_path(
@@ -72,7 +89,7 @@ async def find_event_group_by_path(
     "/by-alias",
     responses={
         200: {"description": "Event group info", "model": ViewEventGroup},
-        404: {"description": "Event group not found"},
+        **EventGroupNotFoundException.responses,
     },
 )
 async def find_event_group_by_alias(
@@ -94,7 +111,7 @@ async def find_event_group_by_alias(
     "/{event_group_id}",
     responses={
         200: {"description": "Event group info", "model": ViewEventGroup},
-        404: {"description": "Event group not found"},
+        **EventGroupNotFoundException.responses,
     },
 )
 async def get_event_group(
@@ -134,10 +151,11 @@ async def list_event_groups(
     responses={
         201: {"description": ".ics file updated successfully"},
         # 304: {"description": ".ics file already exists and content is the same"},
-        400: {"description": "Path is not defined for this event group"},
-        403: {"description": "This user can not execute this operation"},
-        404: {"description": "Event group not found"},
+        **EventGroupWithMissingPath.responses,
+        **OperationIsNotAllowed.responses,
+        **EventGroupNotFoundException.responses,
     },
+    status_code=201,
 )
 async def set_event_group_ics(
     event_group_id: int,
@@ -180,9 +198,13 @@ async def set_event_group_ics(
 
 @router.get(
     "/{event_group_id}/ics",
+    response_class=FileResponse,
     responses={
-        200: {"description": ".ics file"},
-        404: {"description": "Event group not found"},
+        200: {
+            "description": "ICS file with schedule of the event-group",
+            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
+        },
+        **EventGroupNotFoundException.responses,
     },
 )
 async def get_event_group_ics(event_group_id: int, event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY):
@@ -195,7 +217,7 @@ async def get_event_group_ics(event_group_id: int, event_group_repository: EVENT
         raise EventGroupNotFoundException()
     if event_group.path:
         ics_path = PredefinedRepository.locate_ics_by_path(event_group.path)
-        return FileResponse(ics_path)
+        return FileResponse(ics_path, media_type="text/calendar")
     else:
         # TODO: create ics file on the fly from events connected to event group
         raise HTTPException(
@@ -205,9 +227,13 @@ async def get_event_group_ics(event_group_id: int, event_group_repository: EVENT
 
 @router.get(
     "/ics/{event_group_alias}.ics",
+    response_class=FileResponse,
     responses={
-        200: {"description": ".ics file"},
-        404: {"description": "Event group not found"},
+        200: {
+            "description": "ICS file with schedule of the event-group",
+            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
+        },
+        **EventGroupNotFoundException.responses,
     },
 )
 async def get_event_group_ics_by_alias(
@@ -222,7 +248,7 @@ async def get_event_group_ics_by_alias(
         raise EventGroupNotFoundException()
     if event_group.path:
         ics_path = PredefinedRepository.locate_ics_by_path(event_group.path)
-        return FileResponse(ics_path)
+        return FileResponse(ics_path, media_type="text/calendar")
     else:
         # TODO: create ics file on the fly from events connected to event group
         raise HTTPException(

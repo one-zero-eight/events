@@ -4,7 +4,7 @@ from pathlib import Path
 import aiofiles
 import icalendar
 from fastapi import HTTPException
-from starlette.responses import FileResponse
+from fastapi.responses import StreamingResponse
 
 from src.app.dependencies import (
     EVENT_GROUP_REPOSITORY_DEPENDENCY,
@@ -14,23 +14,21 @@ from src.app.dependencies import (
 from src.app.users import router
 from src.exceptions import (
     UserNotFoundException,
+    IncorrectCredentialsException,
+    NoCredentialsException,
     DBEventGroupDoesNotExistInDb,
     EventGroupNotFoundException,
 )
 from src.repositories.predefined import PredefinedRepository
 from src.schemas import ViewUser
 
-auth_responses_schema = {
-    401: {"description": "No credentials provided"},
-    403: {"description": "Could not validate credentials"},
-}
-
 
 @router.get(
     "/me",
     responses={
         200: {"description": "Current user info"},
-        **auth_responses_schema,
+        **IncorrectCredentialsException.responses,
+        **NoCredentialsException.responses,
     },
 )
 async def get_me(
@@ -48,18 +46,25 @@ async def get_me(
 @router.get(
     "/ics/{user_id}",
     responses={
-        200: {"description": "ICS file with schedule based on favorites (non-hidden)"},
-        **auth_responses_schema,
+        200: {
+            "description": "ICS file with schedule based on favorites (non-hidden)",
+            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
+        },
+        **UserNotFoundException.responses,
     },
 )
 async def get_my_schedule(
     user_id: int,
     user_repository: USER_REPOSITORY_DEPENDENCY,
-) -> FileResponse:
+) -> StreamingResponse:
     """
     Get schedule in ICS format for the user
     """
     user = await user_repository.read(user_id)
+
+    if user is None:
+        raise UserNotFoundException()
+
     user: ViewUser
     nonhidden = []
     for association in user.favorites_association:
@@ -99,18 +104,19 @@ async def get_my_schedule(
         vevents = calendar.walk(name="VEVENT")
         main_calendar.subcomponents.extend(vevents)
 
-    async with aiofiles.tempfile.NamedTemporaryFile("wb", prefix="tmp", suffix=".ics", delete=False) as f:
-        await f.write(main_calendar.to_ical())
-        await f.seek(0)
-        return FileResponse(path=f.name)
+    return StreamingResponse(
+        content=main_calendar.to_ical(),
+        media_type="text/calendar",
+    )
 
 
 @router.post(
     "/me/favorites",
     responses={
         200: {"description": "Favorite added successfully"},
-        404: {"description": "Event group not found"},
-        **auth_responses_schema,
+        **EventGroupNotFoundException.responses,
+        **IncorrectCredentialsException.responses,
+        **NoCredentialsException.responses,
     },
 )
 async def add_favorite(
@@ -133,7 +139,8 @@ async def add_favorite(
     "/me/favorites",
     responses={
         200: {"description": "Favorite deleted"},
-        **auth_responses_schema,
+        **IncorrectCredentialsException.responses,
+        **NoCredentialsException.responses,
     },
 )
 async def delete_favorite(
@@ -153,7 +160,8 @@ async def delete_favorite(
     "/me/favorites/hide",
     responses={
         200: {"description": "Favorite hidden"},
-        **auth_responses_schema,
+        **IncorrectCredentialsException.responses,
+        **NoCredentialsException.responses,
     },
 )
 async def hide_favorite(
