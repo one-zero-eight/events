@@ -10,6 +10,7 @@ class CreateUser(BaseModel):
     Represents a user instance to be created.
     """
 
+    id: Optional[int] = None
     email: str
     name: Optional[str] = None
 
