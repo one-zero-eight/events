@@ -26,7 +26,7 @@ from src.schemas import ViewUser
     },
 )
 async def get_event_group_ics_by_alias(
-    event_group_alias: str, event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY
+    user_id: int, export_type: str, event_group_alias: str, event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY
 ):
     """
     Get event group .ics file by id
