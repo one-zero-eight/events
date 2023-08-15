@@ -29,6 +29,13 @@ class Settings(BaseSettings):
     # PostgreSQL database connection URL
     DB_URL: SecretStr
 
+    # Security
+    CORS_ALLOW_ORIGINS: list[str] = [
+        "https://innohassle.ru",
+        "https://dev.innohassle.ru",
+        "http://localhost:3000",
+    ]
+
     # Authentication
     AUTH_COOKIE_NAME: str = "token"
     AUTH_COOKIE_DOMAIN: str = "innohassle.ru" if ENVIRONMENT == Environment.PRODUCTION else "localhost"
