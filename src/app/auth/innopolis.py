@@ -95,7 +95,11 @@ if enabled:
             # and we know where to return a user after authentication.
             # Let's ask them to authenticate again.
             ensure_allowed_return_to(return_to)
-            url = request.url_for("innopolis_login").include_query_params(return_to=return_to)
+            url = (
+                request.url_for("innopolis_login")
+                .replace(scheme="https", hostname="api.innohassle.ru", port="")
+                .include_query_params(return_to=return_to)
+            )
             return RedirectResponse(url, status_code=302)
 
         # We don't know anything, so let's just return user to main page.
