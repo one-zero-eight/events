@@ -94,14 +94,8 @@ if enabled:
             # User is not authenticated,
             # and we know where to return a user after authentication.
             # Let's ask them to authenticate again.
-            from src.main import app
-
             ensure_allowed_return_to(return_to)
-            url = (
-                app.url_path_for("innopolis_login")
-                .make_absolute_url(request.base_url)
-                .include_query_params(return_to=return_to)
-            )
+            url = request.url_for("innopolis_login").include_query_params(return_to=return_to)
             return RedirectResponse(url, status_code=302)
 
         # We don't know anything, so let's just return user to main page.
