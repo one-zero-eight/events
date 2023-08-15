@@ -1,6 +1,6 @@
 import aiofiles
-from fastapi import UploadFile, HTTPException
-from starlette.responses import FileResponse, JSONResponse
+from fastapi import UploadFile
+from starlette.responses import JSONResponse
 
 from src.app.dependencies import EVENT_GROUP_REPOSITORY_DEPENDENCY, CURRENT_USER_ID_DEPENDENCY
 from src.app.event_groups import router
@@ -146,8 +146,10 @@ async def list_event_groups(
 
 
 # ------------------ ICS-related ------------------- #
+
+
 @router.put(
-    "/{event_group_id}/ics",
+    "/{event_group_id}/schedule.ics",
     responses={
         201: {"description": ".ics file updated successfully"},
         # 304: {"description": ".ics file already exists and content is the same"},
@@ -194,66 +196,6 @@ async def set_event_group_ics(
         await f.write(content)
 
     return JSONResponse(status_code=201, content={"message": "File uploaded successfully"})
-
-
-@router.get(
-    "/{event_group_id}/ics",
-    response_class=FileResponse,
-    responses={
-        200: {
-            "description": "ICS file with schedule of the event-group",
-            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
-        },
-        **EventGroupNotFoundException.responses,
-    },
-)
-async def get_event_group_ics(event_group_id: int, event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY):
-    """
-    Get event group .ics file by id
-    """
-    event_group = await event_group_repository.read(event_group_id)
-
-    if event_group is None:
-        raise EventGroupNotFoundException()
-    if event_group.path:
-        ics_path = PredefinedRepository.locate_ics_by_path(event_group.path)
-        return FileResponse(ics_path, media_type="text/calendar")
-    else:
-        # TODO: create ics file on the fly from events connected to event group
-        raise HTTPException(
-            status_code=501, detail="Can not create .ics file on the fly (set static .ics file for the event group"
-        )
-
-
-@router.get(
-    "/ics/{event_group_alias}.ics",
-    response_class=FileResponse,
-    responses={
-        200: {
-            "description": "ICS file with schedule of the event-group",
-            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
-        },
-        **EventGroupNotFoundException.responses,
-    },
-)
-async def get_event_group_ics_by_alias(
-    event_group_alias: str, event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY
-):
-    """
-    Get event group .ics file by id
-    """
-    event_group = await event_group_repository.read_by_alias(event_group_alias)
-
-    if event_group is None:
-        raise EventGroupNotFoundException()
-    if event_group.path:
-        ics_path = PredefinedRepository.locate_ics_by_path(event_group.path)
-        return FileResponse(ics_path, media_type="text/calendar")
-    else:
-        # TODO: create ics file on the fly from events connected to event group
-        raise HTTPException(
-            status_code=501, detail="Can not create .ics file on the fly (set static .ics file for the event group"
-        )
 
 
 # ^^^^^^^^^^^^^ ICS-related ^^^^^^^^^^^^^^^^^^^^^^^^ #
