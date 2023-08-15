@@ -9,7 +9,8 @@ from src.repositories.event_groups import AbstractEventGroupRepository, SqlEvent
 from src.repositories.events import AbstractEventRepository, SqlEventRepository
 from src.repositories.tags import AbstractTagRepository, SqlTagRepository
 from src.repositories.users import AbstractUserRepository, SqlUserRepository
-from src.repositories.workshops import AbstractWorkshopRepository, SqlWorkshopRepository
+
+# from src.repositories.workshops import AbstractWorkshopRepository, SqlWorkshopRepository
 from src.storages.sql import AbstractSQLAlchemyStorage, SQLAlchemyStorage
 
 
@@ -96,6 +97,6 @@ def event_repository(storage) -> "AbstractEventRepository":
     return SqlEventRepository(storage)
 
 
-@pytest.fixture(scope="package")
-def workshop_repository(storage) -> "AbstractWorkshopRepository":
-    return SqlWorkshopRepository(storage)
+# @pytest.fixture(scope="package")
+# def workshop_repository(storage) -> "AbstractWorkshopRepository":
+#     return SqlWorkshopRepository(storage)
