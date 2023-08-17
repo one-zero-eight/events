@@ -25,7 +25,7 @@ cookie_scheme = APIKeyCookie(
 )
 
 
-def get_current_user_id(
+async def get_current_user_id(
     bearer: HTTPAuthorizationCredentials = Depends(bearer_scheme),
     cookie: str = Depends(cookie_scheme),
 ) -> int:
@@ -34,7 +34,7 @@ def get_current_user_id(
     if not token:
         raise NoCredentialsException()
 
-    token_data = verify_user_token(token, IncorrectCredentialsException())
+    token_data = await verify_user_token(token, IncorrectCredentialsException())
     return token_data.user_id
 
 

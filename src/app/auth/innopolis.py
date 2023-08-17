@@ -56,7 +56,7 @@ if enabled:
             token = await oauth.innopolis.authorize_access_token(request)
         except MismatchingStateError:
             # Session is different on 'login' and 'callback'
-            return recover_mismatching_state(request)
+            return await recover_mismatching_state(request)
 
         user_info_dict: dict = token["userinfo"]
         user_info = UserInfoFromSSO(**user_info_dict)
@@ -68,12 +68,12 @@ if enabled:
         token = create_access_token(user.id)
         return redirect_with_token(return_to, token)
 
-    def recover_mismatching_state(request: Request):
+    async def recover_mismatching_state(request: Request):
         return_to = request.session.get("return_to")
 
         try:
             # Check if a user has access token
-            user_id = get_current_user_id(None, request.cookies.get(settings.AUTH_COOKIE_NAME))
+            user_id = await get_current_user_id(None, request.cookies.get(settings.AUTH_COOKIE_NAME))
         except (NoCredentialsException, IncorrectCredentialsException):
             user_id = None
 

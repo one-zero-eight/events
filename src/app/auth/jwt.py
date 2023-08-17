@@ -12,6 +12,7 @@ from typing import Optional
 from authlib.jose import jwt, JoseError
 from pydantic import BaseModel, validator
 
+from src.app.dependencies import Dependencies
 from src.config import settings
 
 ALGORITHM = "HS256"
@@ -51,13 +52,18 @@ def _create_access_token(data: dict, expires_delta: timedelta) -> str:
     return str(encoded_jwt, "utf-8")
 
 
-def verify_user_token(token: str, credentials_exception) -> UserTokenData:
+async def verify_user_token(token: str, credentials_exception) -> UserTokenData:
     try:
+        user_repository = Dependencies.get_user_repository()
         payload = jwt.decode(token, settings.JWT_SECRET_KEY.get_secret_value())
         user_id: str = payload.get("sub")
         if user_id is None or not user_id.isdigit():
             raise credentials_exception
-        token_data = UserTokenData(user_id=int(user_id))
+        converted_user_id = int(user_id)
+        if await user_repository.read(converted_user_id) is None:
+            raise credentials_exception
+
+        token_data = UserTokenData(user_id=converted_user_id)
         return token_data
     except JoseError:
         raise credentials_exception
