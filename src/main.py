@@ -90,9 +90,9 @@ async def setup_predefined_data():
 
     # ------------------- Predefined data -------------------
     with (
-        settings.PREDEFINED_TAGS_FILE.open(encoding="utf-8") as tags_file,
-        settings.PREDEFINED_GROUPS_FILE.open(encoding="utf-8") as groups_file,
-        settings.PREDEFINED_USERS_FILE.open(encoding="utf-8") as users_file,
+        (settings.PREDEFINED_DIR / "innopolis_user_data.json").open(encoding="utf-8") as users_file,
+        (settings.PREDEFINED_DIR / "predefined_event_groups.json").open(encoding="utf-8") as groups_file,
+        (settings.PREDEFINED_DIR / "predefined_tags.json").open(encoding="utf-8") as tags_file,
     ):
         users_json = json.load(users_file)
         groups_json = json.load(groups_file)

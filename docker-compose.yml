@@ -12,7 +12,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-     - "./src/repositories/predefined:/code/src/repositories/predefined"
+     - "./predefined:/code/predefined"
     env_file: .env.local
 
   db:

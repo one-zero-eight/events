@@ -88,4 +88,4 @@ class PredefinedRepository:
 
     @staticmethod
     def locate_ics_by_path(path: str) -> Path:
-        return settings.PREDEFINED_ICS_DIR / path
+        return settings.PREDEFINED_DIR / "ics" / path

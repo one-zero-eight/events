@@ -1,3 +1,2 @@
 # Ignore sensitive files
-/src/repositories/predefined/*.json
-/src/repositories/predefined/ics
+/predefined

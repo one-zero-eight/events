@@ -168,14 +168,13 @@ cython_debug/
 ### User defined ###
 .idea/
 
-# Ignore sensitive files
+# Ignore temporary files
+*.tmp
+/tests/repositories/temp
+
+# Ignore sensitive files and predefined data
+/predefined
 innopolis_user_data.json
 predefined_event_groups.json
 predefined_tags.json
-# Ignore predefined files
-src/repositories/predefined/ics/**/*.ics
-src/repositories/predefined/ics/*.json
-
-# Ignore temporary files
-*.tmp
-/src/repositories/users/predefined_groups.json
+*.ics

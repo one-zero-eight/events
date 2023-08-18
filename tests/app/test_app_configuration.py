@@ -30,12 +30,10 @@ def monkeysession():
 def fake_paths(monkeysession):
     from src.config import settings
 
-    monkeysession.setattr(settings, "PREDEFINED_GROUPS_FILE", Path("tests/repositories/temp/test_groups.json.tmp"))
-    monkeysession.setattr(settings, "PREDEFINED_TAGS_FILE", Path("tests/repositories/temp/test_tags.json.tmp"))
-    monkeysession.setattr(settings, "PREDEFINED_USERS_FILE", Path("tests/repositories/temp/test_users.json.tmp"))
+    monkeysession.setattr(settings, "PREDEFINED_DIR", Path("tests/repositories/temp/predefined"))
 
     # ensure directory exists
-    settings.PREDEFINED_GROUPS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    settings.PREDEFINED_DIR.mkdir(parents=True, exist_ok=True)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -73,13 +71,13 @@ def fake_predefined_repository():
     from src.config import settings
 
     with (
-        settings.PREDEFINED_GROUPS_FILE.open("w", encoding="utf-8") as groups_file,
-        settings.PREDEFINED_TAGS_FILE.open("w", encoding="utf-8") as tags_file,
-        settings.PREDEFINED_USERS_FILE.open("w", encoding="utf-8") as users_file,
+        (settings.PREDEFINED_DIR / "innopolis_user_data.json").open("w", encoding="utf-8") as users_file,
+        (settings.PREDEFINED_DIR / "predefined_event_groups.json").open("w", encoding="utf-8") as groups_file,
+        (settings.PREDEFINED_DIR / "predefined_tags.json").open("w", encoding="utf-8") as tags_file,
     ):
+        users_file.write(user_storage.json())
         groups_file.write(group_storage.json())
         tags_file.write(tag_storage.json())
-        users_file.write(user_storage.json())
 
 
 @pytest.mark.asyncio
