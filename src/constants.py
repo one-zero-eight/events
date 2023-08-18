@@ -30,3 +30,24 @@ LICENSE_INFO = {
     "name": "MIT License",
     "identifier": "MIT",
 }
+
+TAGS_INFO = [
+    {
+        "name": "Event Groups",
+        "description": (
+            "Groups consisting of multiple events. It can represent a schedule of one academic group or club."
+        ),
+    },
+    {
+        "name": "Ics files",
+        "description": "Generate .ics files for event groups to import them into calendar app.",
+    },
+    {
+        "name": "Tags",
+        "description": "Topics or categories of event groups.",
+    },
+    {
+        "name": "Users",
+        "description": "User data and linking users with event groups.",
+    },
+]

@@ -30,6 +30,7 @@ app = FastAPI(
     version=constants.VERSION,
     contact=constants.CONTACT_INFO,
     license_info=constants.LICENSE_INFO,
+    openapi_tags=constants.TAGS_INFO,
     servers=[
         {"url": settings.APP_ROOT_PATH, "description": "Current"},
         {
