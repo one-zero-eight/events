@@ -15,11 +15,10 @@ class Settings(BaseSettings):
     Settings for the application. Get settings from .env file.
     """
 
-    APP_TITLE = "InNoHassle Events API"
-    APP_DESCRIPTION = "API of Events project in InNoHassle Ecosystem."
-    APP_VERSION = "0.1.0"
+    # Prefix for the API path (e.g. "/api/v0")
     APP_ROOT_PATH: str = ""
 
+    # App environment
     ENVIRONMENT: Environment = Environment.DEVELOPMENT
 
     # You can run 'openssl rand -hex 32' to generate keys

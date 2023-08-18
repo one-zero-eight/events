@@ -4,10 +4,11 @@ import re
 
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
-from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.responses import RedirectResponse
 
+from src import constants
 from src.app.routers import routers
 from src.config import settings
 
@@ -23,9 +24,12 @@ def generate_unique_operation_id(route: APIRoute) -> str:
 
 
 app = FastAPI(
-    title=settings.APP_TITLE,
-    description=settings.APP_DESCRIPTION,
-    version=settings.APP_VERSION,
+    title=constants.TITLE,
+    summary=constants.SUMMARY,
+    description=constants.DESCRIPTION,
+    version=constants.VERSION,
+    contact=constants.CONTACT_INFO,
+    license_info=constants.LICENSE_INFO,
     servers=[
         {"url": settings.APP_ROOT_PATH, "description": "Current"},
         {
@@ -35,6 +39,7 @@ app = FastAPI(
     ],
     root_path=settings.APP_ROOT_PATH,
     root_path_in_servers=False,
+    swagger_ui_oauth2_redirect_url=None,
     generate_unique_id_function=generate_unique_operation_id,
 )
 
@@ -142,12 +147,7 @@ for router in routers:
     app.include_router(router)
 
 
-class VersionInfo(BaseModel):
-    title = settings.APP_TITLE
-    description = settings.APP_DESCRIPTION
-    version = settings.APP_VERSION
-
-
-@app.get("/", tags=["System"])
-async def version() -> VersionInfo:
-    return VersionInfo()
+@app.get("/", tags=["System"], include_in_schema=False)
+async def root():
+    # Redirect to docs
+    return RedirectResponse(app.url_path_for("swagger_ui_html"), status_code=302)

@@ -13,7 +13,6 @@ from src.repositories.predefined.repository import (
 )
 
 from src.main import app
-from src.main import settings
 
 fake = Faker()
 
@@ -89,15 +88,3 @@ async def test_startup():
 
     with TestClient(app):
         ...
-
-
-def test_version():
-    client = TestClient(app)
-
-    response = client.get("/")
-    assert response.status_code == 200
-    assert response.json() == {
-        "title": settings.APP_TITLE,
-        "description": settings.APP_DESCRIPTION,
-        "version": settings.APP_VERSION,
-    }
