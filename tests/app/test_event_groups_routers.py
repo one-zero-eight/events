@@ -8,14 +8,14 @@ from tests.misc.test_nonobvious_schemas import get_fake_create_event_group
 async def create_event_group(event_group_repository):
     await setup_repositories()
     event_group_schema = get_fake_create_event_group()
-    event_group = await event_group_repository.create_or_read(event_group_schema)
+    event_group = await event_group_repository.create(event_group_schema)
     return event_group
 
 
 @pytest.mark.asyncio
-async def test_get_event_group(client: httpx.AsyncClient, event_group_repository):
+async def test_get_event_group(async_client: httpx.AsyncClient, event_group_repository):
     event_group = await create_event_group(event_group_repository)
-    response = await client.get(f"event-groups/{event_group.id}")
+    response = await async_client.get(f"event-groups/{event_group.id}")
     response_from_api = response.json()
     assert response.status_code == 200
     assert event_group.alias in response_from_api["alias"]
@@ -25,9 +25,9 @@ async def test_get_event_group(client: httpx.AsyncClient, event_group_repository
 
 
 @pytest.mark.asyncio
-async def test_find_event_group_by_path(client: httpx.AsyncClient, event_group_repository):
+async def test_find_event_group_by_path(async_client: httpx.AsyncClient, event_group_repository):
     event_group = await create_event_group(event_group_repository)
-    response = await client.get(f"event-groups/by-path?path={event_group.path}")
+    response = await async_client.get(f"event-groups/by-path?path={event_group.path}")
     assert response.status_code == 200
     response_from_api = response.json()
     assert event_group.alias in response_from_api["alias"]
@@ -37,20 +37,20 @@ async def test_find_event_group_by_path(client: httpx.AsyncClient, event_group_r
 
 
 @pytest.mark.asyncio
-async def test_not_find_event_group_by_path(client: httpx.AsyncClient, event_group_repository):
+async def test_not_find_event_group_by_path(async_client: httpx.AsyncClient, event_group_repository):
     await setup_repositories()
-    response = await client.get("event-groups/by-path?path=nonexistingpath")
+    response = await async_client.get("event-groups/by-path?path=nonexistingpath")
     assert response.status_code == 404
 
 
 @pytest.mark.asyncio
-async def test_list_event_groups(client: httpx.AsyncClient, event_group_repository):
+async def test_list_event_groups(async_client: httpx.AsyncClient, event_group_repository):
     event_groups = []
     event_groups_number = 10
     for i in range(event_groups_number):
         event_group = await create_event_group(event_group_repository)
         event_groups.append(event_group)
-    response = await client.get("event-groups/")
+    response = await async_client.get("event-groups/")
     response_from_api = response.json()
     assert response.status_code == 200
 

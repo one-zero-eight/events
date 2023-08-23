@@ -13,13 +13,13 @@ async def create_tag(tag_repository):
 
 
 @pytest.mark.asyncio
-async def test_list_tags(client: httpx.AsyncClient, tag_repository):
+async def test_list_tags(async_client: httpx.AsyncClient, tag_repository):
     tags = []
     tags_number = 10
     for i in range(tags_number):
         tag = await create_tag(tag_repository)
         tags.append(tag)
-    response = await client.get("tags/")
+    response = await async_client.get("tags/")
     response_from_api = response.json()
     assert response.status_code == 200
     for i in range(tags_number):

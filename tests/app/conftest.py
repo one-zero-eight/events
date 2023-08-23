@@ -58,12 +58,6 @@ async def _init_models(session: AsyncSession):
         await conn.run_sync(Base.metadata.create_all)
 
 
-@pytest_asyncio.fixture()
-async def client():
-    async with httpx.AsyncClient(app=app, base_url="http://127.0.0.1:8000/") as client:
-        yield client
-
-
 async def _restore_session(session: AsyncSession):
     from src.storages.sql.models.base import Base
 
@@ -93,3 +87,9 @@ def tag_repository(storage) -> "AbstractTagRepository":
 @pytest.fixture(scope="package")
 def event_repository(storage) -> "AbstractEventRepository":
     return SqlEventRepository(storage)
+
+
+@pytest_asyncio.fixture()
+async def async_client():
+    async with httpx.AsyncClient(app=app, base_url="http://testserver") as client:
+        yield client

@@ -6,13 +6,12 @@ from faker import Faker
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from src.main import app
 from src.repositories.predefined.repository import (
     JsonGroupStorage,
     JsonUserStorage,
     JsonTagStorage,
 )
-
-from src.main import app
 
 fake = Faker()
 
@@ -59,7 +58,9 @@ def fake_predefined_repository():
     predefined_groups = []
     for group in fake_groups:
         predefined_group = JsonGroupStorage.PredefinedGroup(
-            alias=group.alias, description=group.description, name=group.name, path=group.path
+            alias=group.alias,
+            description=group.description,
+            name=group.name,  # path=group.path
         )
         predefined_groups.append(predefined_group)
 
@@ -78,6 +79,8 @@ def fake_predefined_repository():
         users_file.write(user_storage.json())
         groups_file.write(group_storage.json())
         tags_file.write(tag_storage.json())
+
+    # TODO: Generate iCal files
 
 
 @pytest.mark.asyncio

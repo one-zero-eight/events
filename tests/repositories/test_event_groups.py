@@ -1,6 +1,8 @@
 import pytest
 from faker import Faker
+from sqlalchemy.exc import IntegrityError
 
+from src.repositories.event_groups import AbstractEventGroupRepository
 from src.schemas.event_groups import CreateEventGroup, ViewEventGroup, UpdateEventGroup
 
 fake = Faker()
@@ -11,9 +13,9 @@ def get_fake_event_group() -> "CreateEventGroup":
     return CreateEventGroup(alias=fake.slug(), name=fake.name(), path=fake_path, description=fake.slug())
 
 
-async def _create_event_group(event_group_repository) -> "ViewEventGroup":
+async def _create_event_group(event_group_repository: AbstractEventGroupRepository) -> "ViewEventGroup":
     event_group_schema = get_fake_event_group()
-    event_group = await event_group_repository.create_or_read(event_group_schema)
+    event_group = await event_group_repository.create(event_group_schema)
     assert event_group is not None
     assert isinstance(event_group, ViewEventGroup)
     assert event_group.id is not None
@@ -22,9 +24,9 @@ async def _create_event_group(event_group_repository) -> "ViewEventGroup":
     return event_group
 
 
-async def _batch_create_event_group(event_group_repository) -> list["ViewEventGroup"]:
+async def _batch_create_event_group(event_group_repository: AbstractEventGroupRepository) -> list["ViewEventGroup"]:
     event_group_schemas = [get_fake_event_group() for _ in range(10)]
-    event_groups = await event_group_repository.batch_create_or_read(event_group_schemas)
+    event_groups = await event_group_repository.batch_create(event_group_schemas)
 
     assert event_groups is not None
     assert isinstance(event_groups, list)
@@ -49,9 +51,11 @@ async def test_create_if_not_exists(event_group_repository):
 @pytest.mark.asyncio
 async def test_create_if_not_exists_HIT(event_group_repository):
     event_group_schema = get_fake_event_group()
-    event_group = await event_group_repository.create_or_read(event_group_schema)
-    hit = await event_group_repository.create_or_read(event_group_schema)
-    assert event_group.id == hit.id
+    event_group = await event_group_repository.create(event_group_schema)
+    assert isinstance(event_group, ViewEventGroup)
+
+    with pytest.raises(IntegrityError):
+        await event_group_repository.create(event_group_schema)
 
 
 @pytest.mark.asyncio
@@ -95,16 +99,27 @@ async def test_update(event_group_repository):
 @pytest.mark.asyncio
 async def test_path_duplicate(event_group_repository):
     event_group = await _create_event_group(event_group_repository)
-
+    assert isinstance(event_group, ViewEventGroup)
     new_scheme = CreateEventGroup(alias=fake.slug(), name=fake.name(), path=event_group.path)
-    new_event_group = await event_group_repository.create_or_read(new_scheme)
-    assert event_group.id == new_event_group.id
+    with pytest.raises(IntegrityError):
+        await event_group_repository.create(new_scheme)
 
 
 @pytest.mark.asyncio
 async def test_null_path(event_group_repository):
     scheme = CreateEventGroup(alias=fake.slug(), name=fake.name())
     new_scheme = CreateEventGroup(alias=fake.slug(), name=fake.name())
-    event_group = await event_group_repository.create_or_read(scheme)
-    new_event_group = await event_group_repository.create_or_read(new_scheme)
+    event_group = await event_group_repository.create(scheme)
+    new_event_group = await event_group_repository.create(new_scheme)
     assert event_group.id != new_event_group.id
+
+
+@pytest.mark.asyncio
+async def test_batch_read_with_ordering(event_group_repository):
+    event_group1 = await _create_event_group(event_group_repository)
+    event_group2 = await _create_event_group(event_group_repository)
+    event_group3 = await _create_event_group(event_group_repository)
+    event_groups = await event_group_repository.batch_read([event_group3.id, event_group2.id, event_group1.id])
+    assert event_groups[0].id == event_group3.id
+    assert event_groups[1].id == event_group2.id
+    assert event_groups[2].id == event_group1.id
