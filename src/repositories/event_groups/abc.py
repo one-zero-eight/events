@@ -10,15 +10,11 @@ if TYPE_CHECKING:
 class AbstractEventGroupRepository(metaclass=ABCMeta):
     # ----------------- CRUD ----------------- #
     @abstractmethod
-    async def create_or_read(self, group: "CreateEventGroup") -> "ViewEventGroup":
+    async def create(self, group: "CreateEventGroup") -> "ViewEventGroup":
         ...
 
     @abstractmethod
-    async def batch_create_or_read(self, groups: list["CreateEventGroup"]) -> list["ViewEventGroup"]:
-        ...
-
-    @abstractmethod
-    async def batch_create_or_update(self, groups: list["CreateEventGroup"]) -> list["ViewEventGroup"]:
+    async def batch_create(self, groups: list["CreateEventGroup"]) -> list["ViewEventGroup"]:
         ...
 
     @abstractmethod
@@ -27,6 +23,10 @@ class AbstractEventGroupRepository(metaclass=ABCMeta):
 
     @abstractmethod
     async def read_all(self) -> list["ViewEventGroup"]:
+        ...
+
+    @abstractmethod
+    async def batch_read(self, group_ids: list[int]) -> list["ViewEventGroup"]:
         ...
 
     @abstractmethod
@@ -39,6 +39,10 @@ class AbstractEventGroupRepository(metaclass=ABCMeta):
 
     @abstractmethod
     async def update(self, event_group_id: int, event_group: "UpdateEventGroup") -> "ViewEventGroup":
+        ...
+
+    @abstractmethod
+    async def batch_update(self, event_groups: dict[int, "UpdateEventGroup"]) -> list["ViewEventGroup"]:
         ...
 
     # ^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^^^^^^^^ #

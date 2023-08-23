@@ -28,6 +28,15 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
         return self.storage.create_session()
 
     # ----------------- CRUD ----------------- #
+
+    async def create(self, group: CreateEventGroup) -> ViewEventGroup:
+        async with self._create_session() as session:
+            return await CRUD.create(session, group)
+
+    async def batch_create(self, groups: list[CreateEventGroup]) -> list[ViewEventGroup]:
+        async with self._create_session() as session:
+            return await CRUD.batch_create(session, groups)
+
     async def read(self, group_id: int) -> ViewEventGroup:
         async with self._create_session() as session:
             return await CRUD.read(session, id=group_id)
@@ -35,6 +44,10 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
     async def read_all(self) -> list[ViewEventGroup]:
         async with self._create_session() as session:
             return await CRUD.read_all(session)
+
+    async def batch_read(self, group_ids: list[int]) -> list[ViewEventGroup]:
+        async with self._create_session() as session:
+            return await CRUD.batch_read(session, pkeys=[{"id": group_id} for group_id in group_ids])
 
     async def read_by_path(self, path: str) -> ViewEventGroup:
         async with self._create_session() as session:
@@ -48,44 +61,13 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
         async with self._create_session() as session:
             return await CRUD.update(session, data=event_group, id=event_group_id)
 
-    async def create_or_read(self, group: CreateEventGroup) -> ViewEventGroup:
+    async def batch_update(self, event_groups: dict[int, "UpdateEventGroup"]) -> list["ViewEventGroup"]:
         async with self._create_session() as session:
-            created = await CRUD.create_if_not_exists(session, group)
-            if created is None:
-                created = await CRUD.read_by(session, only_first=True, path=group.path)
-            return created
+            data = list(event_groups.values())
 
-    async def batch_create_or_read(self, groups: list[CreateEventGroup]) -> list[ViewEventGroup]:
-        async with self._create_session() as session:
-            q = (
-                postgres_insert(EventGroup)
-                .values([group.dict() for group in groups])
-                .on_conflict_do_update(
-                    index_elements=[EventGroup.alias],
-                    set_={"id": EventGroup.id},
-                )
-                .returning(EventGroup)
+            return await CRUD.batch_update(
+                session, data=data, pkeys=[{"id": event_group_id} for event_group_id in event_groups.keys()]
             )
-            db_groups = await session.scalars(q)
-            await session.commit()
-            return [ViewEventGroup.from_orm(group) for group in db_groups]
-
-    async def batch_create_or_update(self, groups: list["CreateEventGroup"]) -> list["ViewEventGroup"]:
-        async with self._create_session() as session:
-            q = postgres_insert(EventGroup).values([group.dict() for group in groups])
-            set_ = {
-                "id": EventGroup.id,
-                "name": q.excluded.name,
-                "description": q.excluded.description,
-                "path": q.excluded.path,
-            }
-            q = q.on_conflict_do_update(
-                index_elements=[EventGroup.alias],
-                set_=set_,
-            ).returning(EventGroup)
-            db_groups = await session.scalars(q)
-            await session.commit()
-            return [ViewEventGroup.from_orm(group) for group in db_groups]
 
     # ^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^ #
 

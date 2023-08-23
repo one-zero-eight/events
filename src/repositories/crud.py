@@ -17,44 +17,46 @@ UpdateType = TypeVar("UpdateType", bound=PydanticModel)
 
 
 class AbstractCRUDRepository(Generic[CreateType, ViewType, UpdateType], metaclass=ABCMeta):
-    @staticmethod
     @abstractmethod
-    async def create(session: AsyncSession, data: CreateType) -> ViewType:
+    async def create(self, session: AsyncSession, data: CreateType) -> ViewType:
         ...
 
-    @staticmethod
     @abstractmethod
-    async def create_if_not_exists(session: AsyncSession, data: CreateType) -> ViewType | None:
+    async def create_if_not_exists(self, session: AsyncSession, data: CreateType) -> ViewType | None:
         ...
 
-    @staticmethod
     @abstractmethod
-    async def read(session: AsyncSession, **pkeys) -> ViewType | None:
+    async def batch_create(self, session: AsyncSession, data: list[CreateType]) -> list[ViewType]:
         ...
 
-    @staticmethod
     @abstractmethod
-    async def batch_read(session: AsyncSession, pkeys: list[dict[str, ...]]) -> list[ViewType]:
+    async def read(self, session: AsyncSession, **pkeys) -> ViewType | None:
         ...
 
-    @staticmethod
     @abstractmethod
-    async def read_all(session: AsyncSession) -> list[ViewType]:
+    async def batch_read(self, session: AsyncSession, pkeys: list[dict[str, ...]]) -> list[ViewType]:
         ...
 
-    @staticmethod
     @abstractmethod
-    async def read_by(session: AsyncSession, only_first: bool, **columns) -> list[ViewType] | ViewType | None:
+    async def read_all(self, session: AsyncSession) -> list[ViewType]:
         ...
 
-    @staticmethod
     @abstractmethod
-    async def update(session: AsyncSession, data: UpdateType, **pkeys) -> ViewType:
+    async def read_by(self, session: AsyncSession, only_first: bool, **columns) -> list[ViewType] | ViewType | None:
         ...
 
-    @staticmethod
     @abstractmethod
-    async def delete(session: AsyncSession, **pkeys) -> None:
+    async def update(self, session: AsyncSession, data: UpdateType, **pkeys) -> ViewType:
+        ...
+
+    @abstractmethod
+    async def batch_update(
+        self, session: AsyncSession, data: list[UpdateType], pkeys: list[dict[str, ...]]
+    ) -> list[ViewType]:
+        ...
+
+    @abstractmethod
+    async def delete(self, session: AsyncSession, **pkeys) -> None:
         ...
 
 
@@ -68,8 +70,8 @@ def CRUDFactory(
     ViewScheme: Type[ViewType],
     UpdateScheme: Type[UpdateType] = None,
     get_options: tuple[ExecutableOption, ...] = (),
-) -> Type[AbstractCRUDRepository[CreateType, ViewType, UpdateType]]:
-    from sqlalchemy import delete, insert, select, update
+) -> AbstractCRUDRepository[CreateType, ViewType, UpdateType]:
+    from sqlalchemy import delete, insert, select, update as sql_update
     from sqlalchemy.dialects.postgresql import insert as postgres_insert
     from sqlalchemy.inspection import inspect
 
@@ -81,17 +83,15 @@ def CRUDFactory(
 
     class CRUD(AbstractCRUDRepository[CreateScheme, ViewScheme, UpdateScheme], metaclass=ABCMeta):
         # ------------------ CREATE -------------- #
-        @staticmethod
-        async def create(session: AsyncSession, data: CreateScheme) -> ViewScheme:
-            q = insert(Model).values(**data.dict()).returning(Model)
+        async def create(self, session: AsyncSession, data: CreateScheme) -> ViewScheme:
+            _insert_query = insert(Model).returning(Model)
             if get_options:
-                q = q.options(*get_options)
-            obj = await session.scalar(q)
+                _insert_query = _insert_query.options(*get_options)
+            obj = await session.scalar(_insert_query, params=data.dict())
             await session.commit()
             return ViewScheme.from_orm(obj)
 
-        @staticmethod
-        async def create_if_not_exists(session: AsyncSession, data: CreateScheme) -> ViewScheme | None:
+        async def create_if_not_exists(self, session: AsyncSession, data: CreateScheme) -> ViewScheme | None:
             q = postgres_insert(Model).values(**data.dict()).on_conflict_do_nothing().returning(Model)
             if get_options:
                 q = q.options(*get_options)
@@ -100,10 +100,19 @@ def CRUDFactory(
             if obj:
                 return ViewScheme.from_orm(obj)
 
+        async def batch_create(self, session: AsyncSession, data: list[CreateScheme]) -> list[ViewScheme]:
+            if not data:
+                return []
+            _insert_query = insert(Model).returning(Model)
+            if get_options:
+                _insert_query = _insert_query.options(*get_options)
+            objs = await session.scalars(_insert_query, params=[obj.dict() for obj in data])
+            await session.commit()
+            return [ViewScheme.from_orm(obj) for obj in objs]
+
         # ^^^^^^^^^^^^^^^^^^ CREATE ^^^^^^^^^^^^^^ #
         # ------------------ READ ---------------- #
-        @staticmethod
-        async def read(session: AsyncSession, **pkeys) -> ViewScheme:
+        async def read(self, session: AsyncSession, **pkeys) -> ViewScheme:
             q = select(Model).where(pkey_clause(pkeys))
             if get_options:
                 q = q.options(*get_options)
@@ -111,24 +120,32 @@ def CRUDFactory(
             if obj:
                 return ViewScheme.from_orm(obj)
 
-        @staticmethod
-        async def batch_read(session: AsyncSession, pkeys: list[dict[str, ...]]) -> list[ViewScheme]:
-            q = select(Model).where(or_(*[pkey_clause(pkey) for pkey in pkeys]))
+        async def batch_read(self, session: AsyncSession, pkeys: list[dict[str, ...]]) -> list[ViewScheme]:
+            if not pkeys:
+                return []
+
+            q = select(Model).where(
+                or_(
+                    *[pkey_clause(pkey) for pkey in pkeys],
+                )
+            )
+
             if get_options:
                 q = q.options(*get_options)
             objs = await session.scalars(q)
+
             return [ViewScheme.from_orm(obj) for obj in objs]
 
-        @staticmethod
-        async def read_all(session: AsyncSession) -> list[ViewScheme]:
+        async def read_all(self, session: AsyncSession) -> list[ViewScheme]:
             q = select(Model)
             if get_options:
                 q = q.options(*get_options)
             objs = await session.scalars(q)
             return [ViewScheme.from_orm(obj) for obj in objs]
 
-        @staticmethod
-        async def read_by(session: AsyncSession, only_first: bool, **columns) -> list[ViewScheme] | ViewScheme | None:
+        async def read_by(
+            self, session: AsyncSession, only_first: bool, **columns
+        ) -> list[ViewScheme] | ViewScheme | None:
             q = select(Model).where(*[getattr(Model, column) == value for column, value in columns.items()])
             if get_options:
                 q = q.options(*get_options)
@@ -140,19 +157,31 @@ def CRUDFactory(
                 return [ViewScheme.from_orm(obj) for obj in objs]
 
         # ^^^^^^^^^^^^^^^^^^ READ ^^^^^^^^^^^^^^^^^^^ #
-        @staticmethod
-        async def update(session: AsyncSession, data: UpdateScheme, **pkeys) -> ViewScheme:
-            q = update(Model).where(pkey_clause(pkeys)).values(**data.dict(exclude_none=True)).returning(Model)
+        async def update(self, session: AsyncSession, data: UpdateScheme, **pkeys) -> ViewScheme:
+            q = sql_update(Model).values(**pkeys, **data.dict(exclude_unset=True)).returning(Model)
             if get_options:
                 q = q.options(*get_options)
             obj = await session.scalar(q)
             await session.commit()
             return ViewScheme.from_orm(obj)
 
-        @staticmethod
-        async def delete(session: AsyncSession, **pkeys) -> None:
+        async def batch_update(
+            self, session: AsyncSession, data: list[UpdateScheme], pkeys: list[dict[str, ...]]
+        ) -> list[ViewScheme]:
+            if not data:
+                return []
+
+            await session.execute(
+                sql_update(Model),
+                params=[{**pkey, **obj.dict(exclude_unset=True)} for pkey, obj in zip(pkeys, data)],
+            )
+            await session.commit()
+
+            return await self.batch_read(session, pkeys)
+
+        async def delete(self, session: AsyncSession, **pkeys) -> None:
             q = delete(Model).where(pkey_clause(pkeys))
             await session.execute(q)
             await session.commit()
 
-    return CRUD
+    return CRUD()

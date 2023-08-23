@@ -56,7 +56,7 @@ class UpdateEventGroup(BaseModel):
 
     alias: Optional[str] = None
     name: Optional[str] = None
-    description: Optional[str] = None
+    description: Optional[str]
     path: Optional[str] = None
 
 

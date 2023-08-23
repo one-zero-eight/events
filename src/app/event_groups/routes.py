@@ -1,5 +1,6 @@
 import aiofiles
-from fastapi import UploadFile
+from fastapi import UploadFile, HTTPException
+from sqlalchemy.exc import IntegrityError
 from starlette.responses import JSONResponse
 
 from src.app.dependencies import EVENT_GROUP_REPOSITORY_DEPENDENCY, CURRENT_USER_ID_DEPENDENCY
@@ -20,6 +21,7 @@ from src.schemas import ViewEventGroup, ListEventGroupsResponse, CreateEventGrou
     "/",
     responses={
         201: {"description": "Event group created successfully", "model": ViewEventGroup},
+        409: {"description": "Integrity error, unique constraint violation. Return existing event group"},
         **IncorrectCredentialsException.responses,
         **NoCredentialsException.responses,
     },
@@ -29,10 +31,14 @@ async def create_event_group(
     event_group: CreateEventGroup,
     event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
     current_user_id: CURRENT_USER_ID_DEPENDENCY,
-) -> ViewEventGroup:
-    created = await event_group_repository.create_or_update(event_group)
-    await event_group_repository.setup_ownership(created.id, current_user_id, OwnershipEnum.owner)
-    return created
+):
+    try:
+        event_group_view = await event_group_repository.create(event_group)
+        await event_group_repository.setup_ownership(event_group_view.id, current_user_id, OwnershipEnum.owner)
+        return JSONResponse(status_code=201, content=event_group_view.dict())
+    except IntegrityError as integrity_error:
+        detail = integrity_error.args[0]
+        raise HTTPException(status_code=409, detail=detail)
 
 
 @router.put(
@@ -52,8 +58,10 @@ async def update_event_group(
     current_user_id: CURRENT_USER_ID_DEPENDENCY,
 ) -> ViewEventGroup:
     event_group = await event_group_repository.read(event_group_id)
+
     if event_group is None:
         raise EventGroupNotFoundException()
+
     owners_and_moderators = {ownership.user_id for ownership in event_group.ownerships}
 
     if current_user_id not in owners_and_moderators:

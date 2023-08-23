@@ -1,5 +1,6 @@
 __all__ = ["app", "setup_repositories"]
 
+import os.path
 import re
 
 from fastapi import FastAPI
@@ -12,6 +13,7 @@ from starlette.responses import RedirectResponse
 from src import constants
 from src.app.routers import routers
 from src.config import settings
+from src.schemas import UpdateEventGroup
 
 
 def generate_unique_operation_id(route: APIRoute) -> str:
@@ -108,16 +110,35 @@ async def setup_predefined_data():
     db_tags = await tag_repository.batch_create_or_read(_create_tags)
     alias_x_tag = {(tag.alias, tag.type): tag for tag in db_tags}
 
-    _create_event_groups = [CreateEventGroup(**group.dict()) for group in predefined_event_groups]
-    db_event_groups = await event_group_repository.batch_create_or_update(_create_event_groups)
-    alias_x_group = {group.alias: group for group in db_event_groups}
+    existing_groups = await event_group_repository.read_all()
+    alias_x_group = {group.alias: group for group in existing_groups}
+    _create_event_groups = [
+        CreateEventGroup(**group.dict()) for group in predefined_event_groups if group.alias not in alias_x_group
+    ]
+    _update_event_groups = {
+        alias_x_group[group.alias].id: UpdateEventGroup(**group.dict(exclude_unset=True))
+        for group in predefined_event_groups
+        if group.alias in alias_x_group
+    }
+    # create new groups
+    db_event_groups = await event_group_repository.batch_create(_create_event_groups)
+
+    # check existance of ics files
+    for group in db_event_groups + existing_groups:
+        alias_x_group[group.alias] = group
+
+        if group.path and not os.path.exists(predefined_repository.locate_ics_by_path(group.path)):
+            raise FileNotFoundError(f"ICS file for group {group.alias} not found")
+
+    # update existing groups
+    await event_group_repository.batch_update(_update_event_groups)
 
     _create_users = [CreateUser(**user.dict()) for user in predefined_users]
     db_users = await user_repository.batch_create_or_read(_create_users)
 
     event_group_id_x_tags_ids = dict()
     for i, predefined_event_group in enumerate(predefined_event_groups):
-        db_event_group_id = db_event_groups[i].id
+        db_event_group_id = alias_x_group[predefined_event_group.alias].id
         tag_ids = [alias_x_tag[(tag.alias, tag.type)].id for tag in predefined_event_group.tags]
         event_group_id_x_tags_ids[db_event_group_id] = tag_ids
 
