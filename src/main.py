@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.routing import APIRoute
 from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
 from src import constants
@@ -149,6 +150,6 @@ for router in routers:
 
 
 @app.get("/", tags=["System"], include_in_schema=False)
-async def root():
+async def root(request: Request):
     # Redirect to docs
-    return RedirectResponse(app.url_path_for("swagger_ui_html"), status_code=302)
+    return RedirectResponse(request.url_for("swagger_ui_html"), status_code=302)
