@@ -173,7 +173,7 @@ cython_debug/
 /tests/repositories/temp
 
 # Ignore sensitive files and predefined data
-/predefined
+/predefined*
 innopolis_user_data.json
 predefined_event_groups.json
 predefined_tags.json
