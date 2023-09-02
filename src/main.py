@@ -1,6 +1,5 @@
 __all__ = ["app", "setup_repositories"]
 
-import os.path
 import re
 
 from fastapi import FastAPI
@@ -126,9 +125,6 @@ async def setup_predefined_data():
     # check existance of ics files
     for group in db_event_groups + existing_groups:
         alias_x_group[group.alias] = group
-
-        if group.path and not os.path.exists(predefined_repository.locate_ics_by_path(group.path)):
-            raise FileNotFoundError(f"ICS file for group {group.alias} not found")
 
     # update existing groups
     await event_group_repository.batch_update(_update_event_groups)
