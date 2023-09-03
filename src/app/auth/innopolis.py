@@ -56,7 +56,7 @@ if enabled:
         error = request.query_params.get("error")
         if error:
             description = request.query_params.get("error_description")
-            return JSONResponse(status_code=403, content={error: error, description: description})
+            return JSONResponse(status_code=403, content={"error": error, "description": description})
 
         try:
             token = await oauth.innopolis.authorize_access_token(request)
