@@ -1,5 +1,6 @@
 __all__ = []
 
+import warnings
 from typing import Optional, Annotated
 
 from fastapi import Depends
@@ -15,7 +16,7 @@ from src.repositories.users import AbstractUserRepository
 enabled = bool(settings.DEV_AUTH_EMAIL) and settings.ENVIRONMENT == Environment.DEVELOPMENT
 
 if enabled:
-    print(
+    warnings.warn(
         "WARNING: Dev auth provider is enabled! "
         "Use this only for development environment "
         "(otherwise, set ENVIRONMENT=production)."
