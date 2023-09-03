@@ -6,7 +6,7 @@ from authlib.integrations.base_client import MismatchingStateError
 from fastapi import Depends
 from pydantic import BaseModel, Field
 from starlette.requests import Request
-from starlette.responses import RedirectResponse
+from starlette.responses import RedirectResponse, JSONResponse
 
 from src.app.auth import router, oauth
 from src.app.auth.common import redirect_with_token, ensure_allowed_return_to
@@ -52,6 +52,12 @@ if enabled:
         request: Request,
         user_repository: Annotated[AbstractUserRepository, Depends(Dependencies.get_user_repository)],
     ):
+        # Check if there are any error from SSO
+        error = request.query_params.get("error")
+        if error:
+            description = request.query_params.get("error_description")
+            return JSONResponse(status_code=403, content={error: error, description: description})
+
         try:
             token = await oauth.innopolis.authorize_access_token(request)
         except MismatchingStateError:
