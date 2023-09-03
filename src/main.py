@@ -105,10 +105,7 @@ async def setup_predefined_data():
     predefined_event_groups = predefined_repository.get_event_groups()
     predefined_users = predefined_repository.get_users()
 
-    _create_tags = [CreateTag(**tag.dict()) for tag in predefined_tags]
-    db_tags = await tag_repository.batch_create_or_read(_create_tags)
-    alias_x_tag = {(tag.alias, tag.type): tag for tag in db_tags}
-
+    # create new groups and update existing groups
     existing_groups = await event_group_repository.read_all()
     alias_x_group = {group.alias: group for group in existing_groups}
     _create_event_groups = [
@@ -120,31 +117,37 @@ async def setup_predefined_data():
         if group.alias in alias_x_group
     }
     # create new groups
-    db_event_groups = await event_group_repository.batch_create(_create_event_groups)
-
-    # check existance of ics files
-    for group in db_event_groups + existing_groups:
-        alias_x_group[group.alias] = group
-
+    created_groups = await event_group_repository.batch_create(_create_event_groups)
     # update existing groups
     await event_group_repository.batch_update(_update_event_groups)
 
-    _create_users = [CreateUser(**user.dict()) for user in predefined_users]
-    db_users = await user_repository.batch_create_or_read(_create_users)
+    for group in created_groups + existing_groups:
+        alias_x_group[group.alias] = group
 
+    # create tags
+    _create_tags = [CreateTag(**tag.dict()) for tag in predefined_tags]
+    db_tags = await tag_repository.batch_create_or_read(_create_tags)
+    alias_x_tag = {(tag.alias, tag.type): tag for tag in db_tags}
+
+    # map tags to groups
     event_group_id_x_tags_ids = dict()
     for i, predefined_event_group in enumerate(predefined_event_groups):
         db_event_group_id = alias_x_group[predefined_event_group.alias].id
         tag_ids = [alias_x_tag[(tag.alias, tag.type)].id for tag in predefined_event_group.tags]
         event_group_id_x_tags_ids[db_event_group_id] = tag_ids
 
-    await tag_repository.batch_add_tags_to_event_group(event_group_id_x_tags_ids)
+    # add tags to groups
+    await tag_repository.batch_set_tags_to_event_group(event_group_id_x_tags_ids)
+
+    # create users
+    _create_users = [CreateUser(**user.dict()) for user in predefined_users]
+    db_users = await user_repository.batch_create_or_read(_create_users)
 
     user_id_x_group_ids = dict()
     for i, user in enumerate(predefined_users):
         user_id = db_users[i].id
         user_id_x_group_ids[user_id] = [alias_x_group[group_alias].id for group_alias in user.groups]
-
+    # map users to groups
     await event_group_repository.batch_setup_groups(user_id_x_group_ids)
 
 

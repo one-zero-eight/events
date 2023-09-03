@@ -54,7 +54,7 @@ class AbstractTagRepository(
         ...
 
     @abstractmethod
-    async def batch_add_tags_to_event_group(self, tags_mapping: dict[int, list[int]]) -> None:
+    async def batch_set_tags_to_event_group(self, tags_mapping: dict[int, list[int]]) -> None:
         ...
 
     @abstractmethod

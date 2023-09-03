@@ -93,9 +93,14 @@ class SqlTagRepository(AbstractTagRepository):
             await session.execute(q)
             await session.commit()
 
-    async def batch_add_tags_to_event_group(self, tags_mapping: dict[int, list[int]]) -> None:
+    async def batch_set_tags_to_event_group(self, tags_mapping: dict[int, list[int]]) -> None:
         async with self._create_session() as session:
             table = Tag.__tags_associations__[EventGroup.__tablename__]
+            # clear all tags
+            to_clear = tuple(tags_mapping.keys())
+            if to_clear:
+                q = delete(table).where(table.object_id.in_(to_clear))
+                await session.execute(q)
 
             values = [
                 {
@@ -109,7 +114,8 @@ class SqlTagRepository(AbstractTagRepository):
             if values:
                 q = insert(table).values(values).on_conflict_do_nothing()
                 await session.execute(q)
-                await session.commit()
+
+            await session.commit()
 
     async def remove_tags_from_event_group(self, event_group_id: int, tag_ids: list[int]) -> None:
         async with self._create_session() as session:
