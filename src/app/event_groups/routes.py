@@ -14,7 +14,6 @@ from src.exceptions import (
     EventGroupNotFoundException,
     OperationIsNotAllowed,
     EventGroupWithMissingPath,
-    IcsFileIsNotModified,
     IncorrectCredentialsException,
     NoCredentialsException,
 )
@@ -165,6 +164,7 @@ async def list_event_groups(
 @router.put(
     "/{event_group_id}/schedule.ics",
     responses={
+        200: {"description": ".ics file is not modified"},
         201: {"description": ".ics file updated successfully"},
         # 304: {"description": ".ics file already exists and content is the same"},
         **EventGroupWithMissingPath.responses,
@@ -186,7 +186,7 @@ async def set_event_group_ics(
     if ics_file.content_type != "text/calendar":
         return JSONResponse(
             status_code=400,
-            content={"message": f"File content type is {ics_file.content_type}, but should be 'text/calendar'"},
+            content={"detail": f"File content type is {ics_file.content_type}, but should be 'text/calendar'"},
         )
 
     event_group = await event_group_repository.read(event_group_id)
@@ -208,7 +208,7 @@ async def set_event_group_ics(
         calendar = icalendar.Calendar.from_ical(await ics_file.read())
         validate_calendar(calendar)
     except ValueError as e:
-        return JSONResponse(status_code=400, content={"message": f"File is not valid:\n{e}"})
+        return JSONResponse(status_code=400, content={"detail": f"File is not valid:\n{e}"})
 
     content = calendar.to_ical()
 
@@ -217,12 +217,12 @@ async def set_event_group_ics(
     async with aiofiles.open(ics_path, "rb") as f:
         old_content = await f.read()
         if old_content == content:
-            return IcsFileIsNotModified()
+            return JSONResponse(status_code=200, content={"detail": "File already exists and content is the same"})
 
     async with aiofiles.open(ics_path, "wb") as f:
         await f.write(content)
 
-    return JSONResponse(status_code=201, content={"message": "File uploaded successfully"})
+    return JSONResponse(status_code=201, content={"detail": "File uploaded successfully"})
 
 
 # ^^^^^^^^^^^^^ ICS-related ^^^^^^^^^^^^^^^^^^^^^^^^ #

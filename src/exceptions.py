@@ -89,20 +89,6 @@ class EventGroupWithMissingPath(HTTPException):
     responses = {400: {"description": "Path is not defined for this event group"}}
 
 
-class IcsFileIsNotModified(HTTPException):
-    """
-    HTTP_304_NOT_MODIFIED
-    """
-
-    def __init__(self):
-        super().__init__(
-            status_code=status.HTTP_304_NOT_MODIFIED,
-            detail=self.responses[304]["description"],
-        )
-
-    responses = {304: {"description": "Event group already connected to the same .ics file"}}
-
-
 class OperationIsNotAllowed(HTTPException):
     """
     HTTP_403_FORBIDDEN
