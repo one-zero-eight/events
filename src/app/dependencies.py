@@ -4,7 +4,7 @@ __all__ = [
     "EVENT_GROUP_REPOSITORY_DEPENDENCY",
     "TAG_REPOSITORY_DEPENDENCY",
     "CURRENT_USER_ID_DEPENDENCY",
-    "IS_VERIFIED_PARSER_DEPENDENCY",
+    "VERIFY_PARSER_DEPENDENCY",
     "Dependencies",
 ]
 
@@ -58,7 +58,7 @@ class Dependencies:
 
     get_current_user_id: Callable[..., str]
 
-    is_verified_parser: Callable[..., bool]
+    verify_parser: Callable[..., bool]
 
 
 STORAGE_DEPENDENCY = Annotated[AbstractSQLAlchemyStorage, Depends(Dependencies.get_storage)]
@@ -68,10 +68,10 @@ EVENT_GROUP_REPOSITORY_DEPENDENCY = Annotated[
 ]
 TAG_REPOSITORY_DEPENDENCY = Annotated[AbstractTagRepository, Depends(Dependencies.get_tag_repository)]
 
-from src.app.auth.dependencies import get_current_user_id, is_verified_parser  # noqa: E402
+from src.app.auth.dependencies import get_current_user_id, verify_parser  # noqa: E402
 
 Dependencies.get_current_user_id = get_current_user_id
-Dependencies.is_verified_parser = is_verified_parser
+Dependencies.verify_parser = verify_parser
 
 CURRENT_USER_ID_DEPENDENCY = Annotated[str, Depends(Dependencies.get_current_user_id)]
-IS_VERIFIED_PARSER_DEPENDENCY = Annotated[bool, Depends(Dependencies.is_verified_parser)]
+VERIFY_PARSER_DEPENDENCY = Annotated[bool, Depends(Dependencies.verify_parser)]

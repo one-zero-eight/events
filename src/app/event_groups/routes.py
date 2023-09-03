@@ -1,9 +1,14 @@
 import aiofiles
+import icalendar
 from fastapi import UploadFile, HTTPException
 from sqlalchemy.exc import IntegrityError
 from starlette.responses import JSONResponse
 
-from src.app.dependencies import EVENT_GROUP_REPOSITORY_DEPENDENCY, CURRENT_USER_ID_DEPENDENCY
+from src.app.dependencies import (
+    EVENT_GROUP_REPOSITORY_DEPENDENCY,
+    CURRENT_USER_ID_DEPENDENCY,
+    VERIFY_PARSER_DEPENDENCY,
+)
 from src.app.event_groups import router
 from src.exceptions import (
     EventGroupNotFoundException,
@@ -55,17 +60,18 @@ async def update_event_group(
     event_group_id: int,
     update_scheme: UpdateEventGroup,
     event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
-    current_user_id: CURRENT_USER_ID_DEPENDENCY,
+    # current_user_id: CURRENT_USER_ID_DEPENDENCY,
+    _: VERIFY_PARSER_DEPENDENCY,
 ) -> ViewEventGroup:
     event_group = await event_group_repository.read(event_group_id)
 
     if event_group is None:
         raise EventGroupNotFoundException()
 
-    owners_and_moderators = {ownership.user_id for ownership in event_group.ownerships}
-
-    if current_user_id not in owners_and_moderators:
-        raise OperationIsNotAllowed()
+    # owners_and_moderators = {ownership.user_id for ownership in event_group.ownerships}
+    #
+    # if current_user_id not in owners_and_moderators:
+    #     raise OperationIsNotAllowed()
 
     event_group = await event_group_repository.update(event_group_id, update_scheme)
     return event_group
@@ -171,11 +177,17 @@ async def set_event_group_ics(
     event_group_id: int,
     ics_file: UploadFile,
     event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
-    current_user_id: CURRENT_USER_ID_DEPENDENCY,
+    # current_user_id: CURRENT_USER_ID_DEPENDENCY,
+    _: VERIFY_PARSER_DEPENDENCY,
 ):
     """
     Load .ics file to event group by event group id and save file to predefined path
     """
+    if ics_file.content_type != "text/calendar":
+        return JSONResponse(
+            status_code=400,
+            content={"message": f"File content type is {ics_file.content_type}, but should be 'text/calendar'"},
+        )
 
     event_group = await event_group_repository.read(event_group_id)
 
@@ -185,23 +197,27 @@ async def set_event_group_ics(
     if event_group.path is None:
         raise EventGroupWithMissingPath()
 
-    owners_and_moderators = {ownership.user_id for ownership in event_group.ownerships}
+    # owners_and_moderators = {ownership.user_id for ownership in event_group.ownerships}
+    #
+    # if current_user_id not in owners_and_moderators:
+    #     raise OperationIsNotAllowed()
 
-    if current_user_id not in owners_and_moderators:
-        raise OperationIsNotAllowed()
+    try:
+        from src.repositories.predefined.repository import validate_calendar
 
-    ics_path = PredefinedRepository.locate_ics_by_path(event_group.path)
+        calendar = icalendar.Calendar.from_ical(await ics_file.read())
+        validate_calendar(calendar)
+    except ValueError as e:
+        return JSONResponse(status_code=400, content={"message": f"File is not valid:\n{e}"})
 
-    # TODO: add validation for ics file(return 400 if file is not valid)
-    if False:
-        return JSONResponse(status_code=400, content={"message": "File is not valid"})
-    # TODO: compare ics files if one already exists and return 200 if they are the same
+    # TODO: compare ics files if one already exists and return 304 if they are the same
     if False:
         return IcsFileIsNotModified()
 
+    ics_path = PredefinedRepository.locate_ics_by_path(event_group.path)
+
     async with aiofiles.open(ics_path, "wb") as f:
-        content = await ics_file.read()
-        await f.write(content)
+        await f.write(calendar.to_ical())
 
     return JSONResponse(status_code=201, content={"message": "File uploaded successfully"})
 

@@ -1,4 +1,4 @@
-__all__ = ["PredefinedRepository", "JsonUserStorage", "JsonGroupStorage", "JsonTagStorage"]
+__all__ = ["PredefinedRepository", "JsonUserStorage", "JsonGroupStorage", "JsonTagStorage", "validate_calendar"]
 
 import os.path
 import warnings

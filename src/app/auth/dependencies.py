@@ -1,4 +1,4 @@
-__all__ = ["get_current_user_id", "is_verified_parser"]
+__all__ = ["get_current_user_id", "verify_parser"]
 
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, APIKeyCookie
@@ -38,5 +38,5 @@ async def get_current_user_id(
     return token_data.user_id
 
 
-def is_verified_parser(token: str) -> bool:
+def verify_parser(token: str) -> bool:
     return verify_parser_token(token, IncorrectCredentialsException())
