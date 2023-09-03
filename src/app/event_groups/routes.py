@@ -210,14 +210,17 @@ async def set_event_group_ics(
     except ValueError as e:
         return JSONResponse(status_code=400, content={"message": f"File is not valid:\n{e}"})
 
-    # TODO: compare ics files if one already exists and return 304 if they are the same
-    if False:
-        return IcsFileIsNotModified()
+    content = calendar.to_ical()
 
     ics_path = PredefinedRepository.locate_ics_by_path(event_group.path)
 
+    async with aiofiles.open(ics_path, "rb") as f:
+        old_content = await f.read()
+        if old_content == content:
+            return IcsFileIsNotModified()
+
     async with aiofiles.open(ics_path, "wb") as f:
-        await f.write(calendar.to_ical())
+        await f.write(content)
 
     return JSONResponse(status_code=201, content={"message": "File uploaded successfully"})
 
