@@ -127,7 +127,7 @@ async def test_batch_add_tags_to_event_group(event_group_repository, tag_reposit
     for event_group in event_groups:
         chosen = random.sample(tags, random.randint(0, len(tags) // 2))
         mapping[event_group.id] = [tag.id for tag in chosen]
-    await tag_repository.batch_add_tags_to_event_group(mapping)
+    await tag_repository.batch_set_tags_to_event_group(mapping)
 
     for event_group in event_groups:
         updated_event_group = await event_group_repository.read(event_group.id)
