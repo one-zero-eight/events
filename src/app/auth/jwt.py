@@ -46,8 +46,9 @@ def create_parser_token() -> str:
 
 def _create_access_token(data: dict, expires_delta: timedelta) -> str:
     payload = data.copy()
-    expire = datetime.utcnow() + expires_delta
-    payload.update({"exp": expire})
+    issued_at = datetime.utcnow()
+    expire = issued_at + expires_delta
+    payload.update({"exp": expire, "iat": issued_at})
     encoded_jwt = jwt.encode({"alg": ALGORITHM}, payload, settings.JWT_SECRET_KEY.get_secret_value())
     return str(encoded_jwt, "utf-8")
 
