@@ -168,8 +168,9 @@ async def list_event_groups(
         201: {"description": ".ics file updated successfully"},
         # 304: {"description": ".ics file already exists and content is the same"},
         **EventGroupWithMissingPath.responses,
-        **OperationIsNotAllowed.responses,
         **EventGroupNotFoundException.responses,
+        **IncorrectCredentialsException.responses,
+        **NoCredentialsException.responses,
     },
     status_code=201,
 )
