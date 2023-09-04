@@ -59,7 +59,7 @@ def OwnershipsMixinFactory(tablename: str, Base: type[DeclarativeBase]):
 
         @declared_attr
         def ownerships(cls) -> Mapped[list["Ownership"]]:
-            return relationship(cls.Ownership, lazy="selectin", cascade="all, delete-orphan")
+            return relationship(cls.Ownership, cascade="all, delete-orphan")
 
     return Mixin
 

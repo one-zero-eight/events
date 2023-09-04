@@ -3,7 +3,7 @@ __all__ = ["CreateTag", "ViewTag", "UpdateTag"]
 import json
 from typing import Optional
 
-from pydantic import BaseModel, validator, Json, Field
+from pydantic import BaseModel, validator, Json
 
 from src.schemas.ownership import Ownership
 
@@ -28,7 +28,7 @@ class ViewTag(BaseModel):
     name: Optional[str] = None
     satellite: Optional[dict] = None
 
-    ownerships: list[Ownership] = Field(default_factory=list)
+    # ownerships: list[Ownership] = Field(default_factory=list)
 
     @validator("satellite", pre=True, always=True)
     def _validate_satellite(cls, v):
