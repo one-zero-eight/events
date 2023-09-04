@@ -1,3 +1,6 @@
+# Website url
+WEBSITE_URL = "https://innohassle.ru"
+
 # API version
 VERSION = "0.1.0"
 

@@ -13,6 +13,7 @@ from src.app.auth.common import redirect_with_token, ensure_allowed_return_to
 from src.app.auth.dependencies import get_current_user_id
 from src.app.dependencies import Dependencies
 from src.app.auth.jwt import create_access_token
+from src import constants
 from src.exceptions import NoCredentialsException, IncorrectCredentialsException
 from src.schemas.users import CreateUser
 from src.config import settings
@@ -94,7 +95,7 @@ if enabled:
             # User has already authenticated in another tab,
             # but we don't know where to return a user.
             # Let's just return user to main page.
-            return RedirectResponse("https://innohassle.ru", status_code=302)
+            return RedirectResponse(constants.WEBSITE_URL, status_code=302)
 
         if return_to:
             # User is not authenticated,
@@ -105,4 +106,4 @@ if enabled:
             return RedirectResponse(url, status_code=302)
 
         # We don't know anything, so let's just return user to main page.
-        return RedirectResponse("https://innohassle.ru", status_code=302)
+        return RedirectResponse(constants.WEBSITE_URL, status_code=302)
