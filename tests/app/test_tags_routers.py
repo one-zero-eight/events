@@ -1,7 +1,7 @@
 import httpx
 import pytest
 
-from src.main import setup_repositories
+from src.utils import setup_repositories
 from tests.repositories.test_tags import get_fake_tag
 
 

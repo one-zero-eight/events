@@ -1,7 +1,7 @@
 import httpx
 import pytest
 
-from src.main import setup_repositories
+from src.utils import setup_repositories
 from tests.misc.test_nonobvious_schemas import get_fake_create_event_group
 
 
