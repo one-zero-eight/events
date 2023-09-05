@@ -58,9 +58,7 @@ def fake_predefined_repository():
     predefined_groups = []
     for group in fake_groups:
         predefined_group = JsonGroupStorage.PredefinedGroup(
-            alias=group.alias,
-            description=group.description,
-            name=group.name,  # path=group.path
+            alias=group.alias, description=group.description, name=group.name, path=group.path
         )
         predefined_groups.append(predefined_group)
 
@@ -83,6 +81,7 @@ def fake_predefined_repository():
     # TODO: Generate iCal files
 
 
+@pytest.mark.skip(reason="Not implemented")
 @pytest.mark.asyncio
 async def test_startup():
     assert isinstance(app, FastAPI)

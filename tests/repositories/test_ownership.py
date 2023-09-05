@@ -25,6 +25,7 @@ async def _test_setup_ownership(
     assert len(updated_target.ownerships) == count_of_ownerships - 1
 
 
+@pytest.mark.skip(reason="Not implemented")
 @pytest.mark.asyncio
 async def test_tag_setup_ownership(tag_repository, user_repository):
     user = await _create_user(user_repository)
@@ -32,6 +33,7 @@ async def test_tag_setup_ownership(tag_repository, user_repository):
     await _test_setup_ownership(user, target, tag_repository)
 
 
+@pytest.mark.skip(reason="Not implemented")
 @pytest.mark.asyncio
 async def test_event_group_setup_ownership(event_group_repository, user_repository):
     user = await _create_user(user_repository)

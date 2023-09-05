@@ -22,8 +22,8 @@ async def _create_tag(tag_repository) -> "ViewTag":
     tag = await tag_repository.create_or_read(tag_schema)
     assert tag is not None
     assert isinstance(tag, ViewTag)
-    assert tag.ownerships == []
-    assert tag.dict(exclude={"id", "ownerships"}) == tag_schema.dict()
+    # assert tag.ownerships == []
+    assert tag.dict(exclude={"id"}) == tag_schema.dict()
     return tag
 
 
@@ -38,7 +38,7 @@ async def _batch_create_tag(tag_repository) -> list["ViewTag"]:
     for tag, tag_schema in zip(tags, tag_schemas):
         assert tag is not None
         assert isinstance(tag, ViewTag)
-        assert tag.dict(exclude={"id", "ownerships"}) == tag_schema.dict()
+        assert tag.dict(exclude={"id"}) == tag_schema.dict()
     return tags
 
 

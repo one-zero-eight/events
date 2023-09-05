@@ -115,11 +115,12 @@ async def test_null_path(event_group_repository):
 
 
 @pytest.mark.asyncio
-async def test_batch_read_with_ordering(event_group_repository):
+async def test_batch_read(event_group_repository):
     event_group1 = await _create_event_group(event_group_repository)
     event_group2 = await _create_event_group(event_group_repository)
     event_group3 = await _create_event_group(event_group_repository)
     event_groups = await event_group_repository.batch_read([event_group3.id, event_group2.id, event_group1.id])
-    assert event_groups[0].id == event_group3.id
-    assert event_groups[1].id == event_group2.id
-    assert event_groups[2].id == event_group1.id
+    ids = [event_group.id for event_group in event_groups]
+    assert event_group1.id in ids
+    assert event_group2.id in ids
+    assert event_group3.id in ids

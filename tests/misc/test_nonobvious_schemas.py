@@ -13,7 +13,7 @@ def get_fake_event_group():
 
 
 def get_fake_create_event_group():
-    return CreateEventGroup(alias=fake.slug(), path=fake.word(), name=fake.word(), description=fake.word(), tags=[])
+    return CreateEventGroup(alias=fake.slug(), path=fake.word(), name=fake.word(), description=fake.word())
 
 
 def test_list_event_groups_from_iterable():
