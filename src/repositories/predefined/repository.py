@@ -74,7 +74,7 @@ class JsonGroupStorage(BaseModel):
             paths.add(group.path)
             located = PredefinedRepository.locate_ics_by_path(group.path)
             if not os.path.exists(located):
-                raise FileNotFoundError(f"ICS file for group {group.alias} not found")
+                raise FileNotFoundError(f"ICS file for group {group.alias} not found ({located})")
             with open(located, "rb") as f:
                 calendar = icalendar.Calendar.from_ical(f.read())
                 try:

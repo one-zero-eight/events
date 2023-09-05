@@ -10,6 +10,7 @@ from src.repositories.events import AbstractEventRepository, SqlEventRepository
 from src.repositories.tags import AbstractTagRepository, SqlTagRepository
 from src.repositories.users import AbstractUserRepository, SqlUserRepository
 from src.storages.sql import AbstractSQLAlchemyStorage, SQLAlchemyStorage
+from src.utils import setup_repositories
 
 
 # --- Monkey Patching --- #
@@ -92,4 +93,5 @@ def event_repository(storage) -> "AbstractEventRepository":
 @pytest_asyncio.fixture()
 async def async_client():
     async with httpx.AsyncClient(app=app, base_url="http://testserver") as client:
+        await setup_repositories()
         yield client

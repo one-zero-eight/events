@@ -1,12 +1,10 @@
 import httpx
 import pytest
 
-from src.utils import setup_repositories
 from tests.misc.test_nonobvious_schemas import get_fake_create_event_group
 
 
 async def create_event_group(event_group_repository):
-    await setup_repositories()
     event_group_schema = get_fake_create_event_group()
     event_group = await event_group_repository.create(event_group_schema)
     return event_group
@@ -38,7 +36,6 @@ async def test_find_event_group_by_path(async_client: httpx.AsyncClient, event_g
 
 @pytest.mark.asyncio
 async def test_not_find_event_group_by_path(async_client: httpx.AsyncClient, event_group_repository):
-    await setup_repositories()
     response = await async_client.get("event-groups/by-path?path=nonexistingpath")
     assert response.status_code == 404
 

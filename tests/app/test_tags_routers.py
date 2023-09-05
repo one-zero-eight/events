@@ -1,12 +1,10 @@
 import httpx
 import pytest
 
-from src.utils import setup_repositories
 from tests.repositories.test_tags import get_fake_tag
 
 
 async def create_tag(tag_repository):
-    await setup_repositories()
     tag_schema = get_fake_tag()
     tag = await tag_repository.create_or_read(tag_schema)
     return tag
