@@ -6,8 +6,8 @@ from src.app.tags import router as router_tags
 # TODO: Implement workshops
 # from src.app.workshops import router as router_workshops
 
-from src.app.ics import router as router_ics
+from src.app.root import router as router_root
 
-routers = [router_users, router_event_groups, router_auth, router_tags, router_ics]
+routers = [router_users, router_event_groups, router_auth, router_tags, router_root]
 
 __all__ = ["routers", *routers]

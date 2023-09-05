@@ -5,11 +5,23 @@ from typing import AsyncGenerator
 import aiofiles
 import icalendar
 from fastapi import HTTPException
-from starlette.responses import FileResponse, StreamingResponse
+from starlette.requests import Request
+from starlette.responses import FileResponse, StreamingResponse, RedirectResponse
 
-from src.app.dependencies import EVENT_GROUP_REPOSITORY_DEPENDENCY, USER_REPOSITORY_DEPENDENCY
-from src.app.ics import router
-from src.exceptions import EventGroupNotFoundException, UserNotFoundException
+from src.app.dependencies import (
+    EVENT_GROUP_REPOSITORY_DEPENDENCY,
+    USER_REPOSITORY_DEPENDENCY,
+    TAG_REPOSITORY_DEPENDENCY,
+    VERIFY_PARSER_DEPENDENCY,
+)
+from src.app.root import router
+from src.config import settings, Environment
+from src.exceptions import (
+    EventGroupNotFoundException,
+    UserNotFoundException,
+    IncorrectCredentialsException,
+    NoCredentialsException,
+)
 from src.repositories.predefined import PredefinedRepository
 from src.schemas import ViewUser
 
@@ -24,6 +36,7 @@ from src.schemas import ViewUser
         },
         **EventGroupNotFoundException.responses,
     },
+    tags=["Ics files"],
 )
 async def get_event_group_ics_by_alias(
     user_id: int, export_type: str, event_group_alias: str, event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY
@@ -84,6 +97,7 @@ async def _generate_ics_from_multiple(user: ViewUser, *ics: Path) -> AsyncGenera
         },
         **UserNotFoundException.responses,
     },
+    tags=["Ics files"],
 )
 async def get_user_schedule(
     user_id: int,
@@ -120,3 +134,36 @@ async def get_user_schedule(
         content=ical_generator,
         media_type="text/calendar",
     )
+
+
+@router.get(
+    "/update-predefined-data",
+    responses={
+        200: {
+            "description": "Predefined data updated successfully",
+        },
+        **IncorrectCredentialsException.responses,
+        **NoCredentialsException.responses,
+    },
+    tags=["System"],
+    include_in_schema=settings.ENVIRONMENT == Environment.DEVELOPMENT,
+)
+async def update_predefined_data(
+    _: VERIFY_PARSER_DEPENDENCY,
+    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
+    tag_repository: TAG_REPOSITORY_DEPENDENCY,
+    user_repository: USER_REPOSITORY_DEPENDENCY,
+):
+    from src.utils import setup_predefined_data
+
+    await setup_predefined_data(
+        event_group_repository=event_group_repository,
+        tag_repository=tag_repository,
+        user_repository=user_repository,
+    )
+
+
+@router.get("/", tags=["System"], include_in_schema=False)
+async def redirect_from_root(request: Request):
+    # Redirect to docs
+    return RedirectResponse(request.url_for("swagger_ui_html"), status_code=302)
