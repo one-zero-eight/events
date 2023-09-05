@@ -11,7 +11,7 @@ from starlette.responses import RedirectResponse
 
 from src import constants
 from src.app.routers import routers
-from src.config import settings
+from src.config import settings, Environment
 from src.schemas import UpdateEventGroup
 
 
@@ -168,6 +168,12 @@ async def close_connection():
 for router in routers:
     app.include_router(router)
 
+if settings.ENVIRONMENT == Environment.DEVELOPMENT:
+    import logging
+    import warnings
+    warnings.warn("Enable sqlalchemy logging")
+    logging.basicConfig()
+    logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 @app.get("/", tags=["System"], include_in_schema=False)
 async def root(request: Request):
