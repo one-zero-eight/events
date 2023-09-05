@@ -38,5 +38,10 @@ async def get_current_user_id(
     return token_data.user_id
 
 
-def verify_parser(token: str) -> bool:
+def verify_parser(
+    bearer: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+) -> bool:
+    token = (bearer and bearer.credentials) or None
+    if not token:
+        raise NoCredentialsException()
     return verify_parser_token(token, IncorrectCredentialsException())
