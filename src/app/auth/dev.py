@@ -17,7 +17,7 @@ enabled = bool(settings.DEV_AUTH_EMAIL) and settings.ENVIRONMENT == Environment.
 
 if enabled:
     warnings.warn(
-        "WARNING: Dev auth provider is enabled! "
+        "Dev auth provider is enabled! "
         "Use this only for development environment "
         "(otherwise, set ENVIRONMENT=production)."
     )
