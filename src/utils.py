@@ -1,6 +1,7 @@
 import re
 
 from fastapi.routing import APIRoute
+from pydantic import BaseModel, Field
 
 from src.config import settings
 from src.schemas import UpdateEventGroup
@@ -42,18 +43,28 @@ async def setup_predefined_data(
     import json
     from src.schemas import CreateEventGroup, CreateUser, CreateTag
     from src.repositories.predefined import PredefinedRepository
+    from pydantic import parse_file_as
+
+    class Categories(BaseModel):
+        class Category(BaseModel):
+            path: str
+
+        categories: list[Category] = Field(default_factory=list)
 
     # ------------------- Predefined data -------------------
-    with (
-        (settings.PREDEFINED_DIR / "innopolis_user_data.json").open(encoding="utf-8") as users_file,
-        (settings.PREDEFINED_DIR / "predefined_event_groups.json").open(encoding="utf-8") as groups_file,
-        (settings.PREDEFINED_DIR / "predefined_tags.json").open(encoding="utf-8") as tags_file,
-    ):
-        users_json = json.load(users_file)
-        groups_json = json.load(groups_file)
-        tags_json = json.load(tags_file)
 
-    predefined_repository = PredefinedRepository.from_jsons(users_json, groups_json, tags_json)
+    with (settings.PREDEFINED_DIR / "innopolis_user_data.json").open(encoding="utf-8") as users_file:
+        users_json = json.load(users_file)
+
+    categories = parse_file_as(Categories, settings.PREDEFINED_DIR / "categories.json")
+    categories_jsons = []
+
+    for category in categories.categories:
+        with (settings.PREDEFINED_DIR / category.path).open(encoding="utf-8") as category_file:
+            category_json = json.load(category_file)
+            categories_jsons.append(category_json)
+
+    predefined_repository = PredefinedRepository.from_jsons(users_json, categories_jsons)
     predefined_tags = predefined_repository.get_tags()
     predefined_event_groups = predefined_repository.get_event_groups()
     predefined_users = predefined_repository.get_users()

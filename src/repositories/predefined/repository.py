@@ -7,8 +7,7 @@ from typing import Optional
 
 import dateutil.rrule
 import icalendar
-from pydantic import BaseModel, Field, parse_obj_as
-from pydantic import validator
+from pydantic import BaseModel, Field, parse_obj_as, validator
 
 from src.config import settings
 
@@ -19,12 +18,6 @@ class JsonUserStorage(BaseModel):
         groups: list[str] = Field(default_factory=list)
 
     users: list[InJsonUser] = Field(default_factory=list)
-
-    @validator("users", pre=True, each_item=True, always=True)
-    def _validate_user(cls, v):
-        if isinstance(v, dict):
-            return JsonUserStorage.InJsonUser(**v)
-        return v
 
     @validator("users")
     def _should_be_unique(cls, v):
@@ -50,28 +43,20 @@ class JsonGroupStorage(BaseModel):
 
     event_groups: list[PredefinedGroup] = Field(default_factory=list)
 
-    @validator("event_groups", pre=True, each_item=True, always=True)
-    def _validate_group(cls, v):
-        if isinstance(v, dict):
-            return JsonGroupStorage.PredefinedGroup(**v)
-        return v
-
     @validator("event_groups")
-    def _should_be_unique(cls, v):
+    def validate_groups(cls, v):
+        paths = set()
         aliases = set()
+
         for group in v:
             if group.alias in aliases:
                 raise ValueError(f"Group alias {group.alias} is not unique")
-            aliases.add(group.alias)
-        return v
-
-    @validator("event_groups")
-    def _path_should_be_unique_and_exist_and_valid(cls, v):
-        paths = set()
-        for group in v:
             if group.path in paths:
                 raise ValueError(f"Group path {group.path} is not unique")
+
+            aliases.add(group.alias)
             paths.add(group.path)
+
             located = PredefinedRepository.locate_ics_by_path(group.path)
             if not os.path.exists(located):
                 raise FileNotFoundError(f"ICS file for group {group.alias} not found ({located})")
@@ -81,6 +66,7 @@ class JsonGroupStorage(BaseModel):
                     validate_calendar(calendar)
                 except ValueError as e:
                     warnings.warn(f"ICS file for group {group.alias} is invalid:\n{e}")
+
         return v
 
 
@@ -92,20 +78,20 @@ class JsonTagStorage(BaseModel):
 
     tags: list[Tag] = Field(default_factory=list)
 
-    @validator("tags", pre=True, each_item=True, always=True)
-    def _validate_tag(cls, v):
-        if isinstance(v, dict):
-            return JsonTagStorage.Tag(**v)
-        return v
-
     @validator("tags")
-    def _should_be_unique(cls, v):
+    def should_be_unique(cls, v):
         aliases = set()
+        tags = []
         for tag in v:
-            if tag.alias in aliases:
-                raise ValueError(f"Tag alias {tag.alias} is not unique")
-            aliases.add(tag.alias)
-        return v
+            if tag.alias not in aliases:
+                tags.append(tag)
+                aliases.add(tag.alias)
+        return tags
+
+
+class CategoryStorage(BaseModel):
+    event_groups: list[JsonGroupStorage.PredefinedGroup] = Field(default_factory=list)
+    tags: list[JsonTagStorage.Tag] = Field(default_factory=list)
 
 
 class PredefinedRepository:
@@ -123,10 +109,18 @@ class PredefinedRepository:
         self.validate()
 
     @classmethod
-    def from_jsons(cls, user_json: dict, event_group_json: dict, tag_json: dict):
+    def from_jsons(cls, user_json: dict, categories_json: list[dict]):
+        event_groups = []
+        tags = []
+        for category_json in categories_json:
+            category_storage = parse_obj_as(CategoryStorage, category_json)
+            event_groups.extend(category_storage.event_groups)
+            tags.extend(category_storage.tags)
+
         user_storage = parse_obj_as(JsonUserStorage, user_json)
-        event_group_storage = parse_obj_as(JsonGroupStorage, event_group_json)
-        tag_storage = parse_obj_as(JsonTagStorage, tag_json)
+        event_group_storage = JsonGroupStorage(event_groups=event_groups)
+        tag_storage = JsonTagStorage(tags=tags)
+
         return cls(user_storage, event_group_storage, tag_storage)
 
     def get_users(self) -> list[JsonUserStorage.InJsonUser]:
@@ -134,6 +128,9 @@ class PredefinedRepository:
 
     def get_event_groups(self) -> list[JsonGroupStorage.PredefinedGroup]:
         return self.event_group_storage.event_groups.copy()
+
+    def _iterate_event_groups(self):
+        return iter(self.event_group_storage.event_groups)
 
     def get_tags(self) -> list[JsonTagStorage.Tag]:
         return self.tag_storage.tags.copy()
@@ -145,13 +142,13 @@ class PredefinedRepository:
     def validate(self):
         # validate mapping event_group <-> tag
         tag_aliases = set(tag.alias for tag in self.tag_storage.tags)
-        for group in self.event_group_storage.event_groups:
+        for group in self._iterate_event_groups():
             for tag in group.tags:
                 if tag.alias not in tag_aliases:
                     raise ValueError(f"Tag {tag.alias} is not found")
 
         # validate mapping user <-> event_group
-        group_aliases = set(group.alias for group in self.event_group_storage.event_groups)
+        group_aliases = set(group.alias for group in self._iterate_event_groups())
         for user in self.user_storage.users:
             for group in user.groups:
                 if group not in group_aliases:
