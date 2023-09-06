@@ -12,6 +12,7 @@ from src.repositories.predefined.repository import (
     JsonGroupStorage,
     JsonUserStorage,
     JsonTagStorage,
+    CategoryStorage,
 )
 
 fake = Faker()
@@ -63,6 +64,7 @@ def fake_icalendar() -> icalendar.Calendar:
 def fake_predefined_repository():
     # save to file
     from src.config import settings
+    import json
 
     def fake_group() -> JsonGroupStorage.PredefinedGroup:
         path = fake.slug() + ".ics"
@@ -83,6 +85,12 @@ def fake_predefined_repository():
 
     predefined_groups = []
 
+    fake_categories = {
+        "categories": [
+            {"path": "category1.json"},
+        ]
+    }
+
     os.makedirs(settings.PREDEFINED_DIR / "ics", exist_ok=True)
 
     for group in fake_groups:
@@ -96,17 +104,19 @@ def fake_predefined_repository():
         predefined_groups.append(predefined_group)
 
     user_storage = JsonUserStorage(users=fake_users)
-    group_storage = JsonGroupStorage(event_groups=predefined_groups)
-    tag_storage = JsonTagStorage(tags=[fake_tag() for _ in range(10)])
+    tags = [fake_tag() for _ in range(10)]
+    category_storage = CategoryStorage(event_groups=predefined_groups, tags=tags)
 
     with (
         (settings.PREDEFINED_DIR / "innopolis_user_data.json").open("w", encoding="utf-8") as users_file,
-        (settings.PREDEFINED_DIR / "predefined_event_groups.json").open("w", encoding="utf-8") as groups_file,
-        (settings.PREDEFINED_DIR / "predefined_tags.json").open("w", encoding="utf-8") as tags_file,
+        (settings.PREDEFINED_DIR / "categories.json").open("w", encoding="utf-8") as categories_file,
+        (settings.PREDEFINED_DIR / fake_categories["categories"][0]["path"]).open(
+            "w", encoding="utf-8"
+        ) as category_file,
     ):
         users_file.write(user_storage.json())
-        groups_file.write(group_storage.json())
-        tags_file.write(tag_storage.json())
+        json.dump(fake_categories, categories_file)
+        category_file.write(category_storage.json())
 
 
 @pytest.mark.asyncio
