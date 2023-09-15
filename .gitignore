@@ -178,3 +178,4 @@ innopolis_user_data.json
 predefined_event_groups.json
 predefined_tags.json
 *.ics
+/.env.alembic

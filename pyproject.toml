@@ -16,6 +16,8 @@ icalendar = "^5.0.7"
 aiofiles = "^23.1.0"
 sqlalchemy = { version = "2.0.19", extras = ["asyncpg"] }
 asyncpg = "^0.28.0"
+alembic = "^1.12.0"
+psycopg2 = "^2.9.7"
 
 [tool.poetry.group.prod.dependencies]
 gunicorn = "20.1.0"
