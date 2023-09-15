@@ -4,9 +4,12 @@ __all__ = [
     "IdMixin",
     "NameMixin",
     "DescriptionMixin",
+    "UpdateCreateDateTimeMixin",
 ]
 
-from sqlalchemy import ForeignKey, String, Text
+import datetime
+
+from sqlalchemy import ForeignKey, String, Text, DateTime, func
 from sqlalchemy.ext.associationproxy import association_proxy, AssociationProxy
 from sqlalchemy.orm import DeclarativeBase, declared_attr, relationship, Mapped, mapped_column
 
@@ -66,6 +69,13 @@ def OwnershipsMixinFactory(tablename: str, Base: type[DeclarativeBase]):
 
 class IdMixin:
     id: Mapped[int] = mapped_column(primary_key=True)
+
+
+class UpdateCreateDateTimeMixin:
+    updated_at: Mapped[datetime.datetime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now(), onupdate=func.now()
+    )
+    created_at: Mapped[datetime.datetime] = mapped_column(DateTime, nullable=False, server_default=func.now())
 
 
 class NameMixin:
