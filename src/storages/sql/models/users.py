@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 
-from src.storages.sql.__mixin__ import IdMixin
+from src.storages.sql.models.__mixin__ import IdMixin
 from src.storages.sql.models.base import Base
 
 if TYPE_CHECKING:

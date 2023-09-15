@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 from sqlalchemy import ForeignKey, func
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 
-from src.storages.sql.__mixin__ import IdMixin, NameMixin, OwnershipsMixinFactory
+from src.storages.sql.models.__mixin__ import IdMixin, NameMixin, OwnershipsMixinFactory
 from src.storages.sql.models.base import Base
 
 if TYPE_CHECKING:

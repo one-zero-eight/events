@@ -5,7 +5,7 @@ from typing import Any
 from sqlalchemy import JSON, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.storages.sql.__mixin__ import IdMixin, NameMixin, OwnershipsMixinFactory, DescriptionMixin
+from src.storages.sql.models.__mixin__ import IdMixin, NameMixin, OwnershipsMixinFactory, DescriptionMixin
 from src.storages.sql.models import Base
 
 

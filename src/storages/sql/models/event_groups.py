@@ -5,7 +5,13 @@ from typing import Any, TYPE_CHECKING
 from sqlalchemy import JSON, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.storages.sql.__mixin__ import TagsMixinFactory, IdMixin, NameMixin, DescriptionMixin, OwnershipsMixinFactory
+from src.storages.sql.models.__mixin__ import (
+    TagsMixinFactory,
+    IdMixin,
+    NameMixin,
+    DescriptionMixin,
+    OwnershipsMixinFactory,
+)
 from src.storages.sql.models import Base
 
 if TYPE_CHECKING:
