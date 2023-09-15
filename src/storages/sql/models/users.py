@@ -10,6 +10,7 @@ from src.storages.sql.models.base import Base
 
 if TYPE_CHECKING:
     from src.storages.sql.models.event_groups import EventGroup
+    from src.storages.sql.models.event_groups import UserXFavoriteEventGroup
 
 
 class User(Base, IdMixin):
@@ -33,6 +34,3 @@ class User(Base, IdMixin):
         "favorites_association",
         "event_group",
     )
-
-
-from src.storages.sql.models.event_groups import UserXFavoriteEventGroup  # noqa: E402
