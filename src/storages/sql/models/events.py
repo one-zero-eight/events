@@ -9,19 +9,51 @@ from src.storages.sql.models.__mixin__ import (
     IdMixin,
     NameMixin,
     DescriptionMixin,
+    UpdateCreateDateTimeMixin,
+    OwnershipsMixinFactory,
 )
 from src.storages.sql.models import Base
 
+from typing import TYPE_CHECKING
 
-class Event(Base, IdMixin, NameMixin, DescriptionMixin):
+if TYPE_CHECKING:
+    from src.storages.sql.models.event_groups import EventGroup
+
+
+class Event(
+    Base, IdMixin, NameMixin, DescriptionMixin, UpdateCreateDateTimeMixin, OwnershipsMixinFactory("events", Base)
+):
+    """
+    Create new .icalendar event
+        - summary
+        - dtstart
+        - dtend OR duration
+        - rrule [optional]
+        - description [optional]
+        - location [optional]
+        - organizer [optional]
+        - attendees [optional]
+        - categories [optional]
+    """
+
     __tablename__ = "events"
 
     patches: Mapped[list["EventPatch"]] = relationship(
         "EventPatch", back_populates="parent", cascade="all, delete-orphan", lazy="selectin"
     )
 
+    event_groups: Mapped[list["EventGroup"]] = relationship(
+        "EventGroup", secondary="events_x_event_groups", back_populates="events", lazy="selectin"
+    )
+
 
 class EventPatch(Base, IdMixin):
+    """
+        Patch for .icalendar event
+        - order-id
+    я
+    """
+
     __tablename__ = "event_patches"
 
     parent_id: Mapped[int] = mapped_column(ForeignKey("events.id"), nullable=False)
@@ -37,3 +69,10 @@ class EventPatch(Base, IdMixin):
     dtend: Mapped[datetime.datetime] = mapped_column()
 
     rrule: Mapped[str] = mapped_column()
+
+
+class EventXEventGroup(Base):
+    __tablename__ = "events_x_event_groups"
+
+    event_id: Mapped[int] = mapped_column(ForeignKey("events.id"), nullable=False, primary_key=True)
+    event_group_id: Mapped[int] = mapped_column(ForeignKey("event_groups.id"), nullable=False, primary_key=True)

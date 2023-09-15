@@ -11,11 +11,13 @@ from src.storages.sql.models.__mixin__ import (
     NameMixin,
     DescriptionMixin,
     OwnershipsMixinFactory,
+    UpdateCreateDateTimeMixin,
 )
 from src.storages.sql.models import Base
 
 if TYPE_CHECKING:
     from src.storages.sql.models.users import User
+    from src.storages.sql.models.events import Event
 
 
 class EventGroup(
@@ -23,6 +25,7 @@ class EventGroup(
     IdMixin,
     NameMixin,
     DescriptionMixin,
+    UpdateCreateDateTimeMixin,
     TagsMixinFactory("event_groups", Base),
     OwnershipsMixinFactory("event_groups", Base),
 ):
@@ -34,6 +37,8 @@ class EventGroup(
     favorites_association: Mapped[list["UserXFavoriteEventGroup"]] = relationship(
         "UserXFavoriteEventGroup", back_populates="event_group", cascade="all, delete-orphan", passive_deletes=True
     )
+
+    events: Mapped[list["Event"]] = relationship("Event", secondary="events_x_event_groups")
 
 
 class UserXFavoriteEventGroup(Base):
