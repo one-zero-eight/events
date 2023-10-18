@@ -1,16 +1,23 @@
 __all__ = ["SqlEventGroupRepository"]
 
+from typing import Optional
+
+from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as postgres_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.repositories.crud import CRUDFactory
+from src.repositories.crud import CRUDFactory, AbstractCRUDRepository
 from src.repositories.event_groups.abc import AbstractEventGroupRepository
 from src.repositories.ownership import setup_ownership_method
 from src.schemas import ViewEventGroup, CreateEventGroup, UpdateEventGroup, OwnershipEnum
 from src.storages.sql import AbstractSQLAlchemyStorage
 from src.storages.sql.models import UserXFavoriteEventGroup, EventGroup
 
-CRUD = CRUDFactory(
+CRUD: AbstractCRUDRepository[
+    CreateEventGroup,
+    ViewEventGroup,
+    UpdateEventGroup,
+] = CRUDFactory(
     EventGroup,
     CreateEventGroup,
     ViewEventGroup,
@@ -40,6 +47,12 @@ class SqlEventGroupRepository(AbstractEventGroupRepository):
     async def read(self, group_id: int) -> ViewEventGroup:
         async with self._create_session() as session:
             return await CRUD.read(session, id=group_id)
+
+    async def get_only_path(self, group_id: int) -> Optional[str]:
+        async with self._create_session() as session:
+            q = select(EventGroup.path).where(EventGroup.id == group_id).where(EventGroup.path.isnot(None))
+            path: Optional[str] = await session.scalar(q)
+            return path
 
     async def read_all(self) -> list[ViewEventGroup]:
         async with self._create_session() as session:

@@ -1,7 +1,7 @@
 __all__ = ["AbstractEventGroupRepository"]
 
 from abc import ABCMeta, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from src.schemas import CreateEventGroup, ViewEventGroup, OwnershipEnum, UpdateEventGroup
@@ -46,6 +46,10 @@ class AbstractEventGroupRepository(metaclass=ABCMeta):
         ...
 
     # ^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^^^^^^^^ #
+
+    @abstractmethod
+    async def get_only_path(self, group_id: int) -> Optional[str]:
+        ...
 
     @abstractmethod
     async def setup_ownership(self, group_id: int, user_id: int, role_alias: "OwnershipEnum") -> None:

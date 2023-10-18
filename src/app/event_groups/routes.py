@@ -173,6 +173,7 @@ async def list_event_groups(
         **NoCredentialsException.responses,
     },
     status_code=201,
+    tags=["ICS"],
 )
 async def set_event_group_ics(
     event_group_id: int,
@@ -190,12 +191,9 @@ async def set_event_group_ics(
             content={"detail": f"File content type is {ics_file.content_type}, but should be 'text/calendar'"},
         )
 
-    event_group = await event_group_repository.read(event_group_id)
+    event_group_path = await event_group_repository.get_only_path(event_group_id)
 
-    if event_group is None:
-        raise EventGroupNotFoundException()
-
-    if event_group.path is None:
+    if event_group_path is None:
         raise EventGroupWithMissingPath()
 
     # owners_and_moderators = {ownership.user_id for ownership in event_group.ownerships}
@@ -213,7 +211,7 @@ async def set_event_group_ics(
 
     content = calendar.to_ical()
 
-    ics_path = PredefinedRepository.locate_ics_by_path(event_group.path)
+    ics_path = PredefinedRepository.locate_ics_by_path(event_group_path)
 
     async with aiofiles.open(ics_path, "rb") as f:
         old_content = await f.read()
