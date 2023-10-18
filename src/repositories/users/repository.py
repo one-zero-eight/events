@@ -18,20 +18,20 @@ from src.storages.sql.models import User, EventGroup, UserXFavoriteEventGroup, L
 from src.storages.sql.storage import AbstractSQLAlchemyStorage
 
 
+_get_options = (
+    selectinload(User.favorites_association),
+    selectinload(User.linked_calendars),
+)
+
+
 def SELECT_USER_BY_ID(id_: int):
     return (
         select(User)
         .where(User.id == id_)
         .options(
-            selectinload(User.favorites_association),
+            selectinload(**_get_options),
         )
     )
-
-
-_get_options = (
-    selectinload(User.favorites_association),
-    selectinload(User.linked_calendars),
-)
 
 
 CRUD: AbstractCRUDRepository[
