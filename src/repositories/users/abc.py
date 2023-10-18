@@ -3,8 +3,9 @@ __all__ = ["AbstractUserRepository"]
 from abc import ABCMeta, abstractmethod
 from typing import TYPE_CHECKING
 
+
 if TYPE_CHECKING:
-    from src.schemas import CreateUser, ViewUser
+    from src.schemas import CreateUser, ViewUser, LinkedCalendarCreate, LinkedCalendarView
 
 
 class AbstractUserRepository(metaclass=ABCMeta):
@@ -45,4 +46,8 @@ class AbstractUserRepository(metaclass=ABCMeta):
 
     @abstractmethod
     async def set_hidden(self, user_id: int, group_id: int, hide: bool = True) -> "ViewUser":
+        ...
+
+    @abstractmethod
+    async def link_calendar(self, user_id: int, calendar: "LinkedCalendarCreate") -> "LinkedCalendarView":
         ...

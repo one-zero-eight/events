@@ -1,3 +1,6 @@
+from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError
+
 from src.app.dependencies import (
     EVENT_GROUP_REPOSITORY_DEPENDENCY,
     USER_REPOSITORY_DEPENDENCY,
@@ -12,6 +15,7 @@ from src.exceptions import (
     EventGroupNotFoundException,
 )
 from src.schemas import ViewUser
+from src.schemas.linked import LinkedCalendarView, LinkedCalendarCreate
 
 
 @router.get(
@@ -105,3 +109,26 @@ async def hide_favorite(
     updated_user = await user_repository.set_hidden(user_id=user_id, group_id=group_id, hide=hide)
     updated_user: ViewUser
     return updated_user
+
+
+@router.post(
+    "/me/linked",
+    responses={
+        200: {"description": "Linked calendar added successfully"},
+        **IncorrectCredentialsException.responses,
+        **NoCredentialsException.responses,
+    },
+)
+async def link_calendar(
+    linked_calendar: LinkedCalendarCreate,
+    user_id: CURRENT_USER_ID_DEPENDENCY,
+    user_repository: USER_REPOSITORY_DEPENDENCY,
+) -> LinkedCalendarView:
+    """
+    Add linked calendar to current user
+    """
+    try:
+        calendar = await user_repository.link_calendar(user_id, linked_calendar)
+        return calendar
+    except IntegrityError:
+        raise HTTPException(status_code=409, detail="Calendar with this alias already exists")

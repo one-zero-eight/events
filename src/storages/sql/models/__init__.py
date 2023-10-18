@@ -6,7 +6,9 @@ from src.storages.sql.models.event_groups import EventGroup, UserXFavoriteEventG
 from src.storages.sql.models.events import Event, EventPatch
 from src.storages.sql.models.tags import Tag
 from src.storages.sql.models.users import User
-from src.storages.sql.models.workshops import Workshop, Timeslot, CheckIn
+from src.storages.sql.models.linked import LinkedCalendar
+
+# from src.storages.sql.models.workshops import Workshop, Timeslot, CheckIn
 
 __all__ = [
     "Base",
@@ -16,7 +18,8 @@ __all__ = [
     "EventPatch",
     "UserXFavoriteEventGroup",
     "Tag",
-    "Workshop",
-    "Timeslot",
-    "CheckIn",
+    #  "Workshop",
+    # "Timeslot",
+    # "CheckIn",
+    "LinkedCalendar",
 ]

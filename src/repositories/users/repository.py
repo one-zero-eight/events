@@ -9,10 +9,12 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.expression import exists
 
 from src.exceptions import DBEventGroupDoesNotExistInDb
-from src.repositories.crud import CRUDFactory
+from src.repositories.crud import CRUDFactory, AbstractCRUDRepository
 from src.repositories.users.abc import AbstractUserRepository
+from src.schemas import LinkedCalendarView
+from src.schemas.linked import LinkedCalendarCreate
 from src.schemas.users import CreateUser, ViewUser, UpdateUser
-from src.storages.sql.models import User, EventGroup, UserXFavoriteEventGroup
+from src.storages.sql.models import User, EventGroup, UserXFavoriteEventGroup, LinkedCalendar
 from src.storages.sql.storage import AbstractSQLAlchemyStorage
 
 
@@ -26,7 +28,17 @@ def SELECT_USER_BY_ID(id_: int):
     )
 
 
-CRUD = CRUDFactory(User, CreateUser, ViewUser, UpdateUser, get_options=(selectinload(User.favorites_association),))
+_get_options = (
+    selectinload(User.favorites_association),
+    selectinload(User.linked_calendars),
+)
+
+
+CRUD: AbstractCRUDRepository[
+    CreateUser,
+    ViewUser,
+    UpdateUser,
+] = CRUDFactory(User, CreateUser, ViewUser, UpdateUser, get_options=_get_options)
 
 MIN_USER_ID = 100_000
 MAX_USER_ID = 999_999
@@ -71,9 +83,7 @@ class SqlUserRepository(AbstractUserRepository):
             q = (
                 q.on_conflict_do_update(index_elements=[User.email], set_={"id": User.id})
                 .returning(User)
-                .options(
-                    selectinload(User.favorites_association),
-                )
+                .options(*_get_options)
             )
             db_users = await session.scalars(q)
             await session.commit()
@@ -86,9 +96,7 @@ class SqlUserRepository(AbstractUserRepository):
             q = (
                 q.on_conflict_do_update(index_elements=[User.email], set_={**q.excluded, "id": User.id})
                 .returning(User)
-                .options(
-                    selectinload(User.favorites_association),
-                )
+                .options(*_get_options)
             )
             user = await session.scalar(q)
             await session.commit()
@@ -165,13 +173,22 @@ class SqlUserRepository(AbstractUserRepository):
                 event_group.hidden = hide
 
             # from table
-            q = (
-                select(User)
-                .where(User.id == user_id)
-                .options(
-                    selectinload(User.favorites_association),
-                )
-            )
+            q = select(User).where(User.id == user_id).options(*_get_options)
             user = await session.scalar(q)
             await session.commit()
             return ViewUser.from_orm(user)
+
+    async def link_calendar(self, user_id: int, calendar: "LinkedCalendarCreate") -> "LinkedCalendarView":
+        async with self._create_session() as session:
+            q = (
+                insert(LinkedCalendar)
+                .values(
+                    user_id=user_id,
+                    **calendar.dict(),
+                )
+                .returning(LinkedCalendar)
+            )
+
+            calendar = await session.scalar(q)
+            await session.commit()
+            return LinkedCalendarView.from_orm(calendar)

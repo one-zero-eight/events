@@ -11,6 +11,7 @@ from src.storages.sql.models.base import Base
 if TYPE_CHECKING:
     from src.storages.sql.models.event_groups import EventGroup
     from src.storages.sql.models.event_groups import UserXFavoriteEventGroup
+    from src.storages.sql.models.linked import LinkedCalendar
 
 
 class User(Base, IdMixin):
@@ -33,4 +34,11 @@ class User(Base, IdMixin):
     favorites: Mapped[list["EventGroup"]] = association_proxy(
         "favorites_association",
         "event_group",
+    )
+
+    linked_calendars: Mapped[list["LinkedCalendar"]] = relationship(
+        "LinkedCalendar",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
