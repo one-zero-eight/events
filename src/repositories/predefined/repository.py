@@ -1,5 +1,6 @@
 __all__ = ["PredefinedRepository", "JsonUserStorage", "JsonGroupStorage", "JsonTagStorage", "validate_calendar"]
 
+import datetime
 import os.path
 import warnings
 from pathlib import Path
@@ -198,5 +199,16 @@ def validate_vevent(event: icalendar.Event):
         )
         rrule_dates = rrule.__iter__()
         rrule_first_dt = next(rrule_dates)
-        if rrule_first_dt != vddd_dtstart.dt:
-            raise ValueError("RRULE is not compatible with DTSTART", event)
+
+        if rrule_first_dt:
+            rrule_first_date = rrule_first_dt.date()
+
+            if isinstance(vddd_dtstart.dt, datetime.datetime):
+                vdd_date = vddd_dtstart.dt.date()
+            elif isinstance(vddd_dtstart.dt, datetime.date):
+                vdd_date = vddd_dtstart.dt
+            else:
+                raise ValueError("DTSTART is not datetime or date", event)
+
+            if rrule_first_date != vdd_date:
+                raise ValueError("DTSTART is not compatible with RRULE", event)
