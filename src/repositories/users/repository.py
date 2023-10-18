@@ -25,13 +25,7 @@ _get_options = (
 
 
 def SELECT_USER_BY_ID(id_: int):
-    return (
-        select(User)
-        .where(User.id == id_)
-        .options(
-            selectinload(**_get_options),
-        )
-    )
+    return select(User).where(User.id == id_).options(*_get_options)
 
 
 CRUD: AbstractCRUDRepository[
