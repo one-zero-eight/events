@@ -27,6 +27,7 @@ RUN apt-get update \
         vim \
         netcat \
         build-essential \
+        libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry. Respects $POETRY_VERSION and $POETRY_HOME
