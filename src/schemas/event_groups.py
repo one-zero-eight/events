@@ -6,6 +6,7 @@ __all__ = [
     "UserXFavoriteGroupView",
 ]
 
+import datetime
 from typing import Optional, Iterable
 
 from pydantic import BaseModel, Field, validator
@@ -34,6 +35,8 @@ class ViewEventGroup(BaseModel):
 
     id: int
     alias: str
+    updated_at: datetime.datetime
+    created_at: datetime.datetime
     path: Optional[str] = None
     name: Optional[str] = None
     description: Optional[str] = None
