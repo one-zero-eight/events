@@ -13,7 +13,7 @@ from src.config import settings, Environment
 from src.app.dependencies import Dependencies
 from src.repositories.users import AbstractUserRepository
 
-enabled = bool(settings.DEV_AUTH_EMAIL) and settings.ENVIRONMENT == Environment.DEVELOPMENT
+enabled = bool(settings.dev_auth_email) and settings.environment == Environment.DEVELOPMENT
 
 if enabled:
     warnings.warn(
@@ -29,7 +29,7 @@ if enabled:
         email: Optional[str] = None,
     ):
         ensure_allowed_return_to(return_to)
-        email = email or settings.DEV_AUTH_EMAIL
+        email = email or settings.dev_auth_email
         user = await user_repository.create_or_update(CreateUser(email=email, name="Ivan Petrov"))
         token = create_access_token(user.id)
         return redirect_with_token(return_to, token)
@@ -39,7 +39,7 @@ if enabled:
         user_repository: Annotated[AbstractUserRepository, Depends(Dependencies.get_user_repository)],
         email: Optional[str] = None,
     ) -> str:
-        email = email or settings.DEV_AUTH_EMAIL
+        email = email or settings.dev_auth_email
         user = await user_repository.create_or_update(CreateUser(email=email, name="Ivan Petrov"))
         return create_access_token(user.id)
 

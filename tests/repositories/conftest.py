@@ -39,7 +39,7 @@ async def client():
 # --- Storage Fixtures --- #
 @pytest.fixture(scope="package")
 def storage(settings: "Settings") -> "AbstractSQLAlchemyStorage":
-    _storage = SQLAlchemyStorage.from_url(settings.DB_URL.get_secret_value())
+    _storage = SQLAlchemyStorage.from_url(settings.db_url.get_secret_value())
     return _storage
 
 

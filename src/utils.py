@@ -22,7 +22,7 @@ async def setup_repositories():
     from src.app.dependencies import Dependencies
 
     # ------------------- Repositories Dependencies -------------------
-    storage = SQLAlchemyStorage.from_url(settings.DB_URL.get_secret_value())
+    storage = SQLAlchemyStorage.from_url(settings.db_url.get_secret_value())
     user_repository = SqlUserRepository(storage)
     event_group_repository = SqlEventGroupRepository(storage)
     tag_repository = SqlTagRepository(storage)
@@ -53,14 +53,14 @@ async def setup_predefined_data(
 
     # ------------------- Predefined data -------------------
 
-    with (settings.PREDEFINED_DIR / "innopolis_user_data.json").open(encoding="utf-8") as users_file:
+    with (settings.predefined_dir / "innopolis_user_data.json").open(encoding="utf-8") as users_file:
         users_json = json.load(users_file)
 
-    categories = parse_file_as(Categories, settings.PREDEFINED_DIR / "categories.json")
+    categories = parse_file_as(Categories, settings.predefined_dir / "categories.json")
     categories_jsons = []
 
     for category in categories.categories:
-        with (settings.PREDEFINED_DIR / category.path).open(encoding="utf-8") as category_file:
+        with (settings.predefined_dir / category.path).open(encoding="utf-8") as category_file:
             category_json = json.load(category_file)
             categories_jsons.append(category_json)
 

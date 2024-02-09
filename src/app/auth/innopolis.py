@@ -25,14 +25,14 @@ class UserInfoFromSSO(BaseModel):
     name: str | None = Field(alias="commonname")
 
 
-enabled = bool(settings.INNOPOLIS_SSO_CLIENT_ID.get_secret_value())
-redirect_uri = settings.INNOPOLIS_SSO_REDIRECT_URI
+enabled = bool(settings.innopolis_sso_client_id.get_secret_value())
+redirect_uri = settings.innopolis_sso_redirect_uri
 
 if enabled:
     innopolis_sso = oauth.register(
         "innopolis",
-        client_id=settings.INNOPOLIS_SSO_CLIENT_ID.get_secret_value(),
-        client_secret=settings.INNOPOLIS_SSO_CLIENT_SECRET.get_secret_value(),
+        client_id=settings.innopolis_sso_client_id.get_secret_value(),
+        client_secret=settings.innopolis_sso_client_secret.get_secret_value(),
         # OAuth client will fetch configuration on first request
         server_metadata_url="https://sso.university.innopolis.ru/adfs/.well-known/openid-configuration",
         client_kwargs={"scope": "openid"},
@@ -80,7 +80,7 @@ if enabled:
 
         try:
             # Check if a user has access token
-            user_id = await get_current_user_id(None, request.cookies.get(settings.AUTH_COOKIE_NAME))
+            user_id = await get_current_user_id(None, request.cookies.get(settings.auth_cookie_name))
         except (NoCredentialsException, IncorrectCredentialsException):
             user_id = None
 

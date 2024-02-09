@@ -138,7 +138,7 @@ class PredefinedRepository:
 
     @staticmethod
     def locate_ics_by_path(path: str) -> Path:
-        return settings.PREDEFINED_DIR / "ics" / path
+        return settings.predefined_dir / "ics" / path
 
     def validate(self):
         # validate mapping event_group <-> tag

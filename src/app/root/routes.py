@@ -25,7 +25,7 @@ from src.exceptions import (
         **NoCredentialsException.responses,
     },
     tags=["System"],
-    include_in_schema=settings.ENVIRONMENT == Environment.DEVELOPMENT,
+    include_in_schema=settings.environment == Environment.DEVELOPMENT,
 )
 async def update_predefined_data(
     _: VERIFY_PARSER_DEPENDENCY,

@@ -49,14 +49,14 @@ def _create_access_token(data: dict, expires_delta: timedelta) -> str:
     issued_at = datetime.utcnow()
     expire = issued_at + expires_delta
     payload.update({"exp": expire, "iat": issued_at})
-    encoded_jwt = jwt.encode({"alg": ALGORITHM}, payload, settings.JWT_SECRET_KEY.get_secret_value())
+    encoded_jwt = jwt.encode({"alg": ALGORITHM}, payload, settings.jwt_secret_key.get_secret_value())
     return str(encoded_jwt, "utf-8")
 
 
 async def verify_user_token(token: str, credentials_exception) -> UserTokenData:
     try:
         user_repository = Dependencies.get_user_repository()
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY.get_secret_value())
+        payload = jwt.decode(token, settings.jwt_secret_key.get_secret_value())
         user_id: str = payload.get("sub")
         if user_id is None or not user_id.isdigit():
             raise credentials_exception
@@ -72,7 +72,7 @@ async def verify_user_token(token: str, credentials_exception) -> UserTokenData:
 
 def verify_parser_token(token: str, credentials_exception) -> bool:
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET_KEY.get_secret_value())
+        payload = jwt.decode(token, settings.jwt_secret_key.get_secret_value())
         parser_data = payload.get("sub")
         if parser_data == "parser":
             return True

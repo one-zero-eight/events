@@ -18,13 +18,13 @@ app = FastAPI(
     license_info=constants.LICENSE_INFO,
     openapi_tags=constants.TAGS_INFO,
     servers=[
-        {"url": settings.APP_ROOT_PATH, "description": "Current"},
+        {"url": settings.app_root_path, "description": "Current"},
         {
             "url": "https://api.innohassle.ru/events/v0",
             "description": "Production environment",
         },
     ],
-    root_path=settings.APP_ROOT_PATH,
+    root_path=settings.app_root_path,
     root_path_in_servers=False,
     swagger_ui_oauth2_redirect_url=None,
     generate_unique_id_function=generate_unique_operation_id,
@@ -32,13 +32,13 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ALLOW_ORIGINS,
+    allow_origins=settings.cors_allow_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-app.add_middleware(SessionMiddleware, secret_key=settings.SESSION_SECRET_KEY.get_secret_value())
+app.add_middleware(SessionMiddleware, secret_key=settings.session_secret_key.get_secret_value())
 
 
 @app.on_event("startup")
@@ -58,7 +58,7 @@ async def close_connection():
 for router in routers:
     app.include_router(router)
 
-if settings.ENVIRONMENT == Environment.DEVELOPMENT:
+if settings.environment == Environment.DEVELOPMENT:
     import logging
     import warnings
 

@@ -1,65 +1,7 @@
-from enum import StrEnum
+import os
 from pathlib import Path
 
-from pydantic import BaseSettings, SecretStr
+from src.config_schema import Settings
 
-
-class Environment(StrEnum):
-    DEVELOPMENT = "development"
-    PRODUCTION = "production"
-    TESTING = "testing"
-
-
-class Settings(BaseSettings):
-    """
-    Settings for the application. Get settings from .env file.
-    """
-
-    # Prefix for the API path (e.g. "/api/v0")
-    APP_ROOT_PATH: str = ""
-
-    # App environment
-    ENVIRONMENT: Environment = Environment.DEVELOPMENT
-
-    # You can run 'openssl rand -hex 32' to generate keys
-    SESSION_SECRET_KEY: SecretStr
-    JWT_SECRET_KEY: SecretStr
-
-    # PostgreSQL database connection URL
-    DB_URL: SecretStr
-
-    # Security
-    CORS_ALLOW_ORIGINS: list[str] = [
-        "https://innohassle.ru",
-        "https://dev.innohassle.ru",
-        "https://pre.innohassle.ru",
-        "http://localhost:3000",
-    ]
-
-    # Authentication
-    AUTH_COOKIE_NAME: str = "token"
-    AUTH_COOKIE_DOMAIN: str = "innohassle.ru" if ENVIRONMENT == Environment.PRODUCTION else "localhost"
-    AUTH_ALLOWED_DOMAINS: list[str] = [
-        "innohassle.ru",
-        "api.innohassle.ru",
-        "pre.innohassle.ru",
-        "dev.innohassle.ru",
-        "localhost",
-    ]
-
-    # Use these only in production
-    INNOPOLIS_SSO_CLIENT_ID: SecretStr = ""
-    INNOPOLIS_SSO_CLIENT_SECRET: SecretStr = ""
-    INNOPOLIS_SSO_REDIRECT_URI: str = "https://innohassle.campus.innopolis.university/oauth2/callback"
-
-    # Use dev auth while development
-    DEV_AUTH_EMAIL: str = ""
-
-    PREDEFINED_DIR: Path = Path("./predefined")
-
-    class Config:
-        env_file = ".env.local"
-        env_file_encoding = "utf-8"
-
-
-settings = Settings()
+settings_path = os.getenv("SETTINGS_PATH", "settings.yaml")
+settings: Settings = Settings.from_yaml(Path(settings_path))

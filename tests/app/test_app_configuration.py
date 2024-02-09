@@ -34,7 +34,7 @@ def fake_paths(monkeysession):
     monkeysession.setattr(settings, "PREDEFINED_DIR", Path("tests/repositories/temp/predefined"))
 
     # ensure directory exists
-    settings.PREDEFINED_DIR.mkdir(parents=True, exist_ok=True)
+    settings.predefined_dir.mkdir(parents=True, exist_ok=True)
 
 
 def fake_icalendar() -> icalendar.Calendar:
@@ -91,11 +91,11 @@ def fake_predefined_repository():
         ]
     }
 
-    os.makedirs(settings.PREDEFINED_DIR / "ics", exist_ok=True)
+    os.makedirs(settings.predefined_dir / "ics", exist_ok=True)
 
     for group in fake_groups:
         calendar = fake_icalendar()
-        with (settings.PREDEFINED_DIR / "ics" / f"{group.path}").open("wb") as ics_file:
+        with (settings.predefined_dir / "ics" / f"{group.path}").open("wb") as ics_file:
             ics_file.write(calendar.to_ical())
 
         predefined_group = JsonGroupStorage.PredefinedGroup(
@@ -108,9 +108,9 @@ def fake_predefined_repository():
     category_storage = CategoryStorage(event_groups=predefined_groups, tags=tags)
 
     with (
-        (settings.PREDEFINED_DIR / "innopolis_user_data.json").open("w", encoding="utf-8") as users_file,
-        (settings.PREDEFINED_DIR / "categories.json").open("w", encoding="utf-8") as categories_file,
-        (settings.PREDEFINED_DIR / fake_categories["categories"][0]["path"]).open(
+        (settings.predefined_dir / "innopolis_user_data.json").open("w", encoding="utf-8") as users_file,
+        (settings.predefined_dir / "categories.json").open("w", encoding="utf-8") as categories_file,
+        (settings.predefined_dir / fake_categories["categories"][0]["path"]).open(
             "w", encoding="utf-8"
         ) as category_file,
     ):
