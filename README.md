@@ -41,7 +41,7 @@ https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/8e519e69-7a
 ## Features list
 
 1. Import any events to your calendar
-    - Easily import events from various sources and add them to your personal calendar
+    - Import events from various sources and add them to your personal calendar
     - Supports popular calendar file format .ics for easy integration with different applications
     - Intuitive import process with step-by-step instruction
 2. Integrated Calendar Dashboard
@@ -59,14 +59,13 @@ https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/8e519e69-7a
 
 1. Install dependencies with [poetry](https://python-poetry.org/docs/).
     ```bash
-    poetry install
+    poetry install --no-root
     ```
 2. Set up pre-commit hooks:
 
     ```bash
-    poetry shell
-    pre-commit install
-    pre-commit run --all-files
+    poetry run pre-commit install --install-hooks -t pre-commit -t commit-msg
+    poetry run pre-commit run --all-files
     ```
 3. Setup environment variables in `.env.local` file.
     ```bash
@@ -74,8 +73,7 @@ https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/8e519e69-7a
     ```
 4. Run the ASGI server using src/dev.py script
     ```bash
-    poetry shell
-    python -m src.dev
+    poetry run python -m src.dev
     ```
    OR using uvicorn directly
     ```bash
