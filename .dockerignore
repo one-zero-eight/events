@@ -1,2 +1,13 @@
-# Ignore sensitive files
-/predefined
+# Ignore everything
+*
+
+# Except code
+!/src/
+!/alembic/
+!/alembic.ini
+!/deploy/docker-entrypoint.sh
+!/pyproject.toml
+!/poetry.lock
+
+# And ignore cache files in the code
+__pycache__
