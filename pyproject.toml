@@ -14,17 +14,18 @@ authlib = "^1.2.1"
 cryptography = "^42.0.2"
 icalendar = "^5.0.7"
 aiofiles = "^23.1.0"
-sqlalchemy = {extras = ["asyncpg"], version = "^2.0.25"}
+sqlalchemy = { extras = ["asyncpg"], version = "^2.0.25" }
 asyncpg = "^0.29.0"
 alembic = "^1.12.0"
-psycopg2-binary = "2.9.9"
+psycopg2-binary = "^2.9.9"
 
 [tool.poetry.group.prod.dependencies]
 gunicorn = "20.1.0"
 
+[tool.poetry.group.dev]
+optional = true
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.0.277"
-black = "^23.3.0"
+ruff = "^0.2.1"
 pre-commit = "^3.3.3"
 
 [tool.poetry.group.test.dependencies]
@@ -41,11 +42,13 @@ addopts = [
     "--strict-markers",
 ]
 
-[tool.black]
-line-length = 120
-
 [tool.ruff]
 line-length = 120
+lint.ignore = [
+    # wildcard imports are fine
+    "F403",
+    "F405",
+]
 
 [build-system]
 requires = ["poetry-core"]
