@@ -6,7 +6,8 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from src import constants
 from src.app.routers import routers
-from src.config import settings, Environment
+from src.config import settings
+from src.config_schema import Environment
 from src.utils import generate_unique_operation_id, setup_repositories
 
 app = FastAPI(
