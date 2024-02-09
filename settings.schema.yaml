@@ -1,0 +1,95 @@
+$schema: http://json-schema.org/draft-07/schema#
+title: Settings
+description: Settings for the application. Get settings from .env file.
+type: object
+properties:
+  app_root_path:
+    title: App Root Path
+    default: ''
+    type: string
+  environment:
+    default: development
+    allOf:
+    - $ref: '#/definitions/Environment'
+  session_secret_key:
+    title: Session Secret Key
+    type: string
+    writeOnly: true
+    format: password
+  jwt_secret_key:
+    title: Jwt Secret Key
+    type: string
+    writeOnly: true
+    format: password
+  db_url:
+    title: Db Url
+    type: string
+    writeOnly: true
+    format: password
+  cors_allow_origins:
+    title: Cors Allow Origins
+    default:
+    - https://innohassle.ru
+    - https://dev.innohassle.ru
+    - https://pre.innohassle.ru
+    - http://localhost:3000
+    type: array
+    items:
+      type: string
+  auth_cookie_name:
+    title: Auth Cookie Name
+    default: token
+    type: string
+  auth_cookie_domain:
+    title: Auth Cookie Domain
+    default: localhost
+    type: string
+  auth_allowed_domains:
+    title: Auth Allowed Domains
+    default:
+    - innohassle.ru
+    - api.innohassle.ru
+    - pre.innohassle.ru
+    - dev.innohassle.ru
+    - localhost
+    type: array
+    items:
+      type: string
+  innopolis_sso_client_id:
+    title: Innopolis Sso Client Id
+    default: ''
+    type: string
+    writeOnly: true
+    format: password
+  innopolis_sso_client_secret:
+    title: Innopolis Sso Client Secret
+    default: ''
+    type: string
+    writeOnly: true
+    format: password
+  innopolis_sso_redirect_uri:
+    title: Innopolis Sso Redirect Uri
+    default: https://innohassle.campus.innopolis.university/oauth2/callback
+    type: string
+  dev_auth_email:
+    title: Dev Auth Email
+    default: ''
+    type: string
+  predefined_dir:
+    title: Predefined Dir
+    default: predefined
+    type: string
+    format: path
+required:
+- session_secret_key
+- jwt_secret_key
+- db_url
+definitions:
+  Environment:
+    title: Environment
+    description: An enumeration.
+    enum:
+    - development
+    - production
+    - testing
+    type: string
