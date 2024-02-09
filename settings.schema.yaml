@@ -16,11 +16,18 @@ properties:
     type: string
     writeOnly: true
     format: password
-  jwt_secret_key:
-    title: Jwt Secret Key
+  jwt_private_key:
+    title: Jwt Private Key
+    description: Private key for JWT. Use 'openssl genrsa -out private.pem 2048' to
+      generate keys
     type: string
     writeOnly: true
     format: password
+  jwt_public_key:
+    title: Jwt Public Key
+    description: Public key for JWT. Use 'openssl rsa -in private.pem -pubout -out
+      public.pem' to generate keys
+    type: string
   db_url:
     title: Db Url
     type: string
@@ -82,7 +89,8 @@ properties:
     format: path
 required:
 - session_secret_key
-- jwt_secret_key
+- jwt_private_key
+- jwt_public_key
 - db_url
 definitions:
   Environment:

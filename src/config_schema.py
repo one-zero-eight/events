@@ -2,7 +2,7 @@ from enum import StrEnum
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel, SecretStr
+from pydantic import BaseModel, SecretStr, Field
 
 
 class Environment(StrEnum):
@@ -24,7 +24,14 @@ class Settings(BaseModel):
 
     # You can run 'openssl rand -hex 32' to generate keys
     session_secret_key: SecretStr
-    jwt_secret_key: SecretStr
+    jwt_private_key: SecretStr = Field(
+        ...,
+        description="Private key for JWT. Use 'openssl genrsa -out private.pem 2048' to generate keys",
+    )
+    jwt_public_key: str = Field(
+        ...,
+        description="Public key for JWT. Use 'openssl rsa -in private.pem -pubout -out public.pem' to generate keys",
+    )
 
     # PostgreSQL database connection URL
     db_url: SecretStr
