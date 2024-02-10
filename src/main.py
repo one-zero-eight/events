@@ -8,6 +8,7 @@ from src import constants
 from src.app.routers import routers
 from src.config import settings
 from src.config_schema import Environment
+from src.storages.sql import SQLAlchemyStorage
 from src.utils import generate_unique_operation_id, setup_repositories
 
 app = FastAPI(
@@ -28,6 +29,7 @@ app = FastAPI(
     root_path=settings.app_root_path,
     root_path_in_servers=False,
     swagger_ui_oauth2_redirect_url=None,
+    swagger_ui_parameters={"tryItOutEnabled": True, "persistAuthorization": True, "filter": True},
     generate_unique_id_function=generate_unique_operation_id,
 )
 
@@ -50,9 +52,9 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def close_connection():
-    from src.app.dependencies import Dependencies
+    from src.app.dependencies import Shared
 
-    storage = Dependencies.get_storage()
+    storage = Shared.f(SQLAlchemyStorage)
     await storage.close_connection()
 
 

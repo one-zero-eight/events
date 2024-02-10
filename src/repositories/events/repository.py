@@ -6,9 +6,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, selectinload
 
 from src.repositories.crud import CRUDFactory
-from src.repositories.events.abc import AbstractEventRepository
 from src.schemas import CreateEvent, UpdateEvent, ViewEvent, AddEventPatch, ViewEventPatch, UpdateEventPatch
-from src.storages.sql import AbstractSQLAlchemyStorage
+from src.storages.sql import SQLAlchemyStorage
 from src.storages.sql.models import Event, EventPatch
 
 CRUD = CRUDFactory(
@@ -20,10 +19,10 @@ CRUD = CRUDFactory(
 )
 
 
-class SqlEventRepository(AbstractEventRepository):
-    storage: AbstractSQLAlchemyStorage
+class SqlEventRepository:
+    storage: SQLAlchemyStorage
 
-    def __init__(self, storage: AbstractSQLAlchemyStorage):
+    def __init__(self, storage: SQLAlchemyStorage):
         self.storage = storage
 
     def _create_session(self) -> AsyncSession:

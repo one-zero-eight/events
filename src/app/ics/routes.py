@@ -8,10 +8,12 @@ import icalendar
 from fastapi import HTTPException
 from starlette.responses import FileResponse, StreamingResponse
 
-from src.app.dependencies import EVENT_GROUP_REPOSITORY_DEPENDENCY, USER_REPOSITORY_DEPENDENCY
+from src.app.dependencies import Shared
 from src.app.ics import router
 from src.exceptions import EventGroupNotFoundException, UserNotFoundException
+from src.repositories.event_groups import SqlEventGroupRepository
 from src.repositories.predefined import PredefinedRepository
+from src.repositories.users import SqlUserRepository
 from src.schemas import ViewUser
 from src.schemas.linked import LinkedCalendarView
 
@@ -27,12 +29,11 @@ from src.schemas.linked import LinkedCalendarView
         **EventGroupNotFoundException.responses,
     },
 )
-async def get_event_group_ics_by_alias(
-    user_id: int, export_type: str, event_group_alias: str, event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY
-):
+async def get_event_group_ics_by_alias(user_id: int, export_type: str, event_group_alias: str):
     """
     Get event group .ics file by id
     """
+    event_group_repository = Shared.f(SqlEventGroupRepository)
     event_group = await event_group_repository.read_by_alias(event_group_alias)
 
     if event_group is None:
@@ -59,11 +60,11 @@ async def get_event_group_ics_by_alias(
 )
 async def get_user_schedule(
     user_id: int,
-    user_repository: USER_REPOSITORY_DEPENDENCY,
 ) -> StreamingResponse:
     """
     Get schedule in ICS format for the user
     """
+    user_repository = Shared.f(SqlUserRepository)
     user = await user_repository.read(user_id)
 
     if user is None:
@@ -106,12 +107,12 @@ async def get_user_schedule(
 )
 async def get_user_linked_schedule(
     user_id: int,
-    user_repository: USER_REPOSITORY_DEPENDENCY,
     linked_alias: str,
 ) -> StreamingResponse:
     """
     Get schedule in ICS format for the user
     """
+    user_repository = Shared.f(SqlUserRepository)
     user = await user_repository.read(user_id)
 
     if user is None:

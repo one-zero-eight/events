@@ -5,9 +5,9 @@ from sqlalchemy.exc import IntegrityError
 from starlette.responses import JSONResponse
 
 from src.app.dependencies import (
-    EVENT_GROUP_REPOSITORY_DEPENDENCY,
     CURRENT_USER_ID_DEPENDENCY,
     VERIFY_PARSER_DEPENDENCY,
+    Shared,
 )
 from src.app.event_groups import router
 from src.exceptions import (
@@ -17,6 +17,7 @@ from src.exceptions import (
     IncorrectCredentialsException,
     NoCredentialsException,
 )
+from src.repositories.event_groups import SqlEventGroupRepository
 from src.repositories.predefined.repository import PredefinedRepository
 from src.schemas import ViewEventGroup, ListEventGroupsResponse, CreateEventGroup, UpdateEventGroup, OwnershipEnum
 
@@ -33,10 +34,10 @@ from src.schemas import ViewEventGroup, ListEventGroupsResponse, CreateEventGrou
 )
 async def create_event_group(
     event_group: CreateEventGroup,
-    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
     current_user_id: CURRENT_USER_ID_DEPENDENCY,
 ):
     try:
+        event_group_repository = Shared.f(SqlEventGroupRepository)
         event_group_view = await event_group_repository.create(event_group)
         await event_group_repository.setup_ownership(event_group_view.id, current_user_id, OwnershipEnum.owner)
         return JSONResponse(status_code=201, content=event_group_view.dict())
@@ -58,10 +59,10 @@ async def create_event_group(
 async def update_event_group(
     event_group_id: int,
     update_scheme: UpdateEventGroup,
-    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
     # current_user_id: CURRENT_USER_ID_DEPENDENCY,
     _: VERIFY_PARSER_DEPENDENCY,
 ) -> ViewEventGroup:
+    event_group_repository = Shared.f(SqlEventGroupRepository)
     event_group = await event_group_repository.read(event_group_id)
 
     if event_group is None:
@@ -85,12 +86,11 @@ async def update_event_group(
 )
 async def find_event_group_by_path(
     path: str,
-    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
 ) -> ViewEventGroup:
     """
     Get event group info by path
     """
-
+    event_group_repository = Shared.f(SqlEventGroupRepository)
     event_group = await event_group_repository.read_by_path(path)
 
     if event_group is None:
@@ -107,12 +107,11 @@ async def find_event_group_by_path(
 )
 async def find_event_group_by_alias(
     alias: str,
-    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
 ) -> ViewEventGroup:
     """
     Get event group info by alias
     """
-
+    event_group_repository = Shared.f(SqlEventGroupRepository)
     event_group = await event_group_repository.read_by_alias(alias)
 
     if event_group is None:
@@ -129,11 +128,11 @@ async def find_event_group_by_alias(
 )
 async def get_event_group(
     event_group_id: int,
-    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
 ) -> ViewEventGroup:
     """
     Get event group info by id
     """
+    event_group_repository = Shared.f(SqlEventGroupRepository)
     event_group = await event_group_repository.read(event_group_id)
 
     if event_group is None:
@@ -148,12 +147,11 @@ async def get_event_group(
         200: {"description": "List of event groups", "model": ListEventGroupsResponse},
     },
 )
-async def list_event_groups(
-    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
-) -> ListEventGroupsResponse:
+async def list_event_groups() -> ListEventGroupsResponse:
     """
     Get a list of all event groups
     """
+    event_group_repository = Shared.f(SqlEventGroupRepository)
     groups = await event_group_repository.read_all()
     return ListEventGroupsResponse.from_iterable(groups)
 
@@ -178,7 +176,6 @@ async def list_event_groups(
 async def set_event_group_ics(
     event_group_id: int,
     ics_file: UploadFile,
-    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
     # current_user_id: CURRENT_USER_ID_DEPENDENCY,
     _: VERIFY_PARSER_DEPENDENCY,
 ):
@@ -190,7 +187,7 @@ async def set_event_group_ics(
             status_code=400,
             content={"detail": f"File content type is {ics_file.content_type}, but should be 'text/calendar'"},
         )
-
+    event_group_repository = Shared.f(SqlEventGroupRepository)
     event_group_path = await event_group_repository.get_only_path(event_group_id)
 
     if event_group_path is None:

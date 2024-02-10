@@ -1,77 +1,62 @@
 __all__ = [
-    "STORAGE_DEPENDENCY",
-    "USER_REPOSITORY_DEPENDENCY",
-    "EVENT_GROUP_REPOSITORY_DEPENDENCY",
-    "TAG_REPOSITORY_DEPENDENCY",
     "CURRENT_USER_ID_DEPENDENCY",
     "VERIFY_PARSER_DEPENDENCY",
-    "Dependencies",
+    "Shared",
 ]
 
-from typing import Annotated, Callable
+from typing import Annotated, Callable, TypeVar, Union, ClassVar, Hashable
 
 from fastapi import Depends
 
-from src.repositories.event_groups import AbstractEventGroupRepository
-from src.repositories.tags import AbstractTagRepository
-from src.repositories.users import AbstractUserRepository
-from src.storages.sql.storage import AbstractSQLAlchemyStorage
+T = TypeVar("T")
+
+CallableOrValue = Union[Callable[[], T], T]
 
 
-class Dependencies:
-    _storage: "AbstractSQLAlchemyStorage"
-    _user_repository: "AbstractUserRepository"
-    _event_group_repository: "AbstractEventGroupRepository"
-    _tag_repository: "AbstractTagRepository"
+class Shared:
+    """
+    Key-value storage with generic type support for accessing shared dependencies
+    """
 
-    @classmethod
-    def get_storage(cls) -> "AbstractSQLAlchemyStorage":
-        return cls._storage
+    __slots__ = ()
+
+    providers: ClassVar[dict[type, CallableOrValue]] = {}
 
     @classmethod
-    def set_storage(cls, storage: "AbstractSQLAlchemyStorage"):
-        cls._storage = storage
+    def register_provider(cls, key: type[T] | Hashable, provider: CallableOrValue):
+        cls.providers[key] = provider
 
     @classmethod
-    def get_user_repository(cls) -> "AbstractUserRepository":
-        return cls._user_repository
+    def f(cls, key: type[T] | Hashable) -> T:
+        """
+        Get shared dependency by key (f - fetch)
+        """
+        if key not in cls.providers:
+            if isinstance(key, type):
+                # try by classname
+                key = key.__name__
 
-    @classmethod
-    def set_user_repository(cls, user_repository: "AbstractUserRepository"):
-        cls._user_repository = user_repository
+                if key not in cls.providers:
+                    raise KeyError(f"Provider for {key} is not registered")
 
-    @classmethod
-    def get_event_group_repository(cls) -> "AbstractEventGroupRepository":
-        return cls._event_group_repository
+            elif isinstance(key, str):
+                # try by classname
+                for cls_key in cls.providers.keys():
+                    if cls_key.__name__ == key:
+                        key = cls_key
+                        break
+                else:
+                    raise KeyError(f"Provider for {key} is not registered")
 
-    @classmethod
-    def set_event_group_repository(cls, event_group_repository: "AbstractEventGroupRepository"):
-        cls._event_group_repository = event_group_repository
+        provider = cls.providers[key]
 
-    @classmethod
-    def get_tag_repository(cls) -> "AbstractTagRepository":
-        return cls._tag_repository
+        if callable(provider):
+            return provider()
+        else:
+            return provider
 
-    @classmethod
-    def set_tag_repository(cls, tag_repository: "AbstractTagRepository"):
-        cls._tag_repository = tag_repository
-
-    get_current_user_id: Callable[..., str]
-
-    verify_parser: Callable[..., bool]
-
-
-STORAGE_DEPENDENCY = Annotated[AbstractSQLAlchemyStorage, Depends(Dependencies.get_storage)]
-USER_REPOSITORY_DEPENDENCY = Annotated[AbstractUserRepository, Depends(Dependencies.get_user_repository)]
-EVENT_GROUP_REPOSITORY_DEPENDENCY = Annotated[
-    AbstractEventGroupRepository, Depends(Dependencies.get_event_group_repository)
-]
-TAG_REPOSITORY_DEPENDENCY = Annotated[AbstractTagRepository, Depends(Dependencies.get_tag_repository)]
 
 from src.app.auth.dependencies import get_current_user_id, verify_parser  # noqa: E402
 
-Dependencies.get_current_user_id = get_current_user_id
-Dependencies.verify_parser = verify_parser
-
-CURRENT_USER_ID_DEPENDENCY = Annotated[str, Depends(Dependencies.get_current_user_id)]
-VERIFY_PARSER_DEPENDENCY = Annotated[bool, Depends(Dependencies.verify_parser)]
+CURRENT_USER_ID_DEPENDENCY = Annotated[str, Depends(get_current_user_id)]
+VERIFY_PARSER_DEPENDENCY = Annotated[bool, Depends(verify_parser)]

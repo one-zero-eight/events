@@ -12,8 +12,9 @@ from typing import Optional
 from authlib.jose import jwt, JoseError
 from pydantic import BaseModel, validator
 
-from src.app.dependencies import Dependencies
+from src.app.dependencies import Shared
 from src.config import settings
+from src.repositories.users import SqlUserRepository
 
 ALGORITHM = "RS256"
 
@@ -55,7 +56,7 @@ def _create_access_token(data: dict, expires_delta: timedelta) -> str:
 
 async def verify_user_token(token: str, credentials_exception) -> UserTokenData:
     try:
-        user_repository = Dependencies.get_user_repository()
+        user_repository = Shared.f(SqlUserRepository)
         payload = jwt.decode(token, settings.jwt_public_key)
         user_id: str = payload.get("sub")
         if user_id is None or not user_id.isdigit():

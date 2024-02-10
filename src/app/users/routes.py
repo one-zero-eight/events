@@ -2,9 +2,8 @@ from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 
 from src.app.dependencies import (
-    EVENT_GROUP_REPOSITORY_DEPENDENCY,
-    USER_REPOSITORY_DEPENDENCY,
     CURRENT_USER_ID_DEPENDENCY,
+    Shared,
 )
 from src.app.users import router
 from src.exceptions import (
@@ -14,6 +13,8 @@ from src.exceptions import (
     DBEventGroupDoesNotExistInDb,
     EventGroupNotFoundException,
 )
+from src.repositories.event_groups import SqlEventGroupRepository
+from src.repositories.users import SqlUserRepository
 from src.schemas import ViewUser
 from src.schemas.linked import LinkedCalendarView, LinkedCalendarCreate
 
@@ -28,13 +29,12 @@ from src.schemas.linked import LinkedCalendarView, LinkedCalendarCreate
 )
 async def get_me(
     user_id: CURRENT_USER_ID_DEPENDENCY,
-    user_repository: USER_REPOSITORY_DEPENDENCY,
 ) -> ViewUser:
     """
     Get current user info if authenticated
     """
+    user_repository = Shared.f(SqlUserRepository)
     user = await user_repository.read(user_id)
-    user: ViewUser
     return user
 
 
@@ -49,15 +49,14 @@ async def get_me(
 )
 async def add_favorite(
     user_id: CURRENT_USER_ID_DEPENDENCY,
-    user_repository: USER_REPOSITORY_DEPENDENCY,
     group_id: int,
 ) -> ViewUser:
     """
     Add favorite to current user
     """
     try:
+        user_repository = Shared.f(SqlUserRepository)
         updated_user = await user_repository.add_favorite(user_id, group_id)
-        updated_user: ViewUser
         return updated_user
     except DBEventGroupDoesNotExistInDb as e:
         raise EventGroupNotFoundException() from e
@@ -73,14 +72,13 @@ async def add_favorite(
 )
 async def delete_favorite(
     user_id: CURRENT_USER_ID_DEPENDENCY,
-    user_repository: USER_REPOSITORY_DEPENDENCY,
     group_id: int,
 ) -> ViewUser:
     """
     Delete favorite from current user
     """
+    user_repository = Shared.f(SqlUserRepository)
     updated_user = await user_repository.remove_favorite(user_id, group_id)
-    updated_user: ViewUser
     return updated_user
 
 
@@ -94,8 +92,6 @@ async def delete_favorite(
 )
 async def hide_favorite(
     user_id: CURRENT_USER_ID_DEPENDENCY,
-    event_group_repository: EVENT_GROUP_REPOSITORY_DEPENDENCY,
-    user_repository: USER_REPOSITORY_DEPENDENCY,
     group_id: int,
     hide: bool = True,
 ) -> ViewUser:
@@ -103,11 +99,11 @@ async def hide_favorite(
     Hide favorite from current user
     """
     # check if a group exists
+    event_group_repository = Shared.f(SqlEventGroupRepository)
     if await event_group_repository.read(group_id) is None:
         raise UserNotFoundException()
-
+    user_repository = Shared.f(SqlUserRepository)
     updated_user = await user_repository.set_hidden(user_id=user_id, group_id=group_id, hide=hide)
-    updated_user: ViewUser
     return updated_user
 
 
@@ -122,12 +118,12 @@ async def hide_favorite(
 async def link_calendar(
     linked_calendar: LinkedCalendarCreate,
     user_id: CURRENT_USER_ID_DEPENDENCY,
-    user_repository: USER_REPOSITORY_DEPENDENCY,
 ) -> LinkedCalendarView:
     """
     Add linked calendar to current user
     """
     try:
+        user_repository = Shared.f(SqlUserRepository)
         calendar = await user_repository.link_calendar(user_id, linked_calendar)
         return calendar
     except IntegrityError:

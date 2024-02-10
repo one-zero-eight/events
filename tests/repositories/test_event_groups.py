@@ -2,7 +2,7 @@ import pytest
 from faker import Faker
 from sqlalchemy.exc import IntegrityError
 
-from src.repositories.event_groups import AbstractEventGroupRepository
+from src.repositories.event_groups import SqlEventGroupRepository
 from src.schemas.event_groups import CreateEventGroup, ViewEventGroup, UpdateEventGroup
 
 fake = Faker()
@@ -13,7 +13,7 @@ def get_fake_event_group() -> "CreateEventGroup":
     return CreateEventGroup(alias=fake.slug(), name=fake.name(), path=fake_path, description=fake.slug())
 
 
-async def _create_event_group(event_group_repository: AbstractEventGroupRepository) -> "ViewEventGroup":
+async def _create_event_group(event_group_repository: SqlEventGroupRepository) -> "ViewEventGroup":
     event_group_schema = get_fake_event_group()
     event_group = await event_group_repository.create(event_group_schema)
     assert event_group is not None
@@ -24,7 +24,7 @@ async def _create_event_group(event_group_repository: AbstractEventGroupReposito
     return event_group
 
 
-async def _batch_create_event_group(event_group_repository: AbstractEventGroupRepository) -> list["ViewEventGroup"]:
+async def _batch_create_event_group(event_group_repository: SqlEventGroupRepository) -> list["ViewEventGroup"]:
     event_group_schemas = [get_fake_event_group() for _ in range(10)]
     event_groups = await event_group_repository.batch_create(event_group_schemas)
 

@@ -1,3 +1,3 @@
-__all__ = ["AbstractSQLAlchemyStorage", "SQLAlchemyStorage"]
+__all__ = ["SQLAlchemyStorage"]
 
-from src.storages.sql.storage import AbstractSQLAlchemyStorage, SQLAlchemyStorage
+from src.storages.sql.storage import SQLAlchemyStorage

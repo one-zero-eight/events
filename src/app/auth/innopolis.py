@@ -1,9 +1,7 @@
 __all__ = []
 
-from typing import Annotated
 
 from authlib.integrations.base_client import MismatchingStateError
-from fastapi import Depends
 from pydantic import BaseModel, Field
 from starlette.requests import Request
 from starlette.responses import RedirectResponse, JSONResponse
@@ -11,13 +9,13 @@ from starlette.responses import RedirectResponse, JSONResponse
 from src.app.auth import router, oauth
 from src.app.auth.common import redirect_with_token, ensure_allowed_return_to
 from src.app.auth.dependencies import get_current_user_id
-from src.app.dependencies import Dependencies
+from src.app.dependencies import Shared
 from src.app.auth.jwt import create_access_token
 from src import constants
 from src.exceptions import NoCredentialsException, IncorrectCredentialsException
+from src.repositories.users import SqlUserRepository
 from src.schemas.users import CreateUser
 from src.config import settings
-from src.repositories.users.abc import AbstractUserRepository
 
 
 class UserInfoFromSSO(BaseModel):
@@ -51,7 +49,6 @@ if enabled:
     @router.get("/innopolis/callback", include_in_schema=False)
     async def innopolis_callback(
         request: Request,
-        user_repository: Annotated[AbstractUserRepository, Depends(Dependencies.get_user_repository)],
     ):
         # Check if there are any error from SSO
         error = request.query_params.get("error")
@@ -67,6 +64,7 @@ if enabled:
 
         user_info_dict: dict = token["userinfo"]
         user_info = UserInfoFromSSO(**user_info_dict)
+        user_repository = Shared.f(SqlUserRepository)
         user = await user_repository.create_or_update(CreateUser(**user_info.dict()))
 
         return_to = request.session.pop("return_to")

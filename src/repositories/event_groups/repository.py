@@ -7,10 +7,9 @@ from sqlalchemy.dialects.postgresql import insert as postgres_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.repositories.crud import CRUDFactory, AbstractCRUDRepository
-from src.repositories.event_groups.abc import AbstractEventGroupRepository
 from src.repositories.ownership import setup_ownership_method
 from src.schemas import ViewEventGroup, CreateEventGroup, UpdateEventGroup, OwnershipEnum
-from src.storages.sql import AbstractSQLAlchemyStorage
+from src.storages.sql import SQLAlchemyStorage
 from src.storages.sql.models import UserXFavoriteEventGroup, EventGroup
 
 CRUD: AbstractCRUDRepository[
@@ -25,10 +24,10 @@ CRUD: AbstractCRUDRepository[
 )
 
 
-class SqlEventGroupRepository(AbstractEventGroupRepository):
-    storage: AbstractSQLAlchemyStorage
+class SqlEventGroupRepository:
+    storage: SQLAlchemyStorage
 
-    def __init__(self, storage: AbstractSQLAlchemyStorage):
+    def __init__(self, storage: SQLAlchemyStorage):
         self.storage = storage
 
     def _create_session(self) -> AsyncSession:

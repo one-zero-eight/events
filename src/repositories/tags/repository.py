@@ -7,9 +7,8 @@ from sqlalchemy.orm import selectinload
 
 from src.repositories.crud import CRUDFactory, AbstractCRUDRepository
 from src.repositories.ownership import setup_ownership_method
-from src.repositories.tags.abc import AbstractTagRepository
 from src.schemas import CreateTag, ViewTag, OwnershipEnum, UpdateTag
-from src.storages.sql import AbstractSQLAlchemyStorage
+from src.storages.sql import AbstractSQLAlchemyStorage, SQLAlchemyStorage
 from src.storages.sql.models import Tag, EventGroup
 
 CRUD: AbstractCRUDRepository[
@@ -19,10 +18,10 @@ CRUD: AbstractCRUDRepository[
 ] = CRUDFactory(Tag, CreateTag, ViewTag, UpdateTag)
 
 
-class SqlTagRepository(AbstractTagRepository):
-    storage: AbstractSQLAlchemyStorage
+class SqlTagRepository:
+    storage: SQLAlchemyStorage
 
-    def __init__(self, storage: AbstractSQLAlchemyStorage):
+    def __init__(self, storage: SQLAlchemyStorage):
         self.storage = storage
 
     def _create_session(self) -> AsyncSession:

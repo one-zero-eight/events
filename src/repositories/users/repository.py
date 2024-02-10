@@ -10,13 +10,11 @@ from sqlalchemy.sql.expression import exists
 
 from src.exceptions import DBEventGroupDoesNotExistInDb
 from src.repositories.crud import CRUDFactory, AbstractCRUDRepository
-from src.repositories.users.abc import AbstractUserRepository
 from src.schemas import LinkedCalendarView
 from src.schemas.linked import LinkedCalendarCreate
 from src.schemas.users import CreateUser, ViewUser, UpdateUser
 from src.storages.sql.models import User, EventGroup, UserXFavoriteEventGroup, LinkedCalendar
-from src.storages.sql.storage import AbstractSQLAlchemyStorage
-
+from src.storages.sql.storage import SQLAlchemyStorage
 
 _get_options = (
     selectinload(User.favorites_association),
@@ -50,10 +48,10 @@ async def _get_available_user_ids(session: AsyncSession, count: int = 1) -> list
     return list(available_ids) if count > 1 else available_ids.pop()
 
 
-class SqlUserRepository(AbstractUserRepository):
-    storage: AbstractSQLAlchemyStorage
+class SqlUserRepository:
+    storage: SQLAlchemyStorage
 
-    def __init__(self, storage: AbstractSQLAlchemyStorage):
+    def __init__(self, storage: SQLAlchemyStorage):
         self.storage = storage
 
     def _create_session(self) -> AsyncSession:

@@ -1,4 +1,3 @@
-__all__ = ["AbstractEventGroupRepository", "SqlEventGroupRepository"]
+__all__ = ["SqlEventGroupRepository"]
 
-from src.repositories.event_groups.abc import AbstractEventGroupRepository
 from src.repositories.event_groups.repository import SqlEventGroupRepository

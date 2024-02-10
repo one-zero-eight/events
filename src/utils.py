@@ -1,49 +1,37 @@
+import json
 import re
 
 from fastapi.routing import APIRoute
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, parse_file_as
 
 from src.config import settings
-from src.schemas import UpdateEventGroup
-
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from src.repositories.event_groups import AbstractEventGroupRepository
-    from src.repositories.users import AbstractUserRepository
-    from src.repositories.tags import AbstractTagRepository
+from src.repositories.event_groups import SqlEventGroupRepository
+from src.repositories.predefined import PredefinedRepository
+from src.repositories.tags import SqlTagRepository
+from src.repositories.users import SqlUserRepository
+from src.schemas import CreateEventGroup, CreateUser, CreateTag, UpdateEventGroup
+from src.storages.sql import SQLAlchemyStorage
 
 
 async def setup_repositories():
-    from src.repositories.event_groups import SqlEventGroupRepository
-    from src.repositories.users import SqlUserRepository
-    from src.repositories.tags import SqlTagRepository
-    from src.storages.sql import SQLAlchemyStorage
-    from src.app.dependencies import Dependencies
-
     # ------------------- Repositories Dependencies -------------------
     storage = SQLAlchemyStorage.from_url(settings.db_url.get_secret_value())
     user_repository = SqlUserRepository(storage)
     event_group_repository = SqlEventGroupRepository(storage)
     tag_repository = SqlTagRepository(storage)
 
-    Dependencies.set_storage(storage)
-    Dependencies.set_user_repository(user_repository)
-    Dependencies.set_event_group_repository(event_group_repository)
-    Dependencies.set_tag_repository(tag_repository)
+    from src.app.dependencies import Shared
+
+    Shared.register_provider(SQLAlchemyStorage, storage)
+    Shared.register_provider(SqlUserRepository, user_repository)
+    Shared.register_provider(SqlEventGroupRepository, event_group_repository)
+    Shared.register_provider(SqlTagRepository, tag_repository)
 
     await storage.create_all()
 
 
-async def setup_predefined_data(
-    event_group_repository: "AbstractEventGroupRepository",
-    tag_repository: "AbstractTagRepository",
-    user_repository: "AbstractUserRepository",
-):
-    import json
-    from src.schemas import CreateEventGroup, CreateUser, CreateTag
-    from src.repositories.predefined import PredefinedRepository
-    from pydantic import parse_file_as
+async def setup_predefined_data():
+    from src.app.dependencies import Shared
 
     class Categories(BaseModel):
         class Category(BaseModel):
@@ -52,6 +40,11 @@ async def setup_predefined_data(
         categories: list[Category] = Field(default_factory=list)
 
     # ------------------- Predefined data -------------------
+
+    event_group_repository = Shared.f(SqlEventGroupRepository)
+
+    tag_repository = Shared.f(SqlTagRepository)
+    user_repository = Shared.f(SqlUserRepository)
 
     with (settings.predefined_dir / "innopolis_user_data.json").open(encoding="utf-8") as users_file:
         users_json = json.load(users_file)

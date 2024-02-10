@@ -5,11 +5,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import Settings, settings as config_settings
 from src.main import app
-from src.repositories.event_groups import AbstractEventGroupRepository, SqlEventGroupRepository
-from src.repositories.events import AbstractEventRepository, SqlEventRepository
-from src.repositories.tags import AbstractTagRepository, SqlTagRepository
-from src.repositories.users import AbstractUserRepository, SqlUserRepository
-from src.storages.sql import AbstractSQLAlchemyStorage, SQLAlchemyStorage
+from src.repositories.event_groups import SqlEventGroupRepository
+from src.repositories.events import SqlEventRepository
+from src.repositories.tags import SqlTagRepository
+from src.repositories.users import SqlUserRepository
+from src.storages.sql import SQLAlchemyStorage
 from src.utils import setup_repositories
 
 
@@ -31,13 +31,13 @@ def settings() -> "Settings":
 
 # --- Storage Fixtures --- #
 @pytest.fixture(scope="package")
-def storage(settings: "Settings") -> "AbstractSQLAlchemyStorage":
+def storage(settings: "Settings") -> "SQLAlchemyStorage":
     _storage = SQLAlchemyStorage.from_url(settings.db_url.get_secret_value())
     return _storage
 
 
 @pytest_asyncio.fixture(scope="function", autouse=True)
-async def setup_storage(storage: "AbstractSQLAlchemyStorage"):
+async def setup_storage(storage: "SQLAlchemyStorage"):
     # Create the necessary tables before each test
     async with storage.create_session() as session:
         await _init_models(session)
@@ -71,22 +71,22 @@ async def _restore_session(session: AsyncSession):
 
 
 @pytest.fixture(scope="package")
-def user_repository(storage) -> "AbstractUserRepository":
+def user_repository(storage) -> "SqlUserRepository":
     return SqlUserRepository(storage)
 
 
 @pytest.fixture(scope="package")
-def event_group_repository(storage) -> "AbstractEventGroupRepository":
+def event_group_repository(storage) -> "SqlEventGroupRepository":
     return SqlEventGroupRepository(storage)
 
 
 @pytest.fixture(scope="package")
-def tag_repository(storage) -> "AbstractTagRepository":
+def tag_repository(storage) -> "SqlTagRepository":
     return SqlTagRepository(storage)
 
 
 @pytest.fixture(scope="package")
-def event_repository(storage) -> "AbstractEventRepository":
+def event_repository(storage) -> "SqlEventRepository":
     return SqlEventRepository(storage)
 
 

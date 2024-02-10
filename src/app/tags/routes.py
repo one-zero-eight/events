@@ -1,7 +1,8 @@
 from pydantic import BaseModel
 
-from src.app.dependencies import TAG_REPOSITORY_DEPENDENCY
+from src.app.dependencies import Shared
 from src.app.tags import router
+from src.repositories.tags import SqlTagRepository
 from src.schemas import ViewTag
 
 
@@ -15,11 +16,10 @@ class ListTagsResponse(BaseModel):
         200: {"description": "List of event groups", "model": ListTagsResponse},
     },
 )
-async def list_tags(
-    tag_repository: TAG_REPOSITORY_DEPENDENCY,
-) -> ListTagsResponse:
+async def list_tags() -> ListTagsResponse:
     """
     Get a list of all tags
     """
+    tag_repository = Shared.f(SqlTagRepository)
     tags = await tag_repository.read_all()
     return ListTagsResponse(tags=tags)

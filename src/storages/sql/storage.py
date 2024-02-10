@@ -1,24 +1,9 @@
-__all__ = ["SQLAlchemyStorage", "AbstractSQLAlchemyStorage"]
+__all__ = ["SQLAlchemyStorage"]
 
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
-from abc import ABC, abstractmethod
 
 
-class AbstractSQLAlchemyStorage(ABC):
-    @abstractmethod
-    def create_session(self) -> AsyncSession:
-        ...
-
-    @abstractmethod
-    async def create_all(self) -> None:
-        ...
-
-    @abstractmethod
-    async def close_connection(self):
-        ...
-
-
-class SQLAlchemyStorage(AbstractSQLAlchemyStorage):
+class SQLAlchemyStorage:
     engine: AsyncEngine
     sessionmaker: async_sessionmaker
 
