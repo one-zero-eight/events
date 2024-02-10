@@ -4,13 +4,12 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import Settings, settings as config_settings
-from src.api.main import app
+from src.api.app import app
 from src.repositories.event_groups import SqlEventGroupRepository
 from src.repositories.events import SqlEventRepository
 from src.repositories.tags import SqlTagRepository
 from src.repositories.users import SqlUserRepository
 
-# from src.repositories.workshops import AbstractWorkshopRepository, SqlWorkshopRepository
 from src.storages.sql import SQLAlchemyStorage
 
 
@@ -95,8 +94,3 @@ def tag_repository(storage) -> "SqlTagRepository":
 @pytest.fixture(scope="package")
 def event_repository(storage) -> "SqlEventRepository":
     return SqlEventRepository(storage)
-
-
-# @pytest.fixture(scope="package")
-# def workshop_repository(storage) -> "AbstractWorkshopRepository":
-#     return SqlWorkshopRepository(storage)

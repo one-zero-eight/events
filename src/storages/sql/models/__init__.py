@@ -8,8 +8,6 @@ from src.storages.sql.models.tags import Tag
 from src.storages.sql.models.users import User
 from src.storages.sql.models.linked import LinkedCalendar
 
-# from src.storages.sql.models.workshops import Workshop, Timeslot, CheckIn
-
 __all__ = [
     "Base",
     "User",
@@ -18,8 +16,5 @@ __all__ = [
     "EventPatch",
     "UserXFavoriteEventGroup",
     "Tag",
-    #  "Workshop",
-    # "Timeslot",
-    # "CheckIn",
     "LinkedCalendar",
 ]
