@@ -8,8 +8,8 @@ import icalendar
 from fastapi import HTTPException
 from starlette.responses import FileResponse, StreamingResponse
 
-from src.app.dependencies import Shared
-from src.app.ics import router
+from src.api.dependencies import Shared
+from src.api.ics import router
 from src.exceptions import EventGroupNotFoundException, UserNotFoundException
 from src.repositories.event_groups import SqlEventGroupRepository
 from src.repositories.predefined import PredefinedRepository

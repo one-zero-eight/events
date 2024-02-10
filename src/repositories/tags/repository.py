@@ -8,7 +8,7 @@ from sqlalchemy.orm import selectinload
 from src.repositories.crud import CRUDFactory, AbstractCRUDRepository
 from src.repositories.ownership import setup_ownership_method
 from src.schemas import CreateTag, ViewTag, OwnershipEnum, UpdateTag
-from src.storages.sql import AbstractSQLAlchemyStorage, SQLAlchemyStorage
+from src.storages.sql import SQLAlchemyStorage
 from src.storages.sql.models import Tag, EventGroup
 
 CRUD: AbstractCRUDRepository[

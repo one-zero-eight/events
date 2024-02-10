@@ -27,7 +27,7 @@ def TagsMixinFactory(tablename: str, Base: type[DeclarativeBase]):
         Tag.__tags_associations__[tablename] = TagAssociation
 
         @declared_attr
-        def tags_association(cls) -> Mapped[TagAssociation]:
+        def tags_association(cls) -> Mapped[list[TagAssociation]]:
             return relationship(cls.TagAssociation, lazy="selectin")
 
         @declared_attr

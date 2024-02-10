@@ -56,8 +56,8 @@ class Settings(BaseModel):
     ]
 
     # Use these only in production
-    innopolis_sso_client_id: SecretStr = ""
-    innopolis_sso_client_secret: SecretStr = ""
+    innopolis_sso_client_id: SecretStr = SecretStr("")
+    innopolis_sso_client_secret: SecretStr = SecretStr("")
     innopolis_sso_redirect_uri: str = "https://innohassle.campus.innopolis.university/oauth2/callback"
 
     # Use dev auth while development
@@ -70,7 +70,7 @@ class Settings(BaseModel):
         with open(path, "r", encoding="utf-8") as f:
             yaml_config = yaml.safe_load(f)
 
-        return cls.from_orm(yaml_config)
+        return cls.parse_obj(yaml_config)
 
     @classmethod
     def save_schema(cls, path: Path) -> None:

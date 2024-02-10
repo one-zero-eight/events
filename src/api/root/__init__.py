@@ -5,4 +5,4 @@ from fastapi import APIRouter
 router = APIRouter(prefix="")
 
 # Register all schemas and routes
-import src.app.root.routes  # noqa: E402, F401
+import src.api.root.routes  # noqa: E402, F401

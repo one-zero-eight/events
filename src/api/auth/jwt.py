@@ -12,7 +12,7 @@ from typing import Optional
 from authlib.jose import jwt, JoseError
 from pydantic import BaseModel, validator
 
-from src.app.dependencies import Shared
+from src.api.dependencies import Shared
 from src.config import settings
 from src.repositories.users import SqlUserRepository
 

@@ -45,7 +45,7 @@ class ViewEventGroup(BaseModel):
 
     @validator("tags", pre=True, always=True)
     def _validate_tags(cls, v):
-        v = list(v)
+        v = list(v) if v else []
         return v
 
     class Config:

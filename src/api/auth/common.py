@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 from starlette.datastructures import URL
 from starlette.responses import RedirectResponse
 
-from src.app.auth import router
+from src.api.auth import router
 from src.config import settings
 from src.exceptions import InvalidReturnToURL
 

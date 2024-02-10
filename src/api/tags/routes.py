@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
-from src.app.dependencies import Shared
-from src.app.tags import router
+from src.api.dependencies import Shared
+from src.api.tags import router
 from src.repositories.tags import SqlTagRepository
 from src.schemas import ViewTag
 

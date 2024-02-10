@@ -20,7 +20,7 @@ async def setup_repositories():
     event_group_repository = SqlEventGroupRepository(storage)
     tag_repository = SqlTagRepository(storage)
 
-    from src.app.dependencies import Shared
+    from src.api.dependencies import Shared
 
     Shared.register_provider(SQLAlchemyStorage, storage)
     Shared.register_provider(SqlUserRepository, user_repository)
@@ -31,7 +31,7 @@ async def setup_repositories():
 
 
 async def setup_predefined_data():
-    from src.app.dependencies import Shared
+    from src.api.dependencies import Shared
 
     class Categories(BaseModel):
         class Category(BaseModel):

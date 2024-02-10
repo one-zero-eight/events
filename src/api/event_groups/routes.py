@@ -4,12 +4,12 @@ from fastapi import UploadFile, HTTPException
 from sqlalchemy.exc import IntegrityError
 from starlette.responses import JSONResponse
 
-from src.app.dependencies import (
+from src.api.dependencies import (
     CURRENT_USER_ID_DEPENDENCY,
     VERIFY_PARSER_DEPENDENCY,
     Shared,
 )
-from src.app.event_groups import router
+from src.api.event_groups import router
 from src.exceptions import (
     EventGroupNotFoundException,
     OperationIsNotAllowed,

@@ -4,7 +4,7 @@ import pytest_asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.config import Settings, settings as config_settings
-from src.main import app
+from src.api.main import app
 from src.repositories.event_groups import SqlEventGroupRepository
 from src.repositories.events import SqlEventRepository
 from src.repositories.tags import SqlTagRepository

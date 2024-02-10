@@ -1,6 +1,6 @@
-from src.app.workshops import router
+from src.api.workshops import router
 from src.schemas import ViewWorkshop, CheckIn
-from src.app.dependencies import (
+from src.api.dependencies import (
     CURRENT_USER_ID_DEPENDENCY,
 )
 from pydantic import BaseModel

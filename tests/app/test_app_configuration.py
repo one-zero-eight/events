@@ -121,7 +121,7 @@ def fake_predefined_repository():
 
 @pytest.mark.asyncio
 async def test_startup(async_client: httpx.AsyncClient):
-    from src.app.auth.jwt import create_parser_token
+    from src.api.auth.jwt import create_parser_token
 
     token = create_parser_token()
 

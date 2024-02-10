@@ -56,7 +56,7 @@ class Shared:
             return provider
 
 
-from src.app.auth.dependencies import get_current_user_id, verify_parser  # noqa: E402
+from src.api.auth.dependencies import get_current_user_id, verify_parser  # noqa: E402
 
 CURRENT_USER_ID_DEPENDENCY = Annotated[str, Depends(get_current_user_id)]
 VERIFY_PARSER_DEPENDENCY = Annotated[bool, Depends(verify_parser)]

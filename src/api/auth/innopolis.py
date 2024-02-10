@@ -6,11 +6,11 @@ from pydantic import BaseModel, Field
 from starlette.requests import Request
 from starlette.responses import RedirectResponse, JSONResponse
 
-from src.app.auth import router, oauth
-from src.app.auth.common import redirect_with_token, ensure_allowed_return_to
-from src.app.auth.dependencies import get_current_user_id
-from src.app.dependencies import Shared
-from src.app.auth.jwt import create_access_token
+from src.api.auth import router, oauth
+from src.api.auth.common import redirect_with_token, ensure_allowed_return_to
+from src.api.auth.dependencies import get_current_user_id
+from src.api.dependencies import Shared
+from src.api.auth.jwt import create_access_token
 from src import constants
 from src.exceptions import NoCredentialsException, IncorrectCredentialsException
 from src.repositories.users import SqlUserRepository

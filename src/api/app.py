@@ -5,7 +5,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
 from src import constants
-from src.app.routers import routers
+from src.api.routers import routers
 from src.config import settings
 from src.config_schema import Environment
 from src.storages.sql import SQLAlchemyStorage
@@ -52,7 +52,7 @@ async def startup_event():
 
 @app.on_event("shutdown")
 async def close_connection():
-    from src.app.dependencies import Shared
+    from src.api.dependencies import Shared
 
     storage = Shared.f(SQLAlchemyStorage)
     await storage.close_connection()

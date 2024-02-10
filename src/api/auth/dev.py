@@ -4,12 +4,12 @@ import warnings
 from typing import Optional
 
 
-from src.app.auth import router
-from src.app.auth.common import redirect_with_token, ensure_allowed_return_to
-from src.app.auth.jwt import create_access_token, create_parser_token
+from src.api.auth import router
+from src.api.auth.common import redirect_with_token, ensure_allowed_return_to
+from src.api.auth.jwt import create_access_token, create_parser_token
 from src.schemas import CreateUser
 from src.config import settings, Environment
-from src.app.dependencies import Shared
+from src.api.dependencies import Shared
 from src.repositories.users import SqlUserRepository
 
 enabled = bool(settings.dev_auth_email) and settings.environment == Environment.DEVELOPMENT

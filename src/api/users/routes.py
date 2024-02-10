@@ -1,11 +1,11 @@
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 
-from src.app.dependencies import (
+from src.api.dependencies import (
     CURRENT_USER_ID_DEPENDENCY,
     Shared,
 )
-from src.app.users import router
+from src.api.users import router
 from src.exceptions import (
     UserNotFoundException,
     IncorrectCredentialsException,

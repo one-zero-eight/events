@@ -3,7 +3,7 @@ __all__ = ["get_current_user_id", "verify_parser"]
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, APIKeyCookie
 
-from src.app.auth.jwt import verify_user_token, verify_parser_token
+from src.api.auth.jwt import verify_user_token, verify_parser_token
 from src.config import settings
 from src.exceptions import (
     NoCredentialsException,
