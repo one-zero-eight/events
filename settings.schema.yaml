@@ -71,6 +71,17 @@ $defs:
     - client_secret
     title: InnopolisSSO
     type: object
+  MusicRoom:
+    additionalProperties: false
+    description: InNoHassle-MusicRoom integration settings
+    properties:
+      api_url:
+        title: Api Url
+        type: string
+    required:
+    - api_url
+    title: MusicRoom
+    type: object
 additionalProperties: false
 description: Settings for the application. Get settings from `settings.yaml` file.
 properties:
@@ -116,6 +127,11 @@ properties:
     format: path
     title: Predefined Dir
     type: string
+  music_room:
+    anyOf:
+    - $ref: '#/$defs/MusicRoom'
+    - type: 'null'
+    default: null
 required:
 - auth
 title: Settings

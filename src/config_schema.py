@@ -21,8 +21,6 @@ class MusicRoom(SettingsEntityModel):
 
     api_url: str
     "URL of the Music Room API"
-    token: SecretStr
-    "Token for the Music Room API"
 
 
 class InnopolisSSO(SettingsEntityModel):
@@ -74,6 +72,8 @@ class Settings(SettingsEntityModel):
     "Email for dev auth"
     predefined_dir: Path = Path("./predefined")
     "Path to the directory with predefined data"
+    music_room: Optional[MusicRoom] = None
+    "InNoHassle-MusicRoom integration settings"
 
     @classmethod
     def from_yaml(cls, path: Path) -> "Settings":

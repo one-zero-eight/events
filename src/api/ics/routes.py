@@ -10,42 +10,13 @@ from starlette.responses import FileResponse, StreamingResponse
 
 from src.api.dependencies import Shared
 from src.api.ics import router
+from src.config import settings
 from src.exceptions import EventGroupNotFoundException, UserNotFoundException
 from src.repositories.event_groups import SqlEventGroupRepository
 from src.repositories.predefined import PredefinedRepository
 from src.repositories.users import SqlUserRepository
 from src.schemas import ViewUser
 from src.schemas.linked import LinkedCalendarView
-
-
-@router.get(
-    "/{event_group_alias}.ics",
-    response_class=FileResponse,
-    responses={
-        200: {
-            "description": "ICS file with schedule of the event-group",
-            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
-        },
-        **EventGroupNotFoundException.responses,
-    },
-)
-async def get_event_group_ics_by_alias(user_id: int, export_type: str, event_group_alias: str):
-    """
-    Get event group .ics file by id
-    """
-    event_group_repository = Shared.f(SqlEventGroupRepository)
-    event_group = await event_group_repository.read_by_alias(event_group_alias)
-
-    if event_group is None:
-        raise EventGroupNotFoundException()
-    if event_group.path:
-        ics_path = PredefinedRepository.locate_ics_by_path(event_group.path)
-        return FileResponse(ics_path, media_type="text/calendar")
-    else:
-        # TODO: create ics file on the fly from events connected to event group
-        raise HTTPException(
-            status_code=501, detail="Can not create .ics file on the fly (set static .ics file for the event group"
-        )
 
 
 @router.get(
@@ -92,6 +63,28 @@ async def get_user_schedule(
         content=ical_generator,
         media_type="text/calendar",
     )
+
+
+@router.get(
+    "/music-room.ics",
+    responses={
+        200: {
+            "description": "ICS file with schedule of the music room",
+            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
+        },
+    },
+    response_class=StreamingResponse,
+)
+async def get_music_room_schedule() -> StreamingResponse:
+    """
+    Get schedule in ICS format for the music room
+    """
+    if settings.music_room is None:
+        raise HTTPException(status_code=404, detail="Music room is not configured")
+
+    ical_generator = _generate_ics_from_url(f"{settings.music_room.api_url}/music-room.ics")
+
+    return StreamingResponse(content=ical_generator, media_type="text/calendar")
 
 
 # TODO: Extract to separated service with cache, task queue based on FastAPI, Celery + Redis
@@ -186,3 +179,33 @@ async def _generate_ics_from_url(url: str) -> AsyncGenerator[bytes, None]:
             if size < 0:
                 raise HTTPException(status_code=400, detail="File is too big")
             yield chunk
+
+
+@router.get(
+    "/{event_group_alias}.ics",
+    response_class=FileResponse,
+    responses={
+        200: {
+            "description": "ICS file with schedule of the event-group",
+            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
+        },
+        **EventGroupNotFoundException.responses,
+    },
+)
+async def get_event_group_ics_by_alias(user_id: int, export_type: str, event_group_alias: str):
+    """
+    Get event group .ics file by id
+    """
+    event_group_repository = Shared.f(SqlEventGroupRepository)
+    event_group = await event_group_repository.read_by_alias(event_group_alias)
+
+    if event_group is None:
+        raise EventGroupNotFoundException()
+    if event_group.path:
+        ics_path = PredefinedRepository.locate_ics_by_path(event_group.path)
+        return FileResponse(ics_path, media_type="text/calendar")
+    else:
+        # TODO: create ics file on the fly from events connected to event group
+        raise HTTPException(
+            status_code=501, detail="Can not create .ics file on the fly (set static .ics file for the event group"
+        )
