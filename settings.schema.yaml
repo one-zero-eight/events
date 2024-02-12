@@ -1,111 +1,122 @@
 $schema: http://json-schema.org/draft-07/schema#
-title: Settings
-description: Settings for the application. Get settings from `settings.yaml` file.
-type: object
-properties:
-  app_root_path:
-    title: App Root Path
-    default: ''
-    type: string
-  environment:
-    default: development
-    allOf:
-    - $ref: '#/definitions/Environment'
-  db_url:
-    title: Db Url
-    default: postgresql://postgres:postgres@localhost:5432/postgres
-    type: string
-    writeOnly: true
-    format: password
-  cors_allow_origins:
-    title: Cors Allow Origins
-    default:
-    - https://innohassle.ru
-    - https://pre.innohassle.ru
-    - http://localhost:3000
-    type: array
-    items:
-      type: string
-  auth:
-    $ref: '#/definitions/Authentication'
-  innopolis_sso:
-    $ref: '#/definitions/InnopolisSSO'
-  test_user_email:
-    title: Test User Email
-    type: string
-    format: email
-  predefined_dir:
-    title: Predefined Dir
-    default: predefined
-    type: string
-    format: path
-required:
-- auth
-definitions:
-  Environment:
-    title: Environment
-    description: An enumeration.
-    enum:
-    - development
-    - production
-    - testing
-    type: string
+$defs:
   Authentication:
-    title: Authentication
-    type: object
+    additionalProperties: false
     properties:
       cookie_name:
-        title: Cookie Name
         default: token
+        title: Cookie Name
         type: string
       cookie_domain:
-        title: Cookie Domain
         default: localhost
+        title: Cookie Domain
         type: string
       allowed_domains:
-        title: Allowed Domains
         default:
         - localhost
-        type: array
         items:
           type: string
+        title: Allowed Domains
+        type: array
       jwt_private_key:
+        format: password
         title: Jwt Private Key
         type: string
         writeOnly: true
-        format: password
       jwt_public_key:
         title: Jwt Public Key
         type: string
       session_secret_key:
+        format: password
         title: Session Secret Key
         type: string
         writeOnly: true
-        format: password
     required:
     - jwt_private_key
     - jwt_public_key
     - session_secret_key
-  InnopolisSSO:
-    title: InnopolisSSO
-    description: Innopolis SSO settings (only for production)
+    title: Authentication
     type: object
+  Environment:
+    enum:
+    - development
+    - production
+    - testing
+    title: Environment
+    type: string
+  InnopolisSSO:
+    additionalProperties: false
+    description: Innopolis SSO settings (only for production)
     properties:
       client_id:
         title: Client Id
         type: string
       client_secret:
+        format: password
         title: Client Secret
         type: string
         writeOnly: true
-        format: password
       redirect_uri:
-        title: Redirect Uri
         default: https://innohassle.campus.innopolis.university/oauth2/callback
+        title: Redirect Uri
         type: string
       resource_id:
+        anyOf:
+        - type: string
+        - type: 'null'
+        default: null
         title: Resource Id
-        type: string
     required:
     - client_id
     - client_secret
+    title: InnopolisSSO
+    type: object
+additionalProperties: false
+description: Settings for the application. Get settings from `settings.yaml` file.
+properties:
+  app_root_path:
+    default: ''
+    title: App Root Path
+    type: string
+  environment:
+    allOf:
+    - $ref: '#/$defs/Environment'
+    default: development
+  db_url:
+    default: postgresql://postgres:postgres@localhost:5432/postgres
+    format: password
+    title: Db Url
+    type: string
+    writeOnly: true
+  cors_allow_origins:
+    default:
+    - https://innohassle.ru
+    - https://pre.innohassle.ru
+    - http://localhost:3000
+    items:
+      type: string
+    title: Cors Allow Origins
+    type: array
+  auth:
+    $ref: '#/$defs/Authentication'
+  innopolis_sso:
+    anyOf:
+    - $ref: '#/$defs/InnopolisSSO'
+    - type: 'null'
+    default: null
+  test_user_email:
+    anyOf:
+    - format: email
+      type: string
+    - type: 'null'
+    default: null
+    title: Test User Email
+  predefined_dir:
+    default: predefined
+    format: path
+    title: Predefined Dir
+    type: string
+required:
+- auth
+title: Settings
+type: object
