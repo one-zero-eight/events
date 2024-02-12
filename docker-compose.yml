@@ -17,6 +17,9 @@ services:
     environment:
       - TZ=Europe/Moscow
     env_file: .env
+    networks:
+      - default
+      - music-room
 
   db:
     image: "postgres:15.3"
@@ -33,3 +36,8 @@ services:
 
 volumes:
   postgres:
+
+networks:
+  music-room:
+    external: true
+    name: music-room
