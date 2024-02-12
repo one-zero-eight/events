@@ -1,6 +1,6 @@
 $schema: http://json-schema.org/draft-07/schema#
 title: Settings
-description: Settings for the application. Get settings from .env file.
+description: Settings for the application. Get settings from `settings.yaml` file.
 type: object
 properties:
   app_root_path:
@@ -11,25 +11,10 @@ properties:
     default: development
     allOf:
     - $ref: '#/definitions/Environment'
-  session_secret_key:
-    title: Session Secret Key
-    type: string
-    writeOnly: true
-    format: password
-  jwt_private_key:
-    title: Jwt Private Key
-    description: Private key for JWT. Use 'openssl genrsa -out private.pem 2048' to
-      generate keys
-    type: string
-    writeOnly: true
-    format: password
-  jwt_public_key:
-    title: Jwt Public Key
-    description: Public key for JWT. Use 'openssl rsa -in private.pem -pubout -out
-      public.pem' to generate keys
-    type: string
   db_url:
     title: Db Url
+    description: PostgreSQL database connection URL
+    default: postgresql://postgres:postgres@localhost:5432/postgres
     type: string
     writeOnly: true
     format: password
@@ -37,50 +22,17 @@ properties:
     title: Cors Allow Origins
     default:
     - https://innohassle.ru
-    - https://dev.innohassle.ru
     - https://pre.innohassle.ru
     - http://localhost:3000
     type: array
     items:
       type: string
-  auth_cookie_name:
-    title: Auth Cookie Name
-    default: token
-    type: string
-  auth_cookie_domain:
-    title: Auth Cookie Domain
-    default: localhost
-    type: string
-  auth_allowed_domains:
-    title: Auth Allowed Domains
-    default:
-    - innohassle.ru
-    - api.innohassle.ru
-    - pre.innohassle.ru
-    - dev.innohassle.ru
-    - localhost
-    type: array
-    items:
-      type: string
-  innopolis_sso_client_id:
-    title: Innopolis Sso Client Id
-    default: ''
-    type: string
-    writeOnly: true
-    format: password
-  innopolis_sso_client_secret:
-    title: Innopolis Sso Client Secret
-    default: ''
-    type: string
-    writeOnly: true
-    format: password
-  innopolis_sso_redirect_uri:
-    title: Innopolis Sso Redirect Uri
-    default: https://innohassle.campus.innopolis.university/oauth2/callback
-    type: string
-  dev_auth_email:
-    title: Dev Auth Email
-    default: ''
+  auth:
+    $ref: '#/definitions/Authentication'
+  innopolis_sso:
+    $ref: '#/definitions/InnopolisSSO'
+  test_user_email:
+    title: Test User Email
     type: string
   predefined_dir:
     title: Predefined Dir
@@ -88,10 +40,7 @@ properties:
     type: string
     format: path
 required:
-- session_secret_key
-- jwt_private_key
-- jwt_public_key
-- db_url
+- auth
 definitions:
   Environment:
     title: Environment
@@ -101,3 +50,62 @@ definitions:
     - production
     - testing
     type: string
+  Authentication:
+    title: Authentication
+    type: object
+    properties:
+      cookie_name:
+        title: Cookie Name
+        default: token
+        type: string
+      cookie_domain:
+        title: Cookie Domain
+        default: localhost
+        type: string
+      allowed_domains:
+        title: Allowed Domains
+        default:
+        - localhost
+        type: array
+        items:
+          type: string
+      jwt_private_key:
+        title: Jwt Private Key
+        type: string
+        writeOnly: true
+        format: password
+      jwt_public_key:
+        title: Jwt Public Key
+        type: string
+      session_secret_key:
+        title: Session Secret Key
+        type: string
+        writeOnly: true
+        format: password
+    required:
+    - jwt_private_key
+    - jwt_public_key
+    - session_secret_key
+  InnopolisSSO:
+    title: InnopolisSSO
+    description: Innopolis SSO settings (only for production)
+    type: object
+    properties:
+      client_id:
+        title: Client Id
+        type: string
+      client_secret:
+        title: Client Secret
+        type: string
+        writeOnly: true
+        format: password
+      redirect_uri:
+        title: Redirect Uri
+        default: https://innohassle.campus.innopolis.university/oauth2/callback
+        type: string
+      resource_id:
+        title: Resource Id
+        type: string
+    required:
+    - client_id
+    - client_secret

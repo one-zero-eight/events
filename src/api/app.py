@@ -41,7 +41,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(SessionMiddleware, secret_key=settings.session_secret_key.get_secret_value())
+app.add_middleware(SessionMiddleware, secret_key=settings.auth.session_secret_key.get_secret_value())
 
 
 @app.on_event("startup")

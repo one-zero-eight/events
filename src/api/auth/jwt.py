@@ -50,14 +50,14 @@ def _create_access_token(data: dict, expires_delta: timedelta) -> str:
     issued_at = datetime.utcnow()
     expire = issued_at + expires_delta
     payload.update({"exp": expire, "iat": issued_at})
-    encoded_jwt = jwt.encode({"alg": ALGORITHM}, payload, settings.jwt_private_key.get_secret_value())
+    encoded_jwt = jwt.encode({"alg": ALGORITHM}, payload, settings.auth.jwt_private_key.get_secret_value())
     return str(encoded_jwt, "utf-8")
 
 
 async def verify_user_token(token: str, credentials_exception) -> UserTokenData:
     try:
         user_repository = Shared.f(SqlUserRepository)
-        payload = jwt.decode(token, settings.jwt_public_key)
+        payload = jwt.decode(token, settings.auth.jwt_public_key)
         user_id: str = payload.get("sub")
         if user_id is None or not user_id.isdigit():
             raise credentials_exception
@@ -73,7 +73,7 @@ async def verify_user_token(token: str, credentials_exception) -> UserTokenData:
 
 def verify_parser_token(token: str, credentials_exception) -> bool:
     try:
-        payload = jwt.decode(token, settings.jwt_public_key)
+        payload = jwt.decode(token, settings.auth.jwt_public_key)
         parser_data = payload.get("sub")
         if parser_data == "parser":
             return True

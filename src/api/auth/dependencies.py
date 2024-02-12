@@ -20,13 +20,13 @@ bearer_scheme = HTTPBearer(
 cookie_scheme = APIKeyCookie(
     scheme_name="Cookie",
     description="Your JSON Web Token (JWT) stored as 'token' cookie",
-    name=settings.auth_cookie_name,  # Cookie name
+    name=settings.auth.cookie_name,  # Cookie name
     auto_error=False,  # We'll handle error manually
 )
 
 
 async def get_current_user_id(
-    bearer: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    bearer: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     cookie: str = Depends(cookie_scheme),
 ) -> int:
     # Prefer header to cookie

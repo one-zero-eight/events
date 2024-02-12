@@ -1,8 +1,6 @@
 __all__ = []
 
 import warnings
-from typing import Optional
-
 
 from src.api.auth import router
 from src.api.auth.common import redirect_with_token, ensure_allowed_return_to
@@ -12,34 +10,25 @@ from src.config import settings, Environment
 from src.api.dependencies import Shared
 from src.repositories.users import SqlUserRepository
 
-enabled = bool(settings.dev_auth_email) and settings.environment == Environment.DEVELOPMENT
-
-if enabled:
+if settings.environment == Environment.DEVELOPMENT:
     warnings.warn(
         "Dev auth provider is enabled! "
         "Use this only for development environment "
         "(otherwise, set ENVIRONMENT=production)."
     )
 
-    @router.get("/dev/login", include_in_schema=False)
-    async def dev_login(
-        return_to: str = "/",
-        email: Optional[str] = None,
-    ):
+    @router.get("/dev/login")
+    async def dev_login(email: str = settings.test_user_email, return_to: str = "/"):
         ensure_allowed_return_to(return_to)
-        email = email or settings.dev_auth_email
         user_repository = Shared.f(SqlUserRepository)
-        user = await user_repository.create_or_update(CreateUser(email=email, name="Ivan Petrov"))
+        user = await user_repository.create_or_update(CreateUser(email=email, name="Unnamed"))
         token = create_access_token(user.id)
         return redirect_with_token(return_to, token)
 
     @router.get("/dev/token")
-    async def get_dev_token(
-        email: Optional[str] = None,
-    ) -> str:
-        email = email or settings.dev_auth_email
+    async def get_dev_token(email: str = settings.test_user_email) -> str:
         user_repository = Shared.f(SqlUserRepository)
-        user = await user_repository.create_or_update(CreateUser(email=email, name="Ivan Petrov"))
+        user = await user_repository.create_or_update(CreateUser(email=email, name="Unnamed"))
         return create_access_token(user.id)
 
     @router.get("/dev/parser-token")
