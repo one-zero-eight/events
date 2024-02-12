@@ -2,7 +2,7 @@ __all__ = ["CreateUser", "ViewUser", "UpdateUser"]
 
 from typing import Optional, Collection
 
-from pydantic import Field, BaseModel, validator
+from pydantic import Field, BaseModel, field_validator, ConfigDict
 
 from src.schemas.linked import LinkedCalendarView
 
@@ -28,21 +28,20 @@ class ViewUser(BaseModel):
     favorites_association: list["UserXFavoriteGroupView"] = Field(default_factory=list)
     linked_calendars: dict[str, "LinkedCalendarView"] = Field(default_factory=dict)
 
-    @validator("favorites_association", pre=True)
+    @field_validator("favorites_association", mode="before")
     def groups_to_list(cls, v):
         if isinstance(v, Collection):
             v = list(v)
         return v
 
-    @validator("linked_calendars", pre=True)
+    @field_validator("linked_calendars", mode="before")
     def calendars_to_dict(cls, v):
         if not isinstance(v, dict):
             keys = [calendar.alias for calendar in v]
             return dict(zip(keys, v))
         return v
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UpdateUser(BaseModel):

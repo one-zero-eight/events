@@ -3,8 +3,8 @@ __all__ = ["CreateEvent", "ViewEvent", "UpdateEvent", "AddEventPatch", "ViewEven
 import datetime
 from typing import Optional
 
-from pydantic import BaseModel, Field, validator
 from icalendar import vRecur
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 
 class CreateEvent(BaseModel):
@@ -19,9 +19,7 @@ class ViewEvent(BaseModel):
     description: Optional[str] = None
 
     patches: list["ViewEventPatch"] = Field(default_factory=list)
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UpdateEvent(BaseModel):
@@ -42,7 +40,7 @@ class AddEventPatch(BaseModel):
 
     rrule: Optional[str | dict] = None
 
-    @validator("rrule", pre=True)
+    @field_validator("rrule", mode="before")
     def _validate_rrule(cls, v) -> str:
         if isinstance(v, vRecur):
             v = v.to_ical().decode()
@@ -72,14 +70,13 @@ class ViewEventPatch(BaseModel):
 
     rrule: Optional[vRecur] = None
 
-    @validator("rrule", pre=True)
+    @field_validator("rrule", mode="before")
     def _validate_rrule(cls, v):
         if isinstance(v, str):
             return vRecur.from_ical(v)
         return v
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True, arbitrary_types_allowed=True)
 
 
 class UpdateEventPatch(BaseModel):
@@ -93,11 +90,13 @@ class UpdateEventPatch(BaseModel):
 
     rrule: Optional[vRecur] = None
 
-    @validator("rrule", pre=True)
+    @field_validator("rrule", mode="before")
     def _validate_rrule(cls, v):
         if isinstance(v, str):
             return vRecur.from_ical(v)
         return v
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
 
 # Update forward refs

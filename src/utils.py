@@ -2,7 +2,7 @@ import json
 import re
 
 from fastapi.routing import APIRoute
-from pydantic import BaseModel, Field, parse_file_as
+from pydantic import BaseModel, Field
 
 from src.config import settings
 from src.repositories.event_groups import SqlEventGroupRepository
@@ -48,8 +48,8 @@ async def setup_predefined_data():
 
     with (settings.predefined_dir / "innopolis_user_data.json").open(encoding="utf-8") as users_file:
         users_json = json.load(users_file)
-
-    categories = parse_file_as(Categories, settings.predefined_dir / "categories.json")
+    with (settings.predefined_dir / "categories.json").open(encoding="utf-8") as categories_file:
+        categories = Categories.model_validate(categories_file)
     categories_jsons = []
 
     for category in categories.categories:

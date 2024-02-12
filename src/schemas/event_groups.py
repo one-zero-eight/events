@@ -8,9 +8,9 @@ __all__ = [
 
 import datetime
 from typing import Optional, Iterable
-
-from pydantic import BaseModel, Field, validator
 from urllib.parse import quote
+
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 
 class CreateEventGroup(BaseModel):
@@ -23,7 +23,7 @@ class CreateEventGroup(BaseModel):
     path: Optional[str] = None
     description: Optional[str] = None
 
-    @validator("alias", pre=True, always=True)
+    @field_validator("alias", mode="before")
     def encode_alias_to_uri(cls, v):
         return quote(v)
 
@@ -41,15 +41,14 @@ class ViewEventGroup(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     tags: list["ViewTag"] = Field(default_factory=list)
-    # ownerships: list["Ownership"] = Field(default_factory=list)
 
-    @validator("tags", pre=True, always=True)
+    # ownerships: list["Ownership"] = Field(default_factory=list)
+    @field_validator("tags", mode="before")
     def _validate_tags(cls, v):
         v = list(v) if v else []
         return v
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UpdateEventGroup(BaseModel):
@@ -59,7 +58,7 @@ class UpdateEventGroup(BaseModel):
 
     alias: Optional[str] = None
     name: Optional[str] = None
-    description: Optional[str]
+    description: Optional[str] = None
     path: Optional[str] = None
 
 
@@ -72,9 +71,7 @@ class UserXFavoriteGroupView(BaseModel):
     event_group: ViewEventGroup
     hidden: bool
     predefined: bool = False
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ListEventGroupsResponse(BaseModel):

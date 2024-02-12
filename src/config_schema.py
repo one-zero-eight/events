@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional
 
 import yaml
-from pydantic import BaseModel, SecretStr, root_validator, EmailStr
+from pydantic import model_validator, BaseModel, SecretStr, EmailStr, ConfigDict
 
 
 class Environment(StrEnum):
@@ -12,7 +12,11 @@ class Environment(StrEnum):
     TESTING = "testing"
 
 
-class MusicRoom(BaseModel):
+class SettingsEntityModel(BaseModel):
+    model_config = ConfigDict(use_attribute_docstrings=True, extra="forbid")
+
+
+class MusicRoom(SettingsEntityModel):
     """InNoHassle-MusicRoom integration settings"""
 
     api_url: str
@@ -21,7 +25,7 @@ class MusicRoom(BaseModel):
     "Token for the Music Room API"
 
 
-class InnopolisSSO(BaseModel):
+class InnopolisSSO(SettingsEntityModel):
     """Innopolis SSO settings (only for production)"""
 
     client_id: str
@@ -34,7 +38,7 @@ class InnopolisSSO(BaseModel):
     "Resource ID for Innopolis SSO (optional); Used for Sports API access"
 
 
-class Authentication(BaseModel):
+class Authentication(SettingsEntityModel):
     cookie_name: str = "token"
     "Name of the cookie for authentication JWT token"
     cookie_domain: str = "localhost"
@@ -49,7 +53,7 @@ class Authentication(BaseModel):
     "Secret key for sessions. Use 'openssl rand -hex 32' to generate keys"
 
 
-class Settings(BaseModel):
+class Settings(SettingsEntityModel):
     """
     Settings for the application. Get settings from `settings.yaml` file.
     """
@@ -74,7 +78,8 @@ class Settings(BaseModel):
     @classmethod
     def from_yaml(cls, path: Path) -> "Settings":
         with open(path, "r", encoding="utf-8") as f:
-            yaml_config = yaml.safe_load(f)
+            yaml_config: dict = yaml.safe_load(f)
+            yaml_config.pop("$schema", None)
 
         return cls.parse_obj(yaml_config)
 
@@ -84,9 +89,8 @@ class Settings(BaseModel):
             schema = {"$schema": "http://json-schema.org/draft-07/schema#", **cls.schema()}
             yaml.dump(schema, f, sort_keys=False)
 
-    @root_validator()
-    def validate_test_user_email(cls, values):
-        test_user_email = values.get("test_user_email")
-        if test_user_email is None and values["environment"] == Environment.DEVELOPMENT:
+    @model_validator(mode="after")
+    def validate_test_user_email(self):
+        if self.test_user_email is None and self.environment == Environment.DEVELOPMENT:
             raise ValueError("test_user_email must be set in development environment")
-        return values
+        return self

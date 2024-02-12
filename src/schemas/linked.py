@@ -1,10 +1,8 @@
 __all__ = ["LinkedCalendarView", "LinkedCalendarCreate", "LinkedCalendarUpdate"]
 
-
 from typing import Optional
 
-
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class LinkedCalendarView(BaseModel):
@@ -20,9 +18,7 @@ class LinkedCalendarView(BaseModel):
     description: Optional[str] = None
     color: Optional[str] = None
     is_active: bool = True
-
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LinkedCalendarCreate(BaseModel):

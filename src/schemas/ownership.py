@@ -1,6 +1,6 @@
 from enum import StrEnum
 
-from pydantic import BaseModel, validator
+from pydantic import ConfigDict, BaseModel, field_validator
 
 
 class OwnershipEnum(StrEnum):
@@ -16,9 +16,8 @@ class Ownership(BaseModel):
 
     role_alias: OwnershipEnum
 
-    @validator("role_alias", pre=True, always=True)
+    @field_validator("role_alias", mode="before")
     def _validate_ownership_enum(cls, v):
         return OwnershipEnum(v)
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)

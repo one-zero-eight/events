@@ -1,3 +1,5 @@
+from pydantic import field_validator
+
 __all__ = ["PredefinedRepository", "JsonUserStorage", "JsonGroupStorage", "JsonTagStorage", "validate_calendar"]
 
 import datetime
@@ -8,7 +10,7 @@ from typing import Optional
 
 import dateutil.rrule
 import icalendar
-from pydantic import BaseModel, Field, parse_obj_as, validator
+from pydantic import BaseModel, Field, parse_obj_as
 
 from src.config import settings
 
@@ -20,7 +22,8 @@ class JsonUserStorage(BaseModel):
 
     users: list[InJsonUser] = Field(default_factory=list)
 
-    @validator("users")
+    @field_validator("users")
+    @classmethod
     def _should_be_unique(cls, v):
         emails = set()
         for user in v:
@@ -44,7 +47,8 @@ class JsonGroupStorage(BaseModel):
 
     event_groups: list[PredefinedGroup] = Field(default_factory=list)
 
-    @validator("event_groups")
+    @field_validator("event_groups")
+    @classmethod
     def validate_groups(cls, v):
         paths = set()
         aliases = set()
@@ -79,7 +83,8 @@ class JsonTagStorage(BaseModel):
 
     tags: list[Tag] = Field(default_factory=list)
 
-    @validator("tags")
+    @field_validator("tags")
+    @classmethod
     def should_be_unique(cls, v):
         aliases = set()
         tags = []

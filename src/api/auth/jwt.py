@@ -22,6 +22,8 @@ ALGORITHM = "RS256"
 class UserTokenData(BaseModel):
     user_id: Optional[int] = None
 
+    # TODO[pydantic]: We couldn't refactor the `validator`, please replace it by `field_validator` manually.
+    # Check https://docs.pydantic.dev/dev-v2/migration/#changes-to-validators for more information.
     @validator("user_id", pre=True, always=True)
     def cast_to_int(cls, v):
         if isinstance(v, str):

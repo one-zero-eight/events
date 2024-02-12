@@ -19,7 +19,7 @@ from src.config import settings
 
 class UserInfoFromSSO(BaseModel):
     email: str
-    name: str | None = Field(alias="commonname")
+    name: str | None = Field(None, alias="commonname")
 
 
 if settings.innopolis_sso is not None:

@@ -8,8 +8,8 @@ packages = []
 
 [tool.poetry.dependencies]
 python = "~3.11"
-pydantic = { extras = ["dotenv"], version = "^1.10.11" }
-fastapi = { extras = ["all"], version = "^0.99.1" }
+pydantic = "^2.6.1"
+fastapi = {extras = ["all"], version = "^0.109.2"}
 authlib = "^1.2.1"
 cryptography = "^42.0.2"
 icalendar = "^5.0.7"
@@ -18,6 +18,8 @@ sqlalchemy = { extras = ["asyncpg"], version = "^2.0.25" }
 asyncpg = "^0.29.0"
 alembic = "^1.12.0"
 psycopg2-binary = "^2.9.9"
+pyyaml = "^6.0.1"
+uvicorn = "^0.27.1"
 
 [tool.poetry.group.prod.dependencies]
 gunicorn = "20.1.0"
