@@ -42,8 +42,8 @@ TAGS_INFO = [
         ),
     },
     {
-        "name": "Ics files",
-        "description": "Generate .ics files for event groups to import them into calendar app.",
+        "name": "ICS",
+        "description": "Generate .ics to import them into calendar app.",
     },
     {
         "name": "Tags",
