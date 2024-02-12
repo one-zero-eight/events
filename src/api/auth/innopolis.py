@@ -45,19 +45,20 @@ if settings.innopolis_sso is not None:
         )
 
     @router.get("/innopolis/callback", include_in_schema=False)
-    async def innopolis_callback(
-        request: Request,
-    ):
+    async def innopolis_callback(request: Request):
         # Check if there are any error from SSO
         error = request.query_params.get("error")
         if error:
             description = request.query_params.get("error_description")
+            print("SSO Error:", error, description)
             return JSONResponse(status_code=403, content={"error": error, "description": description})
 
         try:
             token = await oauth.innopolis.authorize_access_token(request)
+            print("SSO Token received:", token)
         except MismatchingStateError:
             # Session is different on 'login' and 'callback'
+            print("MismatchingStateError")
             return await recover_mismatching_state(request)
 
         user_info_dict: dict = token["userinfo"]
