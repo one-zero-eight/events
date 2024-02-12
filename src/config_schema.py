@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional
 
 import yaml
-from pydantic import BaseModel, SecretStr, root_validator
+from pydantic import BaseModel, SecretStr, root_validator, EmailStr
 
 
 class Environment(StrEnum):
@@ -66,7 +66,7 @@ class Settings(BaseModel):
     "Authentication settings"
     innopolis_sso: Optional[InnopolisSSO] = None
     "Innopolis SSO settings (only for production)"
-    test_user_email: Optional[str] = None
+    test_user_email: Optional[EmailStr] = None
     "Email for dev auth"
     predefined_dir: Path = Path("./predefined")
     "Path to the directory with predefined data"

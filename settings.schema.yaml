@@ -13,7 +13,6 @@ properties:
     - $ref: '#/definitions/Environment'
   db_url:
     title: Db Url
-    description: PostgreSQL database connection URL
     default: postgresql://postgres:postgres@localhost:5432/postgres
     type: string
     writeOnly: true
@@ -34,6 +33,7 @@ properties:
   test_user_email:
     title: Test User Email
     type: string
+    format: email
   predefined_dir:
     title: Predefined Dir
     default: predefined
