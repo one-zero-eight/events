@@ -67,9 +67,9 @@ https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/8e519e69-7a
     poetry run pre-commit install --install-hooks -t pre-commit -t commit-msg
     poetry run pre-commit run --all-files
     ```
-3. Setup environment variables in `.env.local` file.
+3. Setup environment variables in `.env` file.
     ```bash
-    cp .env.example .env.local
+    cp .env.example .env
     ```
 4. Run the ASGI server using src/dev.py script
     ```bash

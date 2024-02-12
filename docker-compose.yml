@@ -16,7 +16,7 @@ services:
       - "./settings.yaml:/code/settings.yaml"
     environment:
       - TZ=Europe/Moscow
-    env_file: .env.local
+    env_file: .env
 
   db:
     image: "postgres:15.3"
@@ -24,7 +24,7 @@ services:
     command: postgres -c synchronous_commit=off
     volumes:
       - "postgres:/var/lib/postgresql/data"
-    env_file: .env.local
+    env_file: .env
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
