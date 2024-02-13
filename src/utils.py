@@ -27,8 +27,6 @@ async def setup_repositories():
     Shared.register_provider(SqlEventGroupRepository, event_group_repository)
     Shared.register_provider(SqlTagRepository, tag_repository)
 
-    await storage.create_all()
-
 
 async def setup_predefined_data():
     from src.api.dependencies import Shared

@@ -89,7 +89,7 @@ def CRUDFactory(
                 _insert_query = _insert_query.options(*get_options)
             obj = await session.scalar(_insert_query, params=data.dict())
             await session.commit()
-            return ViewScheme.from_orm(obj)
+            return ViewScheme.model_validate(obj)
 
         async def create_if_not_exists(self, session: AsyncSession, data: CreateScheme) -> ViewScheme | None:
             q = postgres_insert(Model).values(**data.dict()).on_conflict_do_nothing().returning(Model)
@@ -98,7 +98,7 @@ def CRUDFactory(
             obj = await session.scalar(q)
             await session.commit()
             if obj:
-                return ViewScheme.from_orm(obj)
+                return ViewScheme.model_validate(obj)
 
         async def batch_create(self, session: AsyncSession, data: list[CreateScheme]) -> list[ViewScheme]:
             if not data:
@@ -108,7 +108,7 @@ def CRUDFactory(
                 _insert_query = _insert_query.options(*get_options)
             objs = await session.scalars(_insert_query, params=[obj.dict() for obj in data])
             await session.commit()
-            return [ViewScheme.from_orm(obj) for obj in objs]
+            return [ViewScheme.model_validate(obj) for obj in objs]
 
         # ^^^^^^^^^^^^^^^^^^ CREATE ^^^^^^^^^^^^^^ #
         # ------------------ READ ---------------- #
@@ -118,7 +118,7 @@ def CRUDFactory(
                 q = q.options(*get_options)
             obj = await session.scalar(q)
             if obj:
-                return ViewScheme.from_orm(obj)
+                return ViewScheme.model_validate(obj)
 
         async def batch_read(self, session: AsyncSession, pkeys: list[dict[str, ...]]) -> list[ViewScheme]:
             if not pkeys:
@@ -134,14 +134,14 @@ def CRUDFactory(
                 q = q.options(*get_options)
             objs = await session.scalars(q)
 
-            return [ViewScheme.from_orm(obj) for obj in objs]
+            return [ViewScheme.model_validate(obj) for obj in objs]
 
         async def read_all(self, session: AsyncSession) -> list[ViewScheme]:
             q = select(Model)
             if get_options:
                 q = q.options(*get_options)
             objs = await session.scalars(q)
-            return [ViewScheme.from_orm(obj) for obj in objs]
+            return [ViewScheme.model_validate(obj) for obj in objs]
 
         async def read_by(
             self, session: AsyncSession, only_first: bool, **columns
@@ -151,10 +151,10 @@ def CRUDFactory(
                 q = q.options(*get_options)
             if only_first:
                 obj = await session.scalar(q)
-                return ViewScheme.from_orm(obj) if obj else None
+                return ViewScheme.model_validate(obj) if obj else None
             else:
                 objs = await session.scalars(q)
-                return [ViewScheme.from_orm(obj) for obj in objs]
+                return [ViewScheme.model_validate(obj) for obj in objs]
 
         # ^^^^^^^^^^^^^^^^^^ READ ^^^^^^^^^^^^^^^^^^^ #
         async def update(self, session: AsyncSession, data: UpdateScheme, **pkeys) -> ViewScheme:
@@ -163,7 +163,7 @@ def CRUDFactory(
                 q = q.options(*get_options)
             obj = await session.scalar(q)
             await session.commit()
-            return ViewScheme.from_orm(obj)
+            return ViewScheme.model_validate(obj)
 
         async def batch_update(
             self, session: AsyncSession, data: list[UpdateScheme], pkeys: list[dict[str, ...]]

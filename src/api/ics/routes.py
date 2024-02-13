@@ -11,7 +11,7 @@ from starlette.responses import FileResponse, StreamingResponse
 from src.api.dependencies import Shared
 from src.api.ics import router
 from src.config import settings
-from src.exceptions import EventGroupNotFoundException, UserNotFoundException
+from src.exceptions import EventGroupNotFoundException, UserNotFoundException, ForbiddenException
 from src.repositories.event_groups import SqlEventGroupRepository
 from src.repositories.predefined import PredefinedRepository
 from src.repositories.users import SqlUserRepository
@@ -27,11 +27,11 @@ from src.schemas.linked import LinkedCalendarView
             "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
         },
         **UserNotFoundException.responses,
+        **ForbiddenException.responses,
     },
+    tags=["Users"],
 )
-async def get_user_schedule(
-    user_id: int,
-) -> StreamingResponse:
+async def get_user_schedule(user_id: int, access_key: str) -> StreamingResponse:
     """
     Get schedule in ICS format for the user
     """
@@ -40,6 +40,10 @@ async def get_user_schedule(
 
     if user is None:
         raise UserNotFoundException()
+
+    resource_path = f"/users/{user_id}.ics"
+    if not await user_repository.check_user_schedule_key(user_id, access_key, resource_path):
+        raise ForbiddenException()
 
     user: ViewUser
     nonhidden = []
@@ -58,6 +62,45 @@ async def get_user_schedule(
         paths.add(ics_path)
 
     ical_generator = _generate_ics_from_multiple(user, *paths)
+
+    return StreamingResponse(
+        content=ical_generator,
+        media_type="text/calendar",
+    )
+
+
+# TODO: Extract to separated service with cache, task queue based on FastAPI, Celery + Redis
+@router.get(
+    "/users/{user_id}/linked/{linked_alias}.ics",
+    responses={
+        200: {
+            "description": "ICS file with schedule based on linked url",
+            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
+        },
+        **UserNotFoundException.responses,
+    },
+    tags=["Users"],
+)
+async def get_user_linked_schedule(
+    user_id: int,
+    linked_alias: str,
+) -> StreamingResponse:
+    """
+    Get schedule in ICS format for the user
+    """
+    user_repository = Shared.f(SqlUserRepository)
+    user = await user_repository.read(user_id)
+
+    if user is None:
+        raise UserNotFoundException()
+
+    if linked_alias not in user.linked_calendars:
+        # TODO: Extract to exception
+        raise HTTPException(status_code=404, detail="Linked calendar not found")
+
+    linked_calendar: LinkedCalendarView = user.linked_calendars[linked_alias]
+
+    ical_generator = _generate_ics_from_url(linked_calendar.url)
 
     return StreamingResponse(
         content=ical_generator,
@@ -85,44 +128,6 @@ async def get_music_room_schedule() -> StreamingResponse:
     ical_generator = _generate_ics_from_url(f"{settings.music_room.api_url}/music-room.ics")
 
     return StreamingResponse(content=ical_generator, media_type="text/calendar")
-
-
-# TODO: Extract to separated service with cache, task queue based on FastAPI, Celery + Redis
-@router.get(
-    "/users/{user_id}/linked/{linked_alias}.ics",
-    responses={
-        200: {
-            "description": "ICS file with schedule based on linked url",
-            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
-        },
-        **UserNotFoundException.responses,
-    },
-)
-async def get_user_linked_schedule(
-    user_id: int,
-    linked_alias: str,
-) -> StreamingResponse:
-    """
-    Get schedule in ICS format for the user
-    """
-    user_repository = Shared.f(SqlUserRepository)
-    user = await user_repository.read(user_id)
-
-    if user is None:
-        raise UserNotFoundException()
-
-    if linked_alias not in user.linked_calendars:
-        # TODO: Extract to exception
-        raise HTTPException(status_code=404, detail="Linked calendar not found")
-
-    linked_calendar: LinkedCalendarView = user.linked_calendars[linked_alias]
-
-    ical_generator = _generate_ics_from_url(linked_calendar.url)
-
-    return StreamingResponse(
-        content=ical_generator,
-        media_type="text/calendar",
-    )
 
 
 async def _generate_ics_from_multiple(user: ViewUser, *ics: Path) -> AsyncGenerator[bytes, None]:
@@ -191,6 +196,7 @@ async def _generate_ics_from_url(url: str) -> AsyncGenerator[bytes, None]:
         },
         **EventGroupNotFoundException.responses,
     },
+    tags=["Event Groups"],
 )
 async def get_event_group_ics_by_alias(user_id: int, export_type: str, event_group_alias: str):
     """

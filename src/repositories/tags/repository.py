@@ -52,7 +52,7 @@ class SqlTagRepository:
 
             tags = await session.scalars(q)
             await session.commit()
-            return [ViewTag.from_orm(tag) for tag in tags]
+            return [ViewTag.model_validate(tag) for tag in tags]
 
     async def read(self, id: int) -> "ViewTag":
         async with self._create_session() as session:

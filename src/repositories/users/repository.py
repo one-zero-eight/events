@@ -1,6 +1,7 @@
 __all__ = ["SqlUserRepository"]
 
 import random
+import string
 
 from sqlalchemy import select, delete
 from sqlalchemy.dialects.postgresql import insert
@@ -12,8 +13,8 @@ from src.exceptions import DBEventGroupDoesNotExistInDb
 from src.repositories.crud import CRUDFactory, AbstractCRUDRepository
 from src.schemas import LinkedCalendarView
 from src.schemas.linked import LinkedCalendarCreate
-from src.schemas.users import CreateUser, ViewUser, UpdateUser
-from src.storages.sql.models import User, EventGroup, UserXFavoriteEventGroup, LinkedCalendar
+from src.schemas.users import CreateUser, ViewUser, UpdateUser, ViewUserScheduleKey
+from src.storages.sql.models import User, EventGroup, UserXFavoriteEventGroup, LinkedCalendar, UserScheduleKeys
 from src.storages.sql.storage import SQLAlchemyStorage
 
 _get_options = (
@@ -48,6 +49,10 @@ async def _get_available_user_ids(session: AsyncSession, count: int = 1) -> list
     return list(available_ids) if count > 1 else available_ids.pop()
 
 
+def _generate_random_user_schedule_key() -> str:
+    return "".join(random.choices(string.ascii_letters, k=6))
+
+
 class SqlUserRepository:
     storage: SQLAlchemyStorage
 
@@ -79,7 +84,7 @@ class SqlUserRepository:
             )
             db_users = await session.scalars(q)
             await session.commit()
-            return [ViewUser.from_orm(user) for user in db_users]
+            return [ViewUser.model_validate(user) for user in db_users]
 
     async def create_or_update(self, user: CreateUser) -> ViewUser:
         async with self._create_session() as session:
@@ -92,7 +97,7 @@ class SqlUserRepository:
             )
             user = await session.scalar(q)
             await session.commit()
-            return ViewUser.from_orm(user)
+            return ViewUser.model_validate(user)
 
     async def read(self, user_id: int) -> ViewUser:
         async with self._create_session() as session:
@@ -130,7 +135,7 @@ class SqlUserRepository:
             await session.execute(q)
             user = await session.scalar(SELECT_USER_BY_ID(user_id))
             await session.commit()
-            return ViewUser.from_orm(user)
+            return ViewUser.model_validate(user)
 
     async def remove_favorite(self, user_id: int, favorite_id: int) -> ViewUser:
         async with self._create_session() as session:
@@ -147,7 +152,7 @@ class SqlUserRepository:
             await session.execute(q)
             user = await session.scalar(SELECT_USER_BY_ID(user_id))
             await session.commit()
-            return ViewUser.from_orm(user)
+            return ViewUser.model_validate(user)
 
     async def set_hidden(self, user_id: int, group_id: int, hide: bool = True) -> "ViewUser":
         async with self._create_session() as session:
@@ -168,7 +173,7 @@ class SqlUserRepository:
             q = select(User).where(User.id == user_id).options(*_get_options)
             user = await session.scalar(q)
             await session.commit()
-            return ViewUser.from_orm(user)
+            return ViewUser.model_validate(user)
 
     async def link_calendar(self, user_id: int, calendar: "LinkedCalendarCreate") -> "LinkedCalendarView":
         async with self._create_session() as session:
@@ -183,4 +188,51 @@ class SqlUserRepository:
 
             calendar = await session.scalar(q)
             await session.commit()
-            return LinkedCalendarView.from_orm(calendar)
+            return LinkedCalendarView.model_validate(calendar)
+
+    async def generate_user_schedule_key(self, user_id: int, resource_path: str) -> ViewUserScheduleKey:
+        async with self._create_session() as session:
+            key = _generate_random_user_schedule_key()
+            q = insert(UserScheduleKeys).values(
+                user_id=user_id,
+                access_key=key,
+                resource_path=resource_path,
+            )
+            await session.execute(q)
+            await session.commit()
+            return ViewUserScheduleKey(access_key=key, resource_path=resource_path, user_id=user_id)
+
+    async def get_user_schedule_keys(self, user_id: int) -> list[ViewUserScheduleKey]:
+        async with self._create_session() as session:
+            q = select(UserScheduleKeys).where(UserScheduleKeys.user_id == user_id)
+            keys = await session.scalars(q)
+            return [ViewUserScheduleKey.model_validate(key, from_attributes=True) for key in keys]
+
+    async def get_user_schedule_key_for_resource(self, user_id: int, resource_path: str) -> ViewUserScheduleKey | None:
+        async with self._create_session() as session:
+            q = select(UserScheduleKeys).where(
+                UserScheduleKeys.user_id == user_id,
+                UserScheduleKeys.resource_path == resource_path,
+            )
+            key = await session.scalar(q)
+            return ViewUserScheduleKey.model_validate(key, from_attributes=True) if key else None
+
+    async def check_user_schedule_key(self, user_id: int, key: str, resource_path: str) -> bool:
+        async with self._create_session() as session:
+            q = select(UserScheduleKeys).where(
+                UserScheduleKeys.user_id == user_id,
+                UserScheduleKeys.access_key == key,
+                UserScheduleKeys.resource_path == resource_path,
+            )
+            keyring = await session.scalar(q)
+            return keyring is not None
+
+    async def delete_user_schedule_key(self, user_id: int, key: str, resource_path: str) -> None:
+        async with self._create_session() as session:
+            q = delete(UserScheduleKeys).where(
+                UserScheduleKeys.user_id == user_id,
+                UserScheduleKeys.access_key == key,
+                UserScheduleKeys.resource_path == resource_path,
+            )
+            await session.execute(q)
+            await session.commit()

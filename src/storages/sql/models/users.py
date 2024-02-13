@@ -1,7 +1,8 @@
-__all__ = ["User"]
+__all__ = ["User", "UserScheduleKeys"]
 
 from typing import TYPE_CHECKING
 
+from sqlalchemy import ForeignKey
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 
@@ -42,3 +43,11 @@ class User(Base, IdMixin):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+
+
+class UserScheduleKeys(Base, IdMixin):
+    __tablename__ = "user_schedule_keys"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    access_key: Mapped[str] = mapped_column(nullable=False, index=True)
+    resource_path: Mapped[str] = mapped_column(nullable=False)

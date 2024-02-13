@@ -21,6 +21,20 @@ class NoCredentialsException(HTTPException):
 
 class IncorrectCredentialsException(HTTPException):
     """
+    HTTP_401_UNAUTHORIZED
+    """
+
+    def __init__(self):
+        super().__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=self.responses[401]["description"],
+        )
+
+    responses = {401: {"description": "Could not validate credentials"}}
+
+
+class ForbiddenException(HTTPException):
+    """
     HTTP_403_FORBIDDEN
     """
 
@@ -30,7 +44,7 @@ class IncorrectCredentialsException(HTTPException):
             detail=self.responses[403]["description"],
         )
 
-    responses = {403: {"description": "Could not validate credentials"}}
+    responses = {403: {"description": "Access denied"}}
 
 
 class InvalidReturnToURL(HTTPException):

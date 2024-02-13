@@ -39,7 +39,7 @@ class SqlEventRepository:
             await session.commit()
             # update event
             await session.refresh(db_event)
-            return ViewEvent.from_orm(db_event)
+            return ViewEvent.model_validate(db_event)
 
     async def read(self, event_id: int) -> "ViewEvent":
         async with self._create_session() as session:
@@ -65,13 +65,13 @@ class SqlEventRepository:
             )
             event_patch = await session.scalar(q)
             await session.commit()
-            return ViewEventPatch.from_orm(event_patch)
+            return ViewEventPatch.model_validate(event_patch)
 
     async def read_patches(self, event_id: int) -> list["ViewEventPatch"]:
         async with self._create_session() as session:
             q = select(EventPatch).where(EventPatch.parent_id == event_id).options(joinedload(EventPatch.parent))
             event_patches = await session.scalars(q)
-            return [ViewEventPatch.from_orm(event_patch) for event_patch in event_patches]
+            return [ViewEventPatch.model_validate(event_patch) for event_patch in event_patches]
 
     async def update_patch(self, patch_id: int, patch: "UpdateEventPatch") -> "ViewEventPatch":
         async with self._create_session() as session:
@@ -83,6 +83,6 @@ class SqlEventRepository:
             )
             event_patch = await session.scalar(q)
             await session.commit()
-            return ViewEventPatch.from_orm(event_patch)
+            return ViewEventPatch.model_validate(event_patch)
 
     # ^^^^^^^^^^^^^^^^^^ PATCHES ^^^^^^^^^^^^^^^ #

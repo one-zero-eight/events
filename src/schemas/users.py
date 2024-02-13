@@ -1,4 +1,4 @@
-__all__ = ["CreateUser", "ViewUser", "UpdateUser"]
+__all__ = ["CreateUser", "ViewUser", "UpdateUser", "ViewUserScheduleKey"]
 
 from typing import Optional, Collection
 
@@ -42,6 +42,16 @@ class ViewUser(BaseModel):
         return v
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ViewUserScheduleKey(BaseModel):
+    """
+    Represents a user schedule key.
+    """
+
+    user_id: int
+    access_key: str
+    resource_path: str
 
 
 class UpdateUser(BaseModel):
