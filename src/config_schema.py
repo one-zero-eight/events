@@ -21,6 +21,8 @@ class MusicRoom(SettingsEntityModel):
 
     api_url: str
     "URL of the Music Room API"
+    api_key: SecretStr
+    "API key for the Music Room API"
 
 
 class InnopolisSSO(SettingsEntityModel):
@@ -87,6 +89,11 @@ class Settings(SettingsEntityModel):
     def save_schema(cls, path: Path) -> None:
         with open(path, "w", encoding="utf-8") as f:
             schema = {"$schema": "http://json-schema.org/draft-07/schema#", **cls.model_json_schema()}
+            schema["properties"]["$schema"] = {
+                "description": "Path to the schema file",
+                "title": "Schema",
+                "type": "string",
+            }
             yaml.dump(schema, f, sort_keys=False)
 
     @model_validator(mode="after")

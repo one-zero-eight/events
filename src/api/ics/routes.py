@@ -20,7 +20,7 @@ from src.schemas.linked import LinkedCalendarView
 
 
 @router.get(
-    "/users/{user_id}.ics",
+    "/users/{user_id}/all.ics",
     responses={
         200: {
             "description": "ICS file with schedule based on favorites (non-hidden)",
@@ -33,7 +33,7 @@ from src.schemas.linked import LinkedCalendarView
 )
 async def get_user_schedule(user_id: int, access_key: str) -> StreamingResponse:
     """
-    Get schedule in ICS format for the user
+    Get schedule in ICS format for the user; requires access key for `/users/{user_id}/all.ics` resource
     """
     user_repository = Shared.f(SqlUserRepository)
     user = await user_repository.read(user_id)
@@ -41,7 +41,7 @@ async def get_user_schedule(user_id: int, access_key: str) -> StreamingResponse:
     if user is None:
         raise UserNotFoundException()
 
-    resource_path = f"/users/{user_id}.ics"
+    resource_path = f"/users/{user_id}/all.ics"
     if not await user_repository.check_user_schedule_key(user_id, access_key, resource_path):
         raise ForbiddenException()
 
@@ -69,7 +69,6 @@ async def get_user_schedule(user_id: int, access_key: str) -> StreamingResponse:
     )
 
 
-# TODO: Extract to separated service with cache, task queue based on FastAPI, Celery + Redis
 @router.get(
     "/users/{user_id}/linked/{linked_alias}.ics",
     responses={
@@ -106,6 +105,56 @@ async def get_user_linked_schedule(
         content=ical_generator,
         media_type="text/calendar",
     )
+
+
+@router.get(
+    "/users/{user_id}/music-room.ics",
+    responses={
+        200: {
+            "description": "ICS file with schedule of the music room booking",
+            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
+        },
+        **UserNotFoundException.responses,
+        **ForbiddenException.responses,
+    },
+    tags=["Users"],
+)
+async def get_music_room_user_schedule(user_id: int, access_key: str) -> StreamingResponse:
+    """
+    Get schedule in ICS format for the user; requires access key for `/users/{user_id}/music-room.ics` resource
+    """
+    user_repository = Shared.f(SqlUserRepository)
+    user = await user_repository.read(user_id)
+    if user is None:
+        raise UserNotFoundException()
+
+    resource_path = f"/users/{user_id}/music-room.ics"
+    if not await user_repository.check_user_schedule_key(user_id, access_key, resource_path):
+        raise ForbiddenException()
+
+    if settings.music_room is None:
+        raise HTTPException(status_code=404, detail="Music room is not configured")
+
+    # check if user registered in music room
+    async with httpx.AsyncClient() as client:
+        url = f"{settings.music_room.api_url}/participants/participant_id"
+        query_params = {"email": user.email}
+        headers = {"Authorization": f"Bearer {settings.music_room.api_key.get_secret_value()}"}
+        response = await client.get(url, params=query_params, headers=headers)
+        response.raise_for_status()
+        if response.status_code == 200:
+            participant_id = response.json()
+            if participant_id is None:
+                raise HTTPException(status_code=404, detail="User not found in music room service")
+        else:
+            raise HTTPException(status_code=500, detail="Error in music room service")
+
+    ical_generator = _generate_ics_from_url(
+        f"{settings.music_room.api_url}/participants/{participant_id}/bookings.ics",
+        headers={"Authorization": f"Bearer {settings.music_room.api_key.get_secret_value()}"},
+    )
+
+    return StreamingResponse(content=ical_generator, media_type="text/calendar")
 
 
 @router.get(
@@ -162,11 +211,11 @@ async def _generate_ics_from_multiple(user: ViewUser, *ics: Path) -> AsyncGenera
     yield b"END:VCALENDAR"
 
 
-async def _generate_ics_from_url(url: str) -> AsyncGenerator[bytes, None]:
+async def _generate_ics_from_url(url: str, headers: dict = None) -> AsyncGenerator[bytes, None]:
     async with httpx.AsyncClient() as client:
         # TODO: add config for timeout
         try:
-            response = await client.get(url, timeout=10)
+            response = await client.get(url, timeout=10, headers=headers)
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
             # reraise as HTTPException

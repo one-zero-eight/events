@@ -78,8 +78,14 @@ $defs:
       api_url:
         title: Api Url
         type: string
+      api_key:
+        format: password
+        title: Api Key
+        type: string
+        writeOnly: true
     required:
     - api_url
+    - api_key
     title: MusicRoom
     type: object
 additionalProperties: false
@@ -132,6 +138,10 @@ properties:
     - $ref: '#/$defs/MusicRoom'
     - type: 'null'
     default: null
+  $schema:
+    description: Path to the schema file
+    title: Schema
+    type: string
 required:
 - auth
 title: Settings
