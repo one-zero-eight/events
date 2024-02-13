@@ -82,7 +82,7 @@ async def hide_music_room(
     user_id: CURRENT_USER_ID_DEPENDENCY, target: Literal["music-room", "sports", "moodle"], hide: bool = True
 ) -> ViewUser:
     """
-    Hide music room from current user
+    Hide music room, sports or moodle from current user
     """
     user_repository = Shared.f(SqlUserRepository)
     updated_user = await user_repository.set_hidden(user_id=user_id, target=target, hide=hide)
