@@ -135,10 +135,7 @@ async def _get_personal_ics(user: ViewUser) -> AsyncGenerator[bytes, None]:
     },
     tags=["Users"],
 )
-async def get_user_linked_schedule(
-    user_id: int,
-    linked_alias: str,
-) -> StreamingResponse:
+async def get_user_linked_schedule(user_id: int, linked_alias: str) -> StreamingResponse:
     """
     Get schedule in ICS format for the user
     """
