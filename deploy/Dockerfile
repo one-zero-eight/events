@@ -61,4 +61,4 @@ WORKDIR /code
 
 EXPOSE 8000
 ENTRYPOINT /docker-entrypoint.sh $0 $@
-CMD [ "gunicorn", "--worker-class uvicorn.workers.UvicornWorker", "--bind 0.0.0.0:8000", "--workers 1", "src.main:app" ]
+CMD [ "gunicorn", "--worker-class uvicorn.workers.UvicornWorker", "--bind 0.0.0.0:8000", "--workers 1", "src.api.app:app" ]
