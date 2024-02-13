@@ -2,7 +2,7 @@ __all__ = ["User", "UserScheduleKeys"]
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, false
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship, mapped_column, Mapped
 
@@ -43,6 +43,10 @@ class User(Base, IdMixin):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+
+    music_room_hidden: Mapped[bool] = mapped_column(nullable=False, default=False, server_default=false())
+    sports_hidden: Mapped[bool] = mapped_column(nullable=False, default=False, server_default=false())
+    moodle_hidden: Mapped[bool] = mapped_column(nullable=False, default=False, server_default=false())
 
 
 class UserScheduleKeys(Base, IdMixin):

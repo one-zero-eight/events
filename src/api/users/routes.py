@@ -1,3 +1,5 @@
+from typing import Literal
+
 from fastapi import HTTPException
 from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
@@ -57,10 +59,7 @@ async def delete_favorite(
     return updated_user
 
 
-@router.post(
-    "/me/favorites/hide",
-    responses={200: {"description": "Favorite hidden"}},
-)
+@router.post("/me/favorites/hide", responses={200: {"description": "Favorite hidden"}})
 async def hide_favorite(
     user_id: CURRENT_USER_ID_DEPENDENCY,
     group_id: int,
@@ -74,7 +73,19 @@ async def hide_favorite(
     if await event_group_repository.read(group_id) is None:
         raise UserNotFoundException()
     user_repository = Shared.f(SqlUserRepository)
-    updated_user = await user_repository.set_hidden(user_id=user_id, group_id=group_id, hide=hide)
+    updated_user = await user_repository.set_hidden_event_group(user_id=user_id, group_id=group_id, hide=hide)
+    return updated_user
+
+
+@router.post("/me/{target}/hide", responses={200: {"description": "Target hidden"}})
+async def hide_music_room(
+    user_id: CURRENT_USER_ID_DEPENDENCY, target: Literal["music-room", "sports", "moodle"], hide: bool = True
+) -> ViewUser:
+    """
+    Hide music room from current user
+    """
+    user_repository = Shared.f(SqlUserRepository)
+    updated_user = await user_repository.set_hidden(user_id=user_id, target=target, hide=hide)
     return updated_user
 
 

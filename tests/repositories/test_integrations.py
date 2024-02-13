@@ -62,7 +62,7 @@ async def test_set_hidden(event_group_repository, user_repository):
     assert user_x_group.event_group.id == event_group.id
     assert user_x_group.hidden is False
 
-    await user_repository.set_hidden(user.id, event_group.id, True)
+    await user_repository.set_hidden_event_group(user.id, event_group.id, True)
     updated_user = await user_repository.read(user.id)
     user_x_group = updated_user.favorites_association[0]
     assert user_x_group.hidden is True

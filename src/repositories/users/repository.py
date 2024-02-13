@@ -2,8 +2,9 @@ __all__ = ["SqlUserRepository"]
 
 import random
 import string
+from typing import Literal
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -154,7 +155,7 @@ class SqlUserRepository:
             await session.commit()
             return ViewUser.model_validate(user)
 
-    async def set_hidden(self, user_id: int, group_id: int, hide: bool = True) -> "ViewUser":
+    async def set_hidden_event_group(self, user_id: int, group_id: int, hide: bool = True) -> "ViewUser":
         async with self._create_session() as session:
             # find favorite where user_id and group_id
             q = (
@@ -171,6 +172,25 @@ class SqlUserRepository:
 
             # from table
             q = select(User).where(User.id == user_id).options(*_get_options)
+            user = await session.scalar(q)
+            await session.commit()
+            return ViewUser.model_validate(user)
+
+    async def set_hidden(self, user_id: int, target: Literal["music-room", "sports", "moodle"], hide: bool = True):
+        async with self._create_session() as session:
+            q = (
+                update(User)
+                .where(User.id == user_id)
+                .values(
+                    {
+                        "music_room_hidden": hide if target == "music-room" else User.music_room_hidden,
+                        "sports_hidden": hide if target == "sports" else User.sports_hidden,
+                        "moodle_hidden": hide if target == "moodle" else User.moodle_hidden,
+                    }
+                )
+                .returning(User)
+                .options(*_get_options)
+            )
             user = await session.scalar(q)
             await session.commit()
             return ViewUser.model_validate(user)

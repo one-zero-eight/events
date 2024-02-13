@@ -27,6 +27,9 @@ class ViewUser(BaseModel):
     name: Optional[str] = None
     favorites_association: list["UserXFavoriteGroupView"] = Field(default_factory=list)
     linked_calendars: dict[str, "LinkedCalendarView"] = Field(default_factory=dict)
+    music_room_hidden: bool
+    sports_hidden: bool
+    moodle_hidden: bool
 
     @field_validator("favorites_association", mode="before")
     def groups_to_list(cls, v):
