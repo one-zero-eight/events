@@ -36,7 +36,7 @@ async def get_current_user_schedule(user_id: CURRENT_USER_ID_DEPENDENCY) -> Stre
     user_repository = Shared.f(SqlUserRepository)
     user = await user_repository.read(user_id)
 
-    ical_generator = await get_personal_ics(user)
+    ical_generator = await _get_personal_ics(user)
 
     return StreamingResponse(
         content=ical_generator,
@@ -70,7 +70,7 @@ async def get_user_schedule(user_id: int, access_key: str) -> StreamingResponse:
     if not await user_repository.check_user_schedule_key(user_id, access_key, resource_path):
         raise ForbiddenException()
 
-    ical_generator = await get_personal_ics(user)
+    ical_generator = await _get_personal_ics(user)
 
     return StreamingResponse(
         content=ical_generator,
@@ -78,7 +78,34 @@ async def get_user_schedule(user_id: int, access_key: str) -> StreamingResponse:
     )
 
 
-async def get_personal_ics(user: ViewUser) -> AsyncGenerator[bytes, None]:
+@router.get(
+    "/users/me/music-room.ics",
+    responses={
+        200: {
+            "description": "ICS file with schedule of the music room booking",
+            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
+        },
+    },
+    tags=["Users"],
+)
+async def get_music_room_current_user_schedule(user_id: CURRENT_USER_ID_DEPENDENCY) -> StreamingResponse:
+    """
+    Get schedule in ICS format for the current user
+    """
+    user_repository = Shared.f(SqlUserRepository)
+    user = await user_repository.read(user_id)
+    if user is None:
+        raise UserNotFoundException()
+
+    ical_generator = await _get_personal_music_room_ics(user)
+
+    return StreamingResponse(
+        content=ical_generator,
+        media_type="text/calendar",
+    )
+
+
+async def _get_personal_ics(user: ViewUser) -> AsyncGenerator[bytes, None]:
     nonhidden = []
     for association in user.favorites_association:
         if not association.hidden:
@@ -136,33 +163,6 @@ async def get_user_linked_schedule(
 
 
 @router.get(
-    "/users/me/music-room.ics",
-    responses={
-        200: {
-            "description": "ICS file with schedule of the music room booking",
-            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
-        },
-    },
-    tags=["Users"],
-)
-async def get_music_room_current_user_schedule(user_id: CURRENT_USER_ID_DEPENDENCY) -> StreamingResponse:
-    """
-    Get schedule in ICS format for the current user
-    """
-    user_repository = Shared.f(SqlUserRepository)
-    user = await user_repository.read(user_id)
-    if user is None:
-        raise UserNotFoundException()
-
-    ical_generator = await get_personal_music_room_ics(user)
-
-    return StreamingResponse(
-        content=ical_generator,
-        media_type="text/calendar",
-    )
-
-
-@router.get(
     "/users/{user_id}/music-room.ics",
     responses={
         200: {
@@ -187,12 +187,12 @@ async def get_music_room_user_schedule(user_id: int, access_key: str) -> Streami
     if not await user_repository.check_user_schedule_key(user_id, access_key, resource_path):
         raise ForbiddenException()
 
-    ical_generator = await get_personal_music_room_ics(user)
+    ical_generator = await _get_personal_music_room_ics(user)
 
     return StreamingResponse(content=ical_generator, media_type="text/calendar")
 
 
-async def get_personal_music_room_ics(user: ViewUser) -> AsyncGenerator[bytes, None]:
+async def _get_personal_music_room_ics(user: ViewUser) -> AsyncGenerator[bytes, None]:
     if settings.music_room is None:
         raise HTTPException(status_code=404, detail="Music room is not configured")
     # check if user registered in music room
