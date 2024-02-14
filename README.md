@@ -69,7 +69,7 @@ https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/8e519e69-7a
 
 1. Install [Python 3.11+](https://www.python.org/downloads/release/python-3117/)
 2. Install [Poetry](https://python-poetry.org/docs/)
-3. Install dependencies with [poetry](https://python-poetry.org/docs/cli/#options-2).
+3. Install project dependencies with [poetry](https://python-poetry.org/docs/cli/#options-2).
     ```bash
     poetry install --no-root
     ```
@@ -78,19 +78,27 @@ https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/8e519e69-7a
     ```bash
     poetry run pre-commit install --install-hooks -t pre-commit -t commit-msg
     ```
-5. Setup project settings file (check [settings.schema.yaml](settings.schema.yaml) for more info).
+5. Set up project settings file (check [settings.schema.yaml](settings.schema.yaml) for more info).
     ```bash
     cp settings.example.yaml settings.yaml
     ```
-   And edit `settings.yaml` according to your needs.
-6. Set up a [PostgreSQL](https://www.postgresql.org/) instance and upgrade schema
-   with [alembic](https://alembic.sqlalchemy.org/en/latest/).
-    ```bash
-    poetry run alembic upgrade head
-    ```
-   > Note: Make sure to set up the database connection in `settings.yaml` before running the upgrade command.
-   > You can use [docker-compose](https://docs.docker.com/compose/) to run a PostgreSQL instance;
-   > And [pgAdmin](https://www.pgadmin.org/) to manage your database (also suitable for running).
+    Edit `settings.yaml` according to your needs.
+6. Set up a [PostgreSQL](https://www.postgresql.org/) database instance.
+    1. Set up database settings for [docker-compose](https://docs.docker.com/compose/) container
+       in `.env` file:
+       ```bash
+       cp .env.example .env
+       ```
+    2. Run the database instance:
+       ```bash
+       docker compose up -d db
+       ```
+    3. Make sure to set up the actual database connection in `settings.yaml` before running the upgrade command.
+    4. Upgrade the database schema using [alembic](https://alembic.sqlalchemy.org/en/latest/):
+        ```bash
+        poetry run alembic upgrade head
+        ```
+   > Note: You can use [pgAdmin](https://www.pgadmin.org/) to run and manage your database.
 
 Set up PyCharm integrations:
 
@@ -105,7 +113,7 @@ Set up PyCharm integrations:
 
 1. Run the database if you have not done it yet
     ```bash
-    docker-compose up -d db
+    docker compose up -d db
     ```
    OR do it manually
 2. Run the ASGI server
