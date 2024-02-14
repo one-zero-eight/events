@@ -82,6 +82,15 @@ https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/8e519e69-7a
     ```bash
     cp settings.example.yaml settings.yaml
     ```
+   And edit `settings.yaml` according to your needs.
+6. Set up a [PostgreSQL](https://www.postgresql.org/) instance and upgrade schema
+   with [alembic](https://alembic.sqlalchemy.org/en/latest/).
+    ```bash
+    poetry run alembic upgrade head
+    ```
+   > Note: Make sure to set up the database connection in `settings.yaml` before running the upgrade command.
+   > You can use [docker-compose](https://docs.docker.com/compose/) to run a PostgreSQL instance;
+   > And [pgAdmin](https://www.pgadmin.org/) to manage your database (also suitable for running).
 
 Set up PyCharm integrations:
 
@@ -94,7 +103,12 @@ Set up PyCharm integrations:
 
 ### Run for development
 
-1. Run the ASGI server
+1. Run the database if you have not done it yet
+    ```bash
+    docker-compose up -d db
+    ```
+   OR do it manually
+2. Run the ASGI server
     ```bash
     poetry run python -m src.api
     ```
@@ -103,4 +117,4 @@ Set up PyCharm integrations:
     poetry run uvicorn src.api.app:app --use-colors --proxy-headers --forwarded-allow-ips=*
     ```
 
-Now the API is running on http://127.0.0.1:8000. Good job!
+Now the API is running on http://localhost:8000. Good job!
