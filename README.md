@@ -89,6 +89,8 @@ Set up PyCharm integrations:
    It will lint and format your code. Make sure to enable `Use ruff format` option in plugin settings.
 2. Pydantic ([plugin](https://plugins.jetbrains.com/plugin/12861-pydantic)). It will fix PyCharm issues with
    type-hinting.
+3. Conventional commits ([plugin](https://plugins.jetbrains.com/plugin/13389-conventional-commit)). It will help you
+   to write [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ### Run for development
 
