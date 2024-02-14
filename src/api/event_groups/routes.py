@@ -218,6 +218,8 @@ async def set_event_group_ics(
     async with aiofiles.open(ics_path, "wb") as f:
         await f.write(content)
 
+    await event_group_repository.update_timestamp(event_group_id)
+
     return JSONResponse(status_code=201, content={"detail": "File uploaded successfully"})
 
 

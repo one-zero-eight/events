@@ -2,7 +2,7 @@ __all__ = ["SqlEventGroupRepository"]
 
 from typing import Optional
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.dialects.postgresql import insert as postgres_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -118,5 +118,12 @@ class SqlEventGroupRepository:
                     set_={"predefined": True},
                 )
             )
+            await session.execute(q)
+            await session.commit()
+
+    async def update_timestamp(self, group_id: int):
+        async with self._create_session() as session:
+            # updated_at
+            q = update(EventGroup).where(EventGroup.id == group_id).values()
             await session.execute(q)
             await session.commit()
