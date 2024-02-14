@@ -5,83 +5,100 @@
 [![MIT License](https://img.shields.io/badge/License-MIT-blue.svg) ](https://opensource.org/licenses/MIT)
 [![Python](https://img.shields.io/badge/Python-3.11-blue?style=flat&logo=Python) ](https://www.python.org/downloads/release/python-3110/)
 [![Poetry](https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json)](https://python-poetry.org/)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
 [![GitHub Actions pytest](https://img.shields.io/github/actions/workflow/status/one-zero-eight/InNoHassle-Events/pytest.yml?label=pytest)](https://github.com/one-zero-eight/InNoHassle-Events/actions)
 [![GitHub Actions pre-commit](https://img.shields.io/github/actions/workflow/status/one-zero-eight/InNoHassle-Events/pre-commit.yml?label=pre-commit)](https://github.com/one-zero-eight/InNoHassle-Events/actions)
-[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/ArtemSBulgakov/075e30f7e4a7e9a28e40aa614db5445e/raw/pytest-coverage-comment__main.json)](https://github.com/one-zero-eight/InNoHassle-Events/actions)
 
 ## Table of contents
 
 - [Project Description](#project-description)
-- [How to use](#how-to-use)
-- [Features list](#features-list)
-- [Project Installation](#project-installation)
+    - [Features list](#features-list)
+    - [Demo](#demo)
+- [Development](#development)
+    - [Getting started](#getting-started)
+    - [Run for development](#run-for-development)
 
 ## Project Description
 
 This is the API for events in InNoHassle ecosystem. It is written in Python 3.11
 using [FastAPI](https://fastapi.tiangolo.com/).
 
-## Demo
+### Features list
+
+1. Aggregate Events from Various Sources:
+    - Core courses schedule from the Google Spreadsheet table
+    - Elective courses schedule from another Google Spreadsheet table
+    - Sports classes schedule from the [website](https://sport.innopolis.university)
+    - Dorm cleaning schedule from the [website](https://hotel.innopolis.university/studentaccommodation/)
+    - [InNoHassle-MusicRoom](https://github.com/one-zero-eight/InNoHassle-MusicRoom) schedule (general and personal
+      view)
+    - _Moodle homework and events (in progress)_
+2. Personalize your schedule
+    - Favourites Management
+        - Add schedules to your favorites for easy tracking and quick access
+        - Effortlessly manage your favorite events and keep track of them
+    - Hide or unhide your groups based on your preference
+        - Hidden groups are not visible in the dashboard calendar and are not included in the schedule but can be
+          easily unhidden
+    - Predefined schedules based on your identity
+        - Automatically include your core courses and electives
+        - Automatically include your bookings
+          from [InNoHassle-MusicRoom](https://github.com/one-zero-eight/InNoHassle-MusicRoom)
+        - _Automatically include your sports classes checkins (in progress)_
+3. Export your schedule to any calendar application
+    - Supports popular calendar file format .ics for easy integration with different applications
+    - Export requires key-based authentication to ensure the security of the user's data
+4. User Authentication
+    - Seamless user authentication flow with Innopolis University SSO
+    - Secure and reliable authentication process
+    - User data is stored securely and is not shared with any third-party
+
+### Demo
 
 You can test our product here [InNoHassle](https://innohassle.ru/schedule).
+And see an api deployed
+version [here](https://api.innohassle.ru/events/v0/auth/innopolis/login?return_to=/events/v0/docs).
 
 The background part of our API:
 
 https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/8e519e69-7a2e-4507-9087-6b4e81e5266d
 
-## How to use
+## Development
 
-1. Run the ASGI server(see [Project Installation](#project-installation)) or use our
-   deployed [version](https://api.innohassle.ru/events/v0/auth/innopolis/login?return_to=/events/v0/docs).
-2. Go to Swagger UI, read the docs, and try API endpoints(`/events/v0/docs`).
-3. Enjoy using our API.
+### Getting started
 
-## Features list
-
-1. Import any events to your calendar
-    - Import events from various sources and add them to your personal calendar
-    - Supports popular calendar file format .ics for easy integration with different applications
-    - Intuitive import process with step-by-step instruction
-2. Integrated Calendar Dashboard
-    - View your events in the integrated calendar within the dashboard and schedule
-    - Choose between day, week, or month views to suit your preference
-3. Group Visibility Control
-    - Hide or unhide your groups based on your preference
-    - Hidden groups are not visible in the dashboard calendar
-4. Favourites Management
-    - Add events to your favorites for easy tracking and quick access
-    - Delete outdated events from you favourites list
-    - Effortlessly manage your favorite events and keep track of them
-
-## Project Installation
-
-1. Install dependencies with [poetry](https://python-poetry.org/docs/).
+1. Install [Python 3.11+](https://www.python.org/downloads/release/python-3117/)
+2. Install [Poetry](https://python-poetry.org/docs/)
+3. Install dependencies with [poetry](https://python-poetry.org/docs/cli/#options-2).
     ```bash
     poetry install --no-root
     ```
-2. Set up pre-commit hooks:
+4. Set up [pre-commit](https://pre-commit.com/) hooks:
 
     ```bash
     poetry run pre-commit install --install-hooks -t pre-commit -t commit-msg
-    poetry run pre-commit run --all-files
     ```
-3. Setup environment variables in `.env` file.
+5. Setup project settings file (check [settings.schema.yaml](settings.schema.yaml) for more info).
     ```bash
-    cp .env.example .env
+    cp settings.example.yaml settings.yaml
     ```
-4. Run the ASGI server using src/dev.py script
-    ```bash
-    poetry run python -m src.dev
-    ```
-   OR using uvicorn directly
-    ```bash
-    poetry run uvicorn src.main:app --reload
-    ```
-   OR using 'Dev server' configuration in PyCharm.
 
 Set up PyCharm integrations:
 
-1. Black formatter ([docs](https://black.readthedocs.io/en/stable/integrations/editors.html#pycharm-intellij-idea)).
-2. Ruff ([docs](https://beta.ruff.rs/docs/editor-integrations/#pycharm-unofficial)).
+1. Ruff ([plugin](https://plugins.jetbrains.com/plugin/20574-ruff)).
+   It will lint and format your code. Make sure to enable `Use ruff format` option in plugin settings.
+2. Pydantic ([plugin](https://plugins.jetbrains.com/plugin/12861-pydantic)). It will fix PyCharm issues with
+   type-hinting.
+
+### Run for development
+
+1. Run the ASGI server
+    ```bash
+    poetry run python -m src.api
+    ```
+   OR using uvicorn directly
+    ```bash
+    poetry run uvicorn src.api.app:app --use-colors --proxy-headers --forwarded-allow-ips=*
+    ```
+
+Now the API is running on http://127.0.0.1:8000. Good job!
