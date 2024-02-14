@@ -28,10 +28,7 @@ async def get_me(user_id: CURRENT_USER_ID_DEPENDENCY) -> ViewUser:
     "/me/favorites",
     responses={200: {"description": "Favorite added successfully"}, **EventGroupNotFoundException.responses},
 )
-async def add_favorite(
-    user_id: CURRENT_USER_ID_DEPENDENCY,
-    group_id: int,
-) -> ViewUser:
+async def add_favorite(user_id: CURRENT_USER_ID_DEPENDENCY, group_id: int) -> ViewUser:
     """
     Add favorite to current user
     """
@@ -47,10 +44,7 @@ async def add_favorite(
     "/me/favorites",
     responses={200: {"description": "Favorite deleted"}},
 )
-async def delete_favorite(
-    user_id: CURRENT_USER_ID_DEPENDENCY,
-    group_id: int,
-) -> ViewUser:
+async def delete_favorite(user_id: CURRENT_USER_ID_DEPENDENCY, group_id: int) -> ViewUser:
     """
     Delete favorite from current user
     """
@@ -60,11 +54,7 @@ async def delete_favorite(
 
 
 @router.post("/me/favorites/hide", responses={200: {"description": "Favorite hidden"}})
-async def hide_favorite(
-    user_id: CURRENT_USER_ID_DEPENDENCY,
-    group_id: int,
-    hide: bool = True,
-) -> ViewUser:
+async def hide_favorite(user_id: CURRENT_USER_ID_DEPENDENCY, group_id: int, hide: bool = True) -> ViewUser:
     """
     Hide favorite from current user
     """
@@ -94,8 +84,7 @@ async def hide_music_room(
     responses={200: {"description": "Linked calendar added successfully"}},
 )
 async def link_calendar(
-    linked_calendar: LinkedCalendarCreate,
-    user_id: CURRENT_USER_ID_DEPENDENCY,
+    linked_calendar: LinkedCalendarCreate, user_id: CURRENT_USER_ID_DEPENDENCY
 ) -> LinkedCalendarView:
     """
     Add linked calendar to current user
@@ -118,8 +107,7 @@ class _GetScheduleAccessKeyResponse(BaseModel):
     responses={200: {"description": "Schedule access key for given resource"}},
 )
 async def generate_user_schedule_key(
-    resource_path: str,
-    user_id: CURRENT_USER_ID_DEPENDENCY,
+    resource_path: str, user_id: CURRENT_USER_ID_DEPENDENCY
 ) -> _GetScheduleAccessKeyResponse:
     """
     Generate an access key for the user schedule
@@ -138,9 +126,7 @@ async def generate_user_schedule_key(
     "/me/schedule-access-keys",
     responses={200: {"description": "Schedule access keys for user"}},
 )
-async def get_user_schedule_keys(
-    user_id: CURRENT_USER_ID_DEPENDENCY,
-) -> list[ViewUserScheduleKey]:
+async def get_user_schedule_keys(user_id: CURRENT_USER_ID_DEPENDENCY) -> list[ViewUserScheduleKey]:
     """
     Get all access keys for the user schedule
     """
@@ -155,11 +141,7 @@ async def get_user_schedule_keys(
         200: {"description": "Schedule access key deleted"},
     },
 )
-async def delete_user_schedule_key(
-    access_key: str,
-    resource_path: str,
-    user_id: CURRENT_USER_ID_DEPENDENCY,
-) -> None:
+async def delete_user_schedule_key(access_key: str, resource_path: str, user_id: CURRENT_USER_ID_DEPENDENCY) -> None:
     """
     Delete an access key for the user schedule
     """
