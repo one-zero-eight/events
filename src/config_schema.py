@@ -88,7 +88,7 @@ class Settings(SettingsEntityModel):
     @classmethod
     def save_schema(cls, path: Path) -> None:
         with open(path, "w", encoding="utf-8") as f:
-            schema = {"$schema": "http://json-schema.org/draft-07/schema#", **cls.model_json_schema()}
+            schema = {"$schema": "https://json-schema.org/draft-07/schema", **cls.model_json_schema()}
             schema["properties"]["$schema"] = {
                 "description": "Path to the schema file",
                 "title": "Schema",
