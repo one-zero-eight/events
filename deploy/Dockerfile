@@ -2,7 +2,7 @@
 
 ###########################################################
 # Base Python image. Set shared environment variables.
-FROM python:3.11-slim-bullseye as base
+FROM python:3.11-slim-bullseye AS base
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PIP_NO_CACHE_DIR=off \
