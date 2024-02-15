@@ -14,7 +14,7 @@
 GitHub supports table of
 contents [by default](https://github.blog/changelog/2021-04-13-table-of-contents-support-in-markdown-files/).
 
-## Project Description
+## Project description
 
 This is the API for events in InNoHassle ecosystem. It is written in Python 3.11
 using [FastAPI](https://fastapi.tiangolo.com/).
