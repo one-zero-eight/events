@@ -47,7 +47,7 @@ async def setup_predefined_data():
     with (settings.predefined_dir / "innopolis_user_data.json").open(encoding="utf-8") as users_file:
         users_json = json.load(users_file)
     with (settings.predefined_dir / "categories.json").open(encoding="utf-8") as categories_file:
-        categories = Categories.model_validate(categories_file)
+        categories = Categories.model_validate_json(categories_file.read())
     categories_jsons = []
 
     for category in categories.categories:
