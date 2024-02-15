@@ -11,12 +11,8 @@
 
 ## Table of contents
 
-- [Project Description](#project-description)
-    - [Features list](#features-list)
-    - [Demo](#demo)
-- [Development](#development)
-    - [Getting started](#getting-started)
-    - [Run for development](#run-for-development)
+GitHub supports table of
+contents [by default](https://github.blog/changelog/2021-04-13-table-of-contents-support-in-markdown-files/).
 
 ## Project Description
 
@@ -82,10 +78,10 @@ https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/8e519e69-7a
     ```bash
     cp settings.example.yaml settings.yaml
     ```
-    Edit `settings.yaml` according to your needs.
+   Edit `settings.yaml` according to your needs.
 6. Set up a [PostgreSQL](https://www.postgresql.org/) database instance.
     1. Set up database settings for [docker-compose](https://docs.docker.com/compose/) container
-       in `.env` file:
+       in `.env` file:х
        ```bash
        cp .env.example .env
        ```
@@ -98,7 +94,8 @@ https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/8e519e69-7a
         ```bash
         poetry run alembic upgrade head
         ```
-   > Note: You can use [pgAdmin](https://www.pgadmin.org/) to run and manage your database.
+   > [!NOTE]
+   > You can use [pgAdmin](https://www.pgadmin.org/) to run and manage your database.
 
 Set up PyCharm integrations:
 
