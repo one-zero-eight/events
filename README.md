@@ -94,8 +94,8 @@ https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/8e519e69-7a
         ```bash
         poetry run alembic upgrade head
         ```
-   > [!NOTE]
-   > You can use [pgAdmin](https://www.pgadmin.org/) to run and manage your database.
+> [!NOTE]
+> You can use [pgAdmin](https://www.pgadmin.org/) to run and manage your database.
 
 Set up PyCharm integrations:
 
