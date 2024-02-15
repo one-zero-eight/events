@@ -80,20 +80,21 @@ https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/8e519e69-7a
     ```
    Edit `settings.yaml` according to your needs.
 6. Set up a [PostgreSQL](https://www.postgresql.org/) database instance.
-    1. Set up database settings for [docker-compose](https://docs.docker.com/compose/) container
-       in `.env` file:х
-       ```bash
-       cp .env.example .env
-       ```
-    2. Run the database instance:
-       ```bash
-       docker compose up -d db
-       ```
-    3. Make sure to set up the actual database connection in `settings.yaml` before running the upgrade command.
-    4. Upgrade the database schema using [alembic](https://alembic.sqlalchemy.org/en/latest/):
+    - Set up database settings for [docker-compose](https://docs.docker.com/compose/) container
+      in `.env` file:х
         ```bash
-        poetry run alembic upgrade head
+        cp .env.example .env
         ```
+    - Run the database instance:
+        ```bash
+        docker compose up -d db
+        ```
+    - Make sure to set up the actual database connection in `settings.yaml` before running the upgrade command.
+    - Upgrade the database schema using [alembic](https://alembic.sqlalchemy.org/en/latest/):
+         ```bash
+         poetry run alembic upgrade head
+         ```
+
 > [!NOTE]
 > You can use [pgAdmin](https://www.pgadmin.org/) to run and manage your database.
 
