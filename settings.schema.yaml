@@ -100,7 +100,7 @@ properties:
     - $ref: '#/$defs/Environment'
     default: development
   db_url:
-    default: postgresql://postgres:postgres@localhost:5432/postgres
+    default: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
     format: password
     title: Db Url
     type: string

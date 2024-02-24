@@ -1,6 +1,7 @@
 # Check settings.schema.yaml for more details
 $schema: "./settings.schema.yaml"
 # ---------- Application settings ----- #
+db_url: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
 auth:
   # Run 'openssl rand -hex 32' to generate key
   session_secret_key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
