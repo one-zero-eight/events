@@ -128,3 +128,17 @@ Set up PyCharm integrations:
     ```
 
 Now the API is running on http://localhost:8000. Good job!
+
+## FAQ
+
+### How to update dependencies?
+
+Project dependencies
+
+1. Run `poetry update` to update all dependencies
+2. Run `poetry show --outdated` to check for outdated dependencies
+3. Run `poetry add <package>@latest` to add a new dependency if needed
+
+Pre-commit hooks
+
+1. Run `poetry run pre-commit autoupdate`
