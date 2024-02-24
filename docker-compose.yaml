@@ -1,0 +1,53 @@
+# This is a Docker Compose configuration for local use.
+# In production use docker-compose.prod.yaml
+
+# Run all services:
+# docker compose up --build --detach
+
+version: "3"
+
+services:
+  api:
+    build: . # See Dockerfile for more details
+    depends_on:
+      db:
+        # Wait for the database to be ready before starting the application
+        condition: service_healthy
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./predefined:/code/predefined:rw" # Read-write predefined data
+      - "./settings.yaml:/code/settings.yaml:ro" # Read-only settings file
+    env_file: .env # You can specify some Uvicorn settings in .env file
+    environment:
+      - TZ=Europe/Moscow # Set the timezone for correct calendar image generation
+    networks:
+      - default
+      - music-room
+
+  db:
+    # See more: https://hub.docker.com/_/postgres
+    image: "postgres:15.3"
+    restart: always
+    # The commits were slow on our servers, so we turned off the synchronous_commit
+    command: postgres -c synchronous_commit=off
+    volumes:
+      - "postgres:/var/lib/postgresql/data"
+    ports:
+      - "5432:5432"
+    env_file: .env # Set POSTGRES_PASSWORD in .env file
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres:
+
+networks:
+  # Connect to a 'music-room' network for integration with Music room API
+  music-room:
+    external: true
+    name: music-room

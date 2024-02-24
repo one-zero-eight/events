@@ -1,0 +1,18 @@
+# This is a Docker Compose configuration for production use.
+# For building locally use docker-compose.yaml
+
+# Run all services:
+# docker compose -f docker-compose.yaml -f docker-compose.prod.yaml up --pull always --detach
+
+version: "3"
+
+# Override the default settings for production
+services:
+  # api:
+    # TODO: Pull the image from GitHub Container Registry instead of building locally
+    # image: "ghcr.io/one-zero-eight/innohassle-events:main"
+    # build: !reset null
+    # ports: !reset [] # TODO: Do not expose any ports
+
+  db:
+    ports: !reset [] # Do not expose any ports
