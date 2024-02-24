@@ -26,23 +26,14 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'poetry'
-      - run: poetry install --only main,test
+      - run: poetry install --only main,test --no-root
+      - run: cp settings.example.yaml settings.yaml
       - run: |
           poetry run pytest \
               --junitxml=pytest.xml \
               --cov=src \
               --cov-report=term-missing:skip-covered \
               | tee pytest-coverage.txt
-        env:
-          ENVIRONMENT: 'testing'
-          SESSION_SECRET_KEY: 'this is secret key'
-          JWT_SECRET_KEY: 'this is another secret key'
-          DB_URL: 'postgresql+asyncpg://postgres:postgres@localhost:5432/postgres'
-      - uses: MishaKav/pytest-coverage-comment@main
-        id: coverageComment
-        with:
-          pytest-coverage-path: ./pytest-coverage.txt
-          junitxml-path: ./pytest.xml
       - name: Check the output coverage
         run: |
           echo "Coverage Percentage - ${{ steps.coverageComment.outputs.coverage }}"
@@ -56,15 +47,6 @@ jobs:
           echo "Coverage Tests - ${{ steps.coverageComment.outputs.tests }}"
           echo "Coverage Time - ${{ steps.coverageComment.outputs.time }}"
           echo "Not Success Test Info - ${{ steps.coverageComment.outputs.notSuccessTestInfo }}"
-      - name: Create the Badge
-        uses: schneegans/dynamic-badges-action@v1.6.0
-        with:
-          auth: ${{ secrets.COVERAGE_GIST_ACCESS_TOKEN }}
-          gistID: 075e30f7e4a7e9a28e40aa614db5445e
-          filename: pytest-coverage-comment__main.json
-          label: Coverage
-          message: ${{ steps.coverageComment.outputs.coverage }}
-          color: ${{ steps.coverageComment.outputs.color }}
       - name: Job result
         run: |
           [[ ${{ steps.coverageComment.outputs.failures }} -eq 0 ]] || { echo >&2 "Some tests failed"; exit 1; }
