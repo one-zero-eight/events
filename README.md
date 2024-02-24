@@ -9,6 +9,10 @@
 [![GitHub Actions pytest](https://img.shields.io/github/actions/workflow/status/one-zero-eight/InNoHassle-Events/pytest.yml?label=pytest)](https://github.com/one-zero-eight/InNoHassle-Events/actions)
 [![GitHub Actions pre-commit](https://img.shields.io/github/actions/workflow/status/one-zero-eight/InNoHassle-Events/pre-commit.yml?label=pre-commit)](https://github.com/one-zero-eight/InNoHassle-Events/actions)
 
+[![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=one-zero-eight_InNoHassle-Events&metric=ncloc)](https://sonarcloud.io/summary/new_code?id=one-zero-eight_InNoHassle-Events)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=one-zero-eight_InNoHassle-Events&metric=bugs)](https://sonarcloud.io/summary/new_code?id=one-zero-eight_InNoHassle-Events)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=one-zero-eight_InNoHassle-Events&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=one-zero-eight_InNoHassle-Events)
+
 ## Table of contents
 
 GitHub supports table of
