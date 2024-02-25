@@ -1,4 +1,4 @@
-# Events API in InNoHassle ecosystem
+# Events API | InNoHassle ecosystem 
 
 > https://api.innohassle.ru/events
 
