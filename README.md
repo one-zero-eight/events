@@ -43,6 +43,16 @@ This is the API for events service in InNoHassle ecosystem.
 You can test our product on [innohassle.ru](https://innohassle.ru/schedule) and see a deployed
 api [here](https://api.innohassle.ru/events/v0/auth/innopolis/login?return_to=/events/v0/docs).
 
+### Technologies
+
+- [Python 3.11](https://www.python.org/downloads/release/python-3117/) & [Poetry](https://python-poetry.org/docs/)
+- [FastAPI](https://fastapi.tiangolo.com/) & [Pydantic](https://docs.pydantic.dev/latest/)
+- Database and ORM: [PostgreSQL](https://www.postgresql.org/), [SQLAlchemy](https://www.sqlalchemy.org/),
+  [Alembic](https://alembic.sqlalchemy.org/en/latest/)
+- Formatting and linting: [Ruff](https://docs.astral.sh/ruff/), [Pre-commit](https://pre-commit.com/)
+- Deployment: [Docker](https://www.docker.com/), [Docker Compose](https://docs.docker.com/compose/),
+  [GitHub Actions](https://github.com/features/actions)
+
 ## Development
 
 ### Getting started
