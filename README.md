@@ -14,49 +14,34 @@
 
 ## Table of contents
 
-GitHub supports table of
-contents [by default](https://github.blog/changelog/2021-04-13-table-of-contents-support-in-markdown-files/).
+Did you know that GitHub supports table of
+contents [by default](https://github.blog/changelog/2021-04-13-table-of-contents-support-in-markdown-files/) 🤔
 
-## Project description
+## About
 
-This is the API for events in InNoHassle ecosystem. It is written in Python 3.11
-using [FastAPI](https://fastapi.tiangolo.com/).
+This is the API for events service in InNoHassle ecosystem.
 
-### Features list
+### Features
 
-1. Aggregate Events from Various Sources:
-    - Core courses schedule from the Google Spreadsheet table
-    - Elective courses schedule from another Google Spreadsheet table
-    - Sports classes schedule from the [website](https://sport.innopolis.university)
-    - Dorm cleaning schedule from the [website](https://hotel.innopolis.university/studentaccommodation/)
-    - [InNoHassle-MusicRoom](https://github.com/one-zero-eight/InNoHassle-MusicRoom) schedule (general and personal
-      view)
-    - _Moodle homework and events (in progress)_
-2. Personalize your schedule
-    - Favourites Management
-        - Add schedules to your favorites for easy tracking and quick access
-        - Effortlessly manage your favorite events and keep track of them
-    - Hide or unhide your groups based on your preference
-        - Hidden groups are not visible in the dashboard calendar and are not included in the schedule but can be
-          easily unhidden
-    - Predefined schedules based on your identity
-        - Automatically include your core courses and electives
-        - Automatically include your bookings
-          from [InNoHassle-MusicRoom](https://github.com/one-zero-eight/InNoHassle-MusicRoom)
-        - _Automatically include your sports classes checkins (in progress)_
-3. Export your schedule to any calendar application
-    - Supports popular calendar file format .ics for easy integration with different applications
-    - Export requires key-based authentication to ensure the security of the user's data
-4. User Authentication
-    - Seamless user authentication flow with Innopolis University SSO
-    - Secure and reliable authentication process
-    - User data is stored securely and is not shared with any third-party
+- 📅 Event Aggregation
+    - 📚 [Core and Elective Courses](https://eduwiki.innopolis.university/index.php/All:Schedule)
+    - 🏋️ [Sports Classes](https://sport.innopolis.university)
+    - 🧹 [Dorm Cleaning](https://hotel.innopolis.university/studentaccommodation/)
+    - 🎵 [Music Room Booking](https://innohassle.ru/music-room)
+    - 📖 [Moodle Events](https://moodle.innopolis.university/) _(in progress)_
+
+- 🌟 Personalized Schedule
+    - ⭐ Favorites Management
+    - 👀 Hide/Unhide Groups
+    - 🆔 Automatically add schedule based on your identity
+
+- 🔄 Schedule Export
+    - 🗓️ Schedule in [.ics format](https://icalendar.org/) to import into your calendar app
 
 ### Demo
 
-You can test our product here [InNoHassle](https://innohassle.ru/schedule).
-And see an api deployed
-version [here](https://api.innohassle.ru/events/v0/auth/innopolis/login?return_to=/events/v0/docs).
+You can test our product on [innohassle.ru](https://innohassle.ru/schedule) and see a deployed
+api [here](https://api.innohassle.ru/events/v0/auth/innopolis/login?return_to=/events/v0/docs).
 
 ## Development
 
