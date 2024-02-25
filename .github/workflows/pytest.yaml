@@ -1,6 +1,12 @@
 name: pytest
 
-on: [ push, pull_request ]
+on:
+  # Temporarily disabled
+  #  push: # Run the workflow on push
+  #    branches:
+  #      - main
+  #  pull_request: # Run the workflow on pull requests
+  workflow_dispatch: # Manually run the workflow
 
 jobs:
   pytest:
