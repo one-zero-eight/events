@@ -62,18 +62,18 @@ This is the API for events service in InNoHassle ecosystem.
    cp settings.example.yaml settings.yaml
    ```
    Edit `settings.yaml` according to your needs.
-6. Set up a network for music room service if you have not done it yet.
-   ```bash
-   docker network create music-room
-   ```
-7. Set up a [PostgreSQL](https://www.postgresql.org/) database instance.
+6. Set up a [PostgreSQL](https://www.postgresql.org/) database instance.
    <details>
     <summary>Using docker container</summary>
-
+    
     - Set up database settings for [docker-compose](https://docs.docker.com/compose/) container
       in `.env` file:х
       ```bash
       cp .env.example .env
+      ```
+    - Set up a network for music room service if you have not done it yet.
+      ```bash
+      docker network create music-room
       ```
     - Run the database instance:
       ```bash
