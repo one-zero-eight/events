@@ -96,7 +96,7 @@ This is the API for events service in InNoHassle ecosystem.
       ```
    </details>
 
-Set up PyCharm integrations:
+**Set up PyCharm integrations**
 
 1. Ruff ([plugin](https://plugins.jetbrains.com/plugin/20574-ruff)).
    It will lint and format your code. Make sure to enable `Use ruff format` option in plugin settings.
