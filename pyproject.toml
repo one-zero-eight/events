@@ -11,7 +11,7 @@ python = "~3.11"
 pydantic = "^2.6.1"
 fastapi = {extras = ["all"], version = "^0.109.2"}
 authlib = "^1.2.1"
-cryptography = "^42.0.2"
+cryptography = "^42.0.4"
 icalendar = "^5.0.7"
 aiofiles = "^23.1.0"
 sqlalchemy = { extras = ["asyncpg"], version = "^2.0.25" }
