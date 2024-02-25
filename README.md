@@ -1,4 +1,4 @@
-# Events API | InNoHassle ecosystem 
+# Events API | InNoHassle ecosystem
 
 > https://api.innohassle.ru/events
 
@@ -19,7 +19,7 @@ This is the API for events service in InNoHassle ecosystem.
 
 ### Features
 
--  📅 Event Aggregation
+- 📅 Event Aggregation
     - 📚 [Core and Elective Courses](https://eduwiki.innopolis.university/index.php/All:Schedule)
     - 🏋️ [Sports Classes](https://sport.innopolis.university)
     - 🧹 [Dorm Cleaning](https://hotel.innopolis.university/studentaccommodation/)
@@ -65,7 +65,7 @@ This is the API for events service in InNoHassle ecosystem.
 6. Set up a [PostgreSQL](https://www.postgresql.org/) database instance.
    <details>
     <summary>Using docker container</summary>
-    
+
     - Set up database settings for [docker-compose](https://docs.docker.com/compose/) container
       in `.env` file:х
       ```bash
@@ -122,6 +122,22 @@ This is the API for events service in InNoHassle ecosystem.
    ```
 
 Now the API is running on http://localhost:8000. Good job!
+
+### Deployment
+
+We use Docker with Docker Compose plugin to run the website on servers.
+
+1. Copy the file with environment variables: `cp .env.example .env`
+2. Change environment variables in the `.env` file
+3. Copy the file with settings: `cp settings.example.yaml settings.yaml`
+4. Change settings in the `settings.yaml` file according to your needs
+   (check [settings.schema.yaml](settings.schema.yaml) for more info)
+5. Install Docker with Docker Compose
+6. Deploy [Music room service](https://github.com/one-zero-eight/InNoHassle-MusicRoom)
+   > Or just create a network for the music room service: `docker network create music-room`
+7. Build a Docker image: `docker compose build --pull`
+8. Run the container: `docker compose up --detach`
+9. Check the logs: `docker compose logs -f`
 
 ## FAQ
 
