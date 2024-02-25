@@ -23,18 +23,16 @@ This is the API for events service in InNoHassle ecosystem.
 
 ### Features
 
-- 📅 Event Aggregation
+-  📅 Event Aggregation
     - 📚 [Core and Elective Courses](https://eduwiki.innopolis.university/index.php/All:Schedule)
     - 🏋️ [Sports Classes](https://sport.innopolis.university)
     - 🧹 [Dorm Cleaning](https://hotel.innopolis.university/studentaccommodation/)
     - 🎵 [Music Room Booking](https://innohassle.ru/music-room)
     - 📖 [Moodle Events](https://moodle.innopolis.university/) _(in progress)_
-
 - 🌟 Personalized Schedule
     - ⭐ Favorites Management
     - 👀 Hide/Unhide Groups
     - 🆔 Automatically add schedule based on your identity
-
 - 🔄 Schedule Export
     - 🗓️ Schedule in [.ics format](https://icalendar.org/) to import into your calendar app
 
