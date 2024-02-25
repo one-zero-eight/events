@@ -20,6 +20,8 @@ alembic = "^1.12.0"
 pyyaml = "^6.0.1"
 uvicorn = "^0.27.1"
 
+[tool.poetry.group.prod]
+optional = true
 [tool.poetry.group.prod.dependencies]
 gunicorn = "20.1.0"
 
