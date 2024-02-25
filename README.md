@@ -1,6 +1,6 @@
 # Events API in InNoHassle ecosystem
 
-> Trust the system more than the memory
+> https://api.innohassle.ru/events
 
 [![MIT License](https://img.shields.io/badge/License-MIT-blue.svg) ](https://opensource.org/licenses/MIT)
 [![Python](https://img.shields.io/badge/Python-3.11-blue?style=flat&logo=Python) ](https://www.python.org/downloads/release/python-3110/)
@@ -35,11 +35,6 @@ This is the API for events service in InNoHassle ecosystem.
     - 🆔 Automatically add schedule based on your identity
 - 🔄 Schedule Export
     - 🗓️ Schedule in [.ics format](https://icalendar.org/) to import into your calendar app
-
-### Demo
-
-You can test our product on [innohassle.ru](https://innohassle.ru/schedule) and see a deployed
-api [here](https://api.innohassle.ru/events/v0/auth/innopolis/login?return_to=/events/v0/docs).
 
 ### Technologies
 
