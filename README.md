@@ -71,7 +71,7 @@ https://github.com/one-zero-eight/InNoHassle-Events/assets/104205787/8e519e69-7a
 2. Install [Poetry](https://python-poetry.org/docs/)
 3. Install project dependencies with [poetry](https://python-poetry.org/docs/cli/#options-2).
     ```bash
-    poetry install --no-root
+    poetry install --no-root --with code-style
     ```
 4. Set up [pre-commit](https://pre-commit.com/) hooks:
 
