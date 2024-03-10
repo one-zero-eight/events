@@ -50,7 +50,7 @@ This is the API for events service in InNoHassle ecosystem.
 2. Install [Poetry](https://python-poetry.org/docs/)
 3. Install project dependencies with [Poetry](https://python-poetry.org/docs/cli/#options-2).
    ```bash
-   poetry install --no-root --with code-style
+   poetry install --no-root --with dev
    ```
 4. Set up [pre-commit](https://pre-commit.com/) hooks:
 
