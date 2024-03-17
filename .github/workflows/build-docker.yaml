@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    environment:
+      description: 'Environment to deploy to'
+      type: environment
+      required: true
 
 env:
   # Use GitHub Container Registry
@@ -16,6 +21,8 @@ jobs:
     permissions: # Permissions granted to the 'GITHUB_TOKEN'
       contents: read
       packages: write
+    outputs:
+      imageid: ${{ steps.build.outputs.imageid }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -37,9 +44,58 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Build and push Docker image
+        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
-          push: true
+          push: ${{ github.repository_owner == 'one-zero-eight' && 'true' || 'false' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+  deploy-staging:
+    if: github.repository_owner == 'one-zero-eight' && ((github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging') || (github.event_name == 'push' && github.ref == 'refs/heads/main'))
+    name: Deploy to staging server
+    needs: build-and-push-image
+    runs-on: self-hosted
+    environment:
+      name: staging
+      url: https://api.innohassle.ru/events/staging-v0
+    concurrency:
+      group: staging
+      cancel-in-progress: false
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          fingerprint: ${{ secrets.SSH_FINGERPRINT }}
+          script_stop: true # Stop script on error
+          script: |
+            cd "${{ secrets.DEPLOY_DIRECTORY }}"
+            bash "${{ secrets.DEPLOY_SCRIPT }}" "${{ needs.build-and-push-image.outputs.imageid }}"
+
+  deploy-production:
+    if: github.repository_owner == 'one-zero-eight' && (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    name: Deploy to production server
+    needs: build-and-push-image
+    runs-on: self-hosted
+    environment:
+      name: production
+      url: https://api.innohassle.ru/events/v0
+    concurrency:
+      group: production
+      cancel-in-progress: false
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          fingerprint: ${{ secrets.SSH_FINGERPRINT }}
+          script_stop: true # Stop script on error
+          script: |
+            cd "${{ secrets.DEPLOY_DIRECTORY }}"
+            bash "${{ secrets.DEPLOY_SCRIPT }}" "${{ needs.build-and-push-image.outputs.imageid }}"
