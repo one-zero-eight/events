@@ -57,8 +57,11 @@ if settings.environment == Environment.DEVELOPMENT:
 
 @app.get("/docs", tags=["System"], include_in_schema=False)
 async def swagger_ui_html(request: Request):
+    root_path = request.scope.get("root_path", "").rstrip("/")
+    openapi_url = root_path + app.openapi_url
+
     return get_swagger_ui_html(
-        openapi_url=app.openapi_url,
+        openapi_url=openapi_url,
         title=app.title + " - Swagger UI",
         swagger_js_url="https://api.innohassle.ru/swagger/swagger-ui-bundle.js",
         swagger_css_url="https://api.innohassle.ru/swagger/swagger-ui.css",
