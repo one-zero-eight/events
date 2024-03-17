@@ -1,6 +1,7 @@
 __all__ = ["app"]
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.openapi.docs import get_swagger_ui_html
 from starlette.middleware.cors import CORSMiddleware
 
 from src.api import docs
@@ -30,6 +31,8 @@ app = FastAPI(
     swagger_ui_parameters={"tryItOutEnabled": True, "persistAuthorization": True, "filter": True},
     generate_unique_id_function=docs.generate_unique_operation_id,
     lifespan=lifespan,
+    docs_url=None,
+    redoc_url=None,
 )
 
 app.add_middleware(
@@ -50,3 +53,14 @@ if settings.environment == Environment.DEVELOPMENT:
     warnings.warn("Enable sqlalchemy logging")
     logging.basicConfig()
     logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
+
+
+@app.get("/docs", tags=["System"], include_in_schema=False)
+async def swagger_ui_html(request: Request):
+    return get_swagger_ui_html(
+        openapi_url=app.openapi_url,
+        title=app.title + " - Swagger UI",
+        swagger_js_url="https://api.innohassle.ru/swagger/swagger-ui-bundle.js",
+        swagger_css_url="https://api.innohassle.ru/swagger/swagger-ui.css",
+        swagger_favicon_url="https://api.innohassle.ru/swagger/favicon.png",
+    )
