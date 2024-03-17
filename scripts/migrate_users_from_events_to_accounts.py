@@ -29,23 +29,21 @@ async def main():
             users_to_migrate.append(user)
 
     mongo_queries = []
-    # for (let i in newUsers) {
-    #     console.log(newUsers[i])
-    # newUsers[i] = {
-    # updateOne: {
-    #     filter: {_id: newUsers[i]._id},
-    #     update: newUsers[i],
-    #     upsert: true
-    # }
-    # }
-    # }
+
     for user in users_to_migrate:
         mongo_queries.append(
             {
                 "updateOne": {
                     "filter": {"innopolis_sso.email": user.email},
-                    # "update": {"innopolis_sso": {"email": user.email, "name": user.name}},
-                    "update": {},
+                    "update": {
+                        "$set": {
+                            "innopolis_sso": {
+                                "email": user.email,
+                                "name": user.name,
+                            },
+                            "innohassle_admin": False,
+                        }
+                    },
                     "upsert": True,
                 }
             }
