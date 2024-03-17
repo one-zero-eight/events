@@ -71,7 +71,7 @@ class SqlEventGroupRepository:
     async def batch_read_ids_by_aliases(self, aliases: list[str]) -> dict[str, int | None]:
         async with self._create_session() as session:
             q = select(EventGroup.id, EventGroup.alias).where(EventGroup.alias.in_(aliases))
-            rows = await session.scalars(q)
+            rows = (await session.execute(q)).all()
             result = dict.fromkeys(aliases, None)
             for row in rows:
                 result[row.alias] = row.id
