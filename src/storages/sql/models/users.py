@@ -10,7 +10,7 @@ from src.storages.sql.models.__mixin__ import IdMixin
 from src.storages.sql.models.base import Base
 
 if TYPE_CHECKING:
-    from src.storages.sql.models.event_groups import EventGroup
+    from src.storages.sql.models.event_groups import UserXHiddenEventGroup
     from src.storages.sql.models.event_groups import UserXFavoriteEventGroup
     from src.storages.sql.models.linked import LinkedCalendar
 
@@ -20,22 +20,23 @@ class User(Base, IdMixin):
     __tablename__ = "users"
 
     name: Mapped[str] = mapped_column(nullable=True)
-
+    innohassle_id: Mapped[str] = mapped_column(unique=True, nullable=True)
     email: Mapped[str] = mapped_column(unique=True)
 
-    status: Mapped[str] = mapped_column(nullable=True)
-
     favorites_association: Mapped[list["UserXFavoriteEventGroup"]] = relationship(
-        "UserXFavoriteEventGroup",
-        back_populates="user",
+        "UserXFavoriteEventGroup", cascade="all, delete-orphan", passive_deletes=True
+    )
+
+    favorite_event_groups: Mapped[list[int]] = association_proxy(
+        "favorites_association",
+        "group_id",
+    )
+    hidden_event_groups_association: Mapped[list["UserXHiddenEventGroup"]] = relationship(
+        "UserXHiddenEventGroup",
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
-
-    favorites: Mapped[list["EventGroup"]] = association_proxy(
-        "favorites_association",
-        "event_group",
-    )
+    hidden_event_groups: Mapped[list[int]] = association_proxy("hidden_event_groups_association", "group_id")
 
     linked_calendars: Mapped[list["LinkedCalendar"]] = relationship(
         "LinkedCalendar",

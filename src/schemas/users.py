@@ -1,6 +1,6 @@
 __all__ = ["CreateUser", "ViewUser", "UpdateUser", "ViewUserScheduleKey"]
 
-from typing import Optional, Collection
+from typing import Optional
 
 from pydantic import Field, BaseModel, field_validator, ConfigDict
 
@@ -14,6 +14,7 @@ class CreateUser(BaseModel):
 
     id: Optional[int] = None
     email: str
+    innohassle_id: str
     name: Optional[str] = None
 
 
@@ -24,18 +25,14 @@ class ViewUser(BaseModel):
 
     id: int
     email: str
+    innohassle_id: str | None = None
     name: Optional[str] = None
-    favorites_association: list["UserXFavoriteGroupView"] = Field(default_factory=list)
+    favorite_event_groups: list[int] = Field(default_factory=list)
+    hidden_event_groups: list[int] = Field(default_factory=list)
     linked_calendars: dict[str, "LinkedCalendarView"] = Field(default_factory=dict)
     music_room_hidden: bool
     sports_hidden: bool
     moodle_hidden: bool
-
-    @field_validator("favorites_association", mode="before")
-    def groups_to_list(cls, v):
-        if isinstance(v, Collection):
-            v = list(v)
-        return v
 
     @field_validator("linked_calendars", mode="before")
     def calendars_to_dict(cls, v):
@@ -65,8 +62,5 @@ class UpdateUser(BaseModel):
     email: Optional[str] = None
     name: Optional[str] = None
 
-
-# fix circular import
-from src.schemas.event_groups import UserXFavoriteGroupView  # noqa: E402
 
 ViewUser.update_forward_refs()

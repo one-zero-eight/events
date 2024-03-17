@@ -20,7 +20,7 @@ from src.exceptions import IncorrectCredentialsException, NoCredentialsException
     include_in_schema=settings.environment == Environment.DEVELOPMENT,
 )
 async def update_predefined_data(_: VERIFY_PARSER_DEPENDENCY):
-    from src.utils import setup_predefined_data
+    from src.repositories.predefined.utils import setup_predefined_data
 
     await setup_predefined_data()
 

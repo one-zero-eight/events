@@ -2,22 +2,6 @@
 $schema: "./settings.schema.yaml"
 # ---------- Application settings ----- #
 db_url: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
-auth:
-  # Run 'openssl rand -hex 32' to generate key
-  session_secret_key: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-  # Run 'openssl genrsa -out private.pem 2048' to generate keys
-  jwt_private_key: |
-    -----BEGIN RSA PRIVATE KEY-----
-    ssssssssssssssssssssssssssssss
-    ssssssssssssssssssssssssssssss
-    ssssssssssssssssssssssssssssss
-    ssssssssssssssssssssssssssssss
-    -----END RSA PRIVATE KEY-----
-  # For existing key run 'openssl rsa -in private.pem -pubout -out public.pem'
-  jwt_public_key: |
-    -----BEGIN PUBLIC KEY-----
-    ssssssssssssssssssssssssssssss
-    ssssssssssssssssssssssssssssss
-    sssssssssss
-    -----END PUBLIC KEY-----
-test_user_email: a.atov@innopolis.university
+accounts:
+  # JWT secret
+  api_jwt_token: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

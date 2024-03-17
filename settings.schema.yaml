@@ -1,41 +1,25 @@
 $schema: https://json-schema.org/draft-07/schema
 $defs:
-  Authentication:
+  Accounts:
     additionalProperties: false
+    description: InNoHassle-Accounts integration settings
     properties:
-      cookie_name:
-        default: token
-        title: Cookie Name
+      api_url:
+        default: https://api.innohassle.ru/accounts/v0
+        title: Api Url
         type: string
-      cookie_domain:
-        default: localhost
-        title: Cookie Domain
+      well_known_url:
+        default: https://api.innohassle.ru/accounts/v0/.well-known
+        title: Well Known Url
         type: string
-      allowed_domains:
-        default:
-        - localhost
-        items:
-          type: string
-        title: Allowed Domains
-        type: array
-      jwt_private_key:
+      api_jwt_token:
         format: password
-        title: Jwt Private Key
-        type: string
-        writeOnly: true
-      jwt_public_key:
-        title: Jwt Public Key
-        type: string
-      session_secret_key:
-        format: password
-        title: Session Secret Key
+        title: Api Jwt Token
         type: string
         writeOnly: true
     required:
-    - jwt_private_key
-    - jwt_public_key
-    - session_secret_key
-    title: Authentication
+    - api_jwt_token
+    title: Accounts
     type: object
   Environment:
     enum:
@@ -44,33 +28,6 @@ $defs:
     - testing
     title: Environment
     type: string
-  InnopolisSSO:
-    additionalProperties: false
-    description: Innopolis SSO settings (only for production)
-    properties:
-      client_id:
-        title: Client Id
-        type: string
-      client_secret:
-        format: password
-        title: Client Secret
-        type: string
-        writeOnly: true
-      redirect_uri:
-        default: https://innohassle.campus.innopolis.university/oauth2/callback
-        title: Redirect Uri
-        type: string
-      resource_id:
-        anyOf:
-        - type: string
-        - type: 'null'
-        default: null
-        title: Resource Id
-    required:
-    - client_id
-    - client_secret
-    title: InnopolisSSO
-    type: object
   MusicRoom:
     additionalProperties: false
     description: InNoHassle-MusicRoom integration settings
@@ -114,25 +71,13 @@ properties:
       type: string
     title: Cors Allow Origins
     type: array
-  auth:
-    $ref: '#/$defs/Authentication'
-  innopolis_sso:
-    anyOf:
-    - $ref: '#/$defs/InnopolisSSO'
-    - type: 'null'
-    default: null
-  test_user_email:
-    anyOf:
-    - format: email
-      type: string
-    - type: 'null'
-    default: null
-    title: Test User Email
   predefined_dir:
     default: predefined
     format: path
     title: Predefined Dir
     type: string
+  accounts:
+    $ref: '#/$defs/Accounts'
   music_room:
     anyOf:
     - $ref: '#/$defs/MusicRoom'
@@ -143,6 +88,6 @@ properties:
     title: Schema
     type: string
 required:
-- auth
+- accounts
 title: Settings
 type: object

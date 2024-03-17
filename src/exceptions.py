@@ -44,7 +44,7 @@ class ForbiddenException(HTTPException):
             detail=self.responses[403]["description"],
         )
 
-    responses = {403: {"description": "Access denied"}}
+    responses = {403: {"description": "Access denied, not enough permissions"}}
 
 
 class InvalidReturnToURL(HTTPException):
@@ -61,31 +61,21 @@ class InvalidReturnToURL(HTTPException):
     responses = {400: {"description": "Invalid return_to URL"}}
 
 
-class UserNotFoundException(HTTPException):
+class ObjectNotFound(HTTPException):
     """
     HTTP_404_NOT_FOUND
     """
 
-    def __init__(self):
+    def __init__(self, detail: str | None = None):
         super().__init__(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=self.responses[404]["description"],
+            detail=detail or self.responses[404]["description"],
         )
 
-    responses = {404: {"description": "User not found"}}
+    responses = {404: {"description": "Object not found"}}
 
 
-class EventGroupNotFoundException(HTTPException):
-    """
-    HTTP_404_NOT_FOUND
-    """
-
-    def __init__(self):
-        super().__init__(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=self.responses[404]["description"],
-        )
-
+class EventGroupNotFoundException(ObjectNotFound):
     responses = {404: {"description": "Event group not found"}}
 
 
@@ -103,22 +93,7 @@ class EventGroupWithMissingPath(HTTPException):
     responses = {400: {"description": "Path is not defined for this event group"}}
 
 
-class OperationIsNotAllowed(HTTPException):
-    """
-    HTTP_403_FORBIDDEN
-    """
-
-    def __init__(self):
-        super().__init__(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail=self.responses[403]["description"],
-        )
-
-    responses = {403: {"description": "This user can not execute this operation"}}
-
-
-class DBException(Exception):
-    ...
+class DBException(Exception): ...
 
 
 class DBEventGroupDoesNotExistInDb(DBException):

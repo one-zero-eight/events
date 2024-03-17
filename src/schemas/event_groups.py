@@ -3,7 +3,6 @@ __all__ = [
     "ViewEventGroup",
     "UpdateEventGroup",
     "ListEventGroupsResponse",
-    "UserXFavoriteGroupView",
 ]
 
 import datetime
@@ -60,18 +59,6 @@ class UpdateEventGroup(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     path: Optional[str] = None
-
-
-class UserXFavoriteGroupView(BaseModel):
-    """
-    Represents a group instance from the database excluding sensitive information.
-    """
-
-    user_id: int
-    event_group: ViewEventGroup
-    hidden: bool
-    predefined: bool = False
-    model_config = ConfigDict(from_attributes=True)
 
 
 class ListEventGroupsResponse(BaseModel):

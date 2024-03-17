@@ -1,4 +1,8 @@
 # Website url
+import re
+
+from fastapi.routing import APIRoute
+
 WEBSITE_URL = "https://innohassle.ru"
 
 # API version
@@ -54,3 +58,13 @@ TAGS_INFO = [
         "description": "User data and linking users with event groups.",
     },
 ]
+
+
+def generate_unique_operation_id(route: APIRoute) -> str:
+    # Better names for operationId in OpenAPI schema.
+    # It is needed because clients generate code based on these names.
+    # Requires pair (tag name + function name) to be unique.
+    # See fastapi.utils:generate_unique_id (default implementation).
+    operation_id = f"{route.tags[0]}_{route.name}".lower()
+    operation_id = re.sub(r"\W+", "_", operation_id)
+    return operation_id

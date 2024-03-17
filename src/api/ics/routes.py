@@ -8,13 +8,13 @@ import icalendar
 from fastapi import HTTPException
 from starlette.responses import FileResponse, StreamingResponse
 
-from src.api.dependencies import Shared, CURRENT_USER_ID_DEPENDENCY
+from src.api.dependencies import CURRENT_USER_ID_DEPENDENCY
 from src.api.ics import router
 from src.config import settings
-from src.exceptions import EventGroupNotFoundException, UserNotFoundException, ForbiddenException
-from src.repositories.event_groups import SqlEventGroupRepository
-from src.repositories.predefined import PredefinedRepository
-from src.repositories.users import SqlUserRepository
+from src.exceptions import EventGroupNotFoundException, ObjectNotFound, ForbiddenException
+from src.repositories.event_groups.repository import event_group_repository
+from src.repositories.predefined import PredefinedStorage
+from src.repositories.users.repository import user_repository
 from src.schemas import ViewUser
 from src.schemas.linked import LinkedCalendarView
 
@@ -33,7 +33,7 @@ async def get_current_user_schedule(user_id: CURRENT_USER_ID_DEPENDENCY) -> Stre
     """
     Get schedule in ICS format for the current user
     """
-    user_repository = Shared.f(SqlUserRepository)
+
     user = await user_repository.read(user_id)
 
     ical_generator = await _get_personal_ics(user)
@@ -51,7 +51,7 @@ async def get_current_user_schedule(user_id: CURRENT_USER_ID_DEPENDENCY) -> Stre
             "description": "ICS file with schedule based on favorites (non-hidden)",
             "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
         },
-        **UserNotFoundException.responses,
+        **ObjectNotFound.responses,
         **ForbiddenException.responses,
     },
     tags=["Users"],
@@ -60,11 +60,11 @@ async def get_user_schedule(user_id: int, access_key: str) -> StreamingResponse:
     """
     Get schedule in ICS format for the user; requires access key for `/users/{user_id}/all.ics` resource
     """
-    user_repository = Shared.f(SqlUserRepository)
+
     user = await user_repository.read(user_id)
 
     if user is None:
-        raise UserNotFoundException()
+        raise ObjectNotFound()
 
     resource_path = f"/users/{user_id}/all.ics"
     if not await user_repository.check_user_schedule_key(user_id, access_key, resource_path):
@@ -92,10 +92,10 @@ async def get_music_room_current_user_schedule(user_id: CURRENT_USER_ID_DEPENDEN
     """
     Get schedule in ICS format for the current user
     """
-    user_repository = Shared.f(SqlUserRepository)
+
     user = await user_repository.read(user_id)
     if user is None:
-        raise UserNotFoundException()
+        raise ObjectNotFound()
 
     ical_generator = await _get_personal_music_room_ics(user)
 
@@ -112,13 +112,13 @@ async def _get_personal_ics(user: ViewUser) -> AsyncGenerator[bytes, None]:
             nonhidden.append(association)
     paths = set()
     for association in nonhidden:
-        event_group = association.event_group
+        event_group = await event_group_repository.read(association.group_id)
         if event_group.path is None:
             raise HTTPException(
                 status_code=501,
                 detail="Can not create .ics file for event group on the fly (set static .ics file for the event group",
             )
-        ics_path = PredefinedRepository.locate_ics_by_path(event_group.path)
+        ics_path = PredefinedStorage.locate_ics_by_path(event_group.path)
         paths.add(ics_path)
     ical_generator = _generate_ics_from_multiple(user, *paths)
     return ical_generator
@@ -131,7 +131,7 @@ async def _get_personal_ics(user: ViewUser) -> AsyncGenerator[bytes, None]:
             "description": "ICS file with schedule based on linked url",
             "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
         },
-        **UserNotFoundException.responses,
+        **ObjectNotFound.responses,
     },
     tags=["Users"],
 )
@@ -139,15 +139,14 @@ async def get_user_linked_schedule(user_id: int, linked_alias: str) -> Streaming
     """
     Get schedule in ICS format for the user
     """
-    user_repository = Shared.f(SqlUserRepository)
+
     user = await user_repository.read(user_id)
 
     if user is None:
-        raise UserNotFoundException()
+        raise ObjectNotFound(f"User with id {user_id} not found")
 
     if linked_alias not in user.linked_calendars:
-        # TODO: Extract to exception
-        raise HTTPException(status_code=404, detail="Linked calendar not found")
+        raise ObjectNotFound(f"Linked calendar with alias {linked_alias} not found")
 
     linked_calendar: LinkedCalendarView = user.linked_calendars[linked_alias]
 
@@ -166,7 +165,7 @@ async def get_user_linked_schedule(user_id: int, linked_alias: str) -> Streaming
             "description": "ICS file with schedule of the music room booking",
             "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
         },
-        **UserNotFoundException.responses,
+        **ObjectNotFound.responses,
         **ForbiddenException.responses,
     },
     tags=["Users"],
@@ -175,10 +174,10 @@ async def get_music_room_user_schedule(user_id: int, access_key: str) -> Streami
     """
     Get schedule in ICS format for the user; requires access key for `/users/{user_id}/music-room.ics` resource
     """
-    user_repository = Shared.f(SqlUserRepository)
+
     user = await user_repository.read(user_id)
     if user is None:
-        raise UserNotFoundException()
+        raise ObjectNotFound()
 
     resource_path = f"/users/{user_id}/music-room.ics"
     if not await user_repository.check_user_schedule_key(user_id, access_key, resource_path):
@@ -238,8 +237,8 @@ async def _generate_ics_from_multiple(user: ViewUser, *ics: Path) -> AsyncGenera
     async def _async_read_schedule(ics_path: Path):
         async with aiofiles.open(ics_path, "r") as f:
             content = await f.read()
-            calendar = icalendar.Calendar.from_ical(content)
-            return calendar
+            _cal = icalendar.Calendar.from_ical(content)
+            return _cal
 
     tasks = [_async_read_schedule(ics_path) for ics_path in ics]
     calendars = await asyncio.gather(*tasks)
@@ -306,13 +305,13 @@ async def get_event_group_ics_by_alias(user_id: int, export_type: str, event_gro
     """
     Get event group .ics file by id
     """
-    event_group_repository = Shared.f(SqlEventGroupRepository)
+
     event_group = await event_group_repository.read_by_alias(event_group_alias)
 
     if event_group is None:
         raise EventGroupNotFoundException()
     if event_group.path:
-        ics_path = PredefinedRepository.locate_ics_by_path(event_group.path)
+        ics_path = PredefinedStorage.locate_ics_by_path(event_group.path)
         return FileResponse(ics_path, media_type="text/calendar")
     else:
         # TODO: create ics file on the fly from events connected to event group

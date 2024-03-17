@@ -7,18 +7,17 @@ from starlette.responses import JSONResponse
 from src.api.dependencies import (
     CURRENT_USER_ID_DEPENDENCY,
     VERIFY_PARSER_DEPENDENCY,
-    Shared,
 )
 from src.api.event_groups import router
 from src.exceptions import (
     EventGroupNotFoundException,
-    OperationIsNotAllowed,
     EventGroupWithMissingPath,
     IncorrectCredentialsException,
     NoCredentialsException,
+    ForbiddenException,
 )
-from src.repositories.event_groups import SqlEventGroupRepository
-from src.repositories.predefined.repository import PredefinedRepository
+from src.repositories.event_groups.repository import event_group_repository
+from src.repositories.predefined.repository import PredefinedStorage
 from src.schemas import ViewEventGroup, ListEventGroupsResponse, CreateEventGroup, UpdateEventGroup, OwnershipEnum
 
 
@@ -37,7 +36,6 @@ async def create_event_group(
     current_user_id: CURRENT_USER_ID_DEPENDENCY,
 ):
     try:
-        event_group_repository = Shared.f(SqlEventGroupRepository)
         event_group_view = await event_group_repository.create(event_group)
         await event_group_repository.setup_ownership(event_group_view.id, current_user_id, OwnershipEnum.owner)
         return JSONResponse(status_code=201, content=event_group_view.dict())
@@ -51,7 +49,7 @@ async def create_event_group(
     responses={
         200: {"description": "Event group updated successfully", "model": ViewEventGroup},
         **EventGroupNotFoundException.responses,
-        **OperationIsNotAllowed.responses,
+        **ForbiddenException.responses,
         **IncorrectCredentialsException.responses,
         **NoCredentialsException.responses,
     },
@@ -62,7 +60,6 @@ async def update_event_group(
     # current_user_id: CURRENT_USER_ID_DEPENDENCY,
     _: VERIFY_PARSER_DEPENDENCY,
 ) -> ViewEventGroup:
-    event_group_repository = Shared.f(SqlEventGroupRepository)
     event_group = await event_group_repository.read(event_group_id)
 
     if event_group is None:
@@ -90,7 +87,7 @@ async def find_event_group_by_path(
     """
     Get event group info by path
     """
-    event_group_repository = Shared.f(SqlEventGroupRepository)
+
     event_group = await event_group_repository.read_by_path(path)
 
     if event_group is None:
@@ -111,7 +108,7 @@ async def find_event_group_by_alias(
     """
     Get event group info by alias
     """
-    event_group_repository = Shared.f(SqlEventGroupRepository)
+
     event_group = await event_group_repository.read_by_alias(alias)
 
     if event_group is None:
@@ -132,7 +129,7 @@ async def get_event_group(
     """
     Get event group info by id
     """
-    event_group_repository = Shared.f(SqlEventGroupRepository)
+
     event_group = await event_group_repository.read(event_group_id)
 
     if event_group is None:
@@ -151,7 +148,7 @@ async def list_event_groups() -> ListEventGroupsResponse:
     """
     Get a list of all event groups
     """
-    event_group_repository = Shared.f(SqlEventGroupRepository)
+
     groups = await event_group_repository.read_all()
     return ListEventGroupsResponse.from_iterable(groups)
 
@@ -187,7 +184,7 @@ async def set_event_group_ics(
             status_code=400,
             content={"detail": f"File content type is {ics_file.content_type}, but should be 'text/calendar'"},
         )
-    event_group_repository = Shared.f(SqlEventGroupRepository)
+
     event_group_path = await event_group_repository.get_only_path(event_group_id)
 
     if event_group_path is None:
@@ -199,7 +196,7 @@ async def set_event_group_ics(
     #     raise OperationIsNotAllowed()
 
     try:
-        from src.repositories.predefined.repository import validate_calendar
+        from src.repositories.predefined.validators import validate_calendar
 
         calendar = icalendar.Calendar.from_ical(await ics_file.read())
         validate_calendar(calendar)
@@ -208,7 +205,7 @@ async def set_event_group_ics(
 
     content = calendar.to_ical()
 
-    ics_path = PredefinedRepository.locate_ics_by_path(event_group_path)
+    ics_path = PredefinedStorage.locate_ics_by_path(event_group_path)
 
     async with aiofiles.open(ics_path, "rb") as f:
         old_content = await f.read()

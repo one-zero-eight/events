@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Optional
 
 import yaml
-from pydantic import model_validator, BaseModel, SecretStr, EmailStr, ConfigDict
+from pydantic import BaseModel, SecretStr, ConfigDict
 
 
 class Environment(StrEnum):
@@ -25,32 +25,15 @@ class MusicRoom(SettingsEntityModel):
     "API key for the Music Room API"
 
 
-class InnopolisSSO(SettingsEntityModel):
-    """Innopolis SSO settings (only for production)"""
+class Accounts(SettingsEntityModel):
+    """InNoHassle-Accounts integration settings"""
 
-    client_id: str
-    "Client ID for Innopolis SSO"
-    client_secret: SecretStr
-    "Client secret for Innopolis SSO"
-    redirect_uri: str = "https://innohassle.campus.innopolis.university/oauth2/callback"
-    "Redirect URI for Innopolis SSO"
-    resource_id: Optional[str] = None
-    "Resource ID for Innopolis SSO (optional); Used for Sports API access"
-
-
-class Authentication(SettingsEntityModel):
-    cookie_name: str = "token"
-    "Name of the cookie for authentication JWT token"
-    cookie_domain: str = "localhost"
-    "Domain of the cookie for authentication JWT token"
-    allowed_domains: list[str] = ["localhost"]
-    "Allowed domains for redirecting after authentication"
-    jwt_private_key: SecretStr
-    "Private key for JWT. Use 'openssl genrsa -out private.pem 2048' to generate keys"
-    jwt_public_key: str
-    "Public key for JWT. Use 'openssl rsa -in private.pem -pubout -out public.pem' to generate keys"
-    session_secret_key: SecretStr
-    "Secret key for sessions. Use 'openssl rand -hex 32' to generate keys"
+    api_url: str = "https://api.innohassle.ru/accounts/v0"
+    "URL of the Accounts API"
+    well_known_url: str = "https://api.innohassle.ru/accounts/v0/.well-known"
+    "URL of the well-known endpoint for the Accounts API"
+    api_jwt_token: SecretStr
+    "JWT token for accessing the Accounts API as a service"
 
 
 class Settings(SettingsEntityModel):
@@ -66,14 +49,10 @@ class Settings(SettingsEntityModel):
     "PostgreSQL database connection URL"
     cors_allow_origins: list[str] = ["https://innohassle.ru", "https://pre.innohassle.ru", "http://localhost:3000"]
     "Allowed origins for CORS: from which domains requests to the API are allowed"
-    auth: Authentication
-    "Authentication settings"
-    innopolis_sso: Optional[InnopolisSSO] = None
-    "Innopolis SSO settings (only for production)"
-    test_user_email: Optional[EmailStr] = None
-    "Email for dev auth"
     predefined_dir: Path = Path("./predefined")
     "Path to the directory with predefined data"
+    accounts: Accounts
+    "InNoHassle-Accounts integration settings"
     music_room: Optional[MusicRoom] = None
     "InNoHassle-MusicRoom integration settings"
 
@@ -95,9 +74,3 @@ class Settings(SettingsEntityModel):
                 "type": "string",
             }
             yaml.dump(schema, f, sort_keys=False)
-
-    @model_validator(mode="after")
-    def validate_test_user_email(self):
-        if self.test_user_email is None and self.environment == Environment.DEVELOPMENT:
-            raise ValueError("test_user_email must be set in development environment")
-        return self

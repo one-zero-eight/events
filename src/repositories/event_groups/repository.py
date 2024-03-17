@@ -1,16 +1,15 @@
-__all__ = ["SqlEventGroupRepository"]
+__all__ = ["SqlEventGroupRepository", "event_group_repository"]
 
 from typing import Optional
 
 from sqlalchemy import select, update
-from sqlalchemy.dialects.postgresql import insert as postgres_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.repositories.crud import CRUDFactory, AbstractCRUDRepository
 from src.repositories.ownership import setup_ownership_method
 from src.schemas import ViewEventGroup, CreateEventGroup, UpdateEventGroup, OwnershipEnum
 from src.storages.sql import SQLAlchemyStorage
-from src.storages.sql.models import UserXFavoriteEventGroup, EventGroup
+from src.storages.sql.models import EventGroup
 
 CRUD: AbstractCRUDRepository[
     CreateEventGroup,
@@ -27,7 +26,7 @@ CRUD: AbstractCRUDRepository[
 class SqlEventGroupRepository:
     storage: SQLAlchemyStorage
 
-    def __init__(self, storage: SQLAlchemyStorage):
+    def update_storage(self, storage: SQLAlchemyStorage):
         self.storage = storage
 
     def _create_session(self) -> AsyncSession:
@@ -69,6 +68,15 @@ class SqlEventGroupRepository:
         async with self._create_session() as session:
             return await CRUD.read_by(session, only_first=True, alias=alias)
 
+    async def batch_read_ids_by_aliases(self, aliases: list[str]) -> dict[str, int | None]:
+        async with self._create_session() as session:
+            q = select(EventGroup.id, EventGroup.alias).where(EventGroup.alias.in_(aliases))
+            rows = await session.scalars(q)
+            result = dict.fromkeys(aliases, None)
+            for row in rows:
+                result[row.alias] = row.id
+            return result
+
     async def update(self, event_group_id: int, event_group: UpdateEventGroup) -> ViewEventGroup:
         async with self._create_session() as session:
             return await CRUD.update(session, data=event_group, id=event_group_id)
@@ -88,42 +96,12 @@ class SqlEventGroupRepository:
             OwnershipClass = EventGroup.Ownership
             return await setup_ownership_method(OwnershipClass, session, group_id, user_id, role_alias)
 
-    async def setup_groups(self, user_id: int, groups: list[int]):
-        async with self._create_session() as session:
-            q = (
-                postgres_insert(UserXFavoriteEventGroup)
-                .values([{"user_id": user_id, "group_id": group_id, "predefined": True} for group_id in groups])
-                .on_conflict_do_update(
-                    index_elements=[UserXFavoriteEventGroup.user_id, UserXFavoriteEventGroup.group_id],
-                    set_={"predefined": True},
-                )
-            )
-            await session.execute(q)
-            await session.commit()
-
-    async def batch_setup_groups(self, groups_mapping: dict[int, list[int]]):
-        async with self._create_session() as session:
-            # in one query
-            q = (
-                postgres_insert(UserXFavoriteEventGroup)
-                .values(
-                    [
-                        {"user_id": user_id, "group_id": group_id, "predefined": True}
-                        for user_id, group_ids in groups_mapping.items()
-                        for group_id in group_ids
-                    ]
-                )
-                .on_conflict_do_update(
-                    index_elements=[UserXFavoriteEventGroup.user_id, UserXFavoriteEventGroup.group_id],
-                    set_={"predefined": True},
-                )
-            )
-            await session.execute(q)
-            await session.commit()
-
     async def update_timestamp(self, group_id: int):
         async with self._create_session() as session:
             # updated_at
             q = update(EventGroup).where(EventGroup.id == group_id).values()
             await session.execute(q)
             await session.commit()
+
+
+event_group_repository = SqlEventGroupRepository()

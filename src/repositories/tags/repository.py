@@ -1,4 +1,4 @@
-__all__ = ["SqlTagRepository"]
+__all__ = ["SqlTagRepository", "tag_repository"]
 
 from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert
@@ -21,7 +21,7 @@ CRUD: AbstractCRUDRepository[
 class SqlTagRepository:
     storage: SQLAlchemyStorage
 
-    def __init__(self, storage: SQLAlchemyStorage):
+    def update_storage(self, storage: SQLAlchemyStorage):
         self.storage = storage
 
     def _create_session(self) -> AsyncSession:
@@ -126,3 +126,6 @@ class SqlTagRepository:
             q = delete(table).where(table.object_id == event_group_id).where(table.tag_id.in_(tag_ids))
             await session.execute(q)
             await session.commit()
+
+
+tag_repository = SqlTagRepository()

@@ -1,3 +1,3 @@
-__all__ = ["PredefinedRepository"]
+__all__ = ["PredefinedStorage"]
 
-from src.repositories.predefined.repository import PredefinedRepository
+from src.repositories.predefined.storage import PredefinedStorage

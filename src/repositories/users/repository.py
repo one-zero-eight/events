@@ -1,4 +1,4 @@
-__all__ = ["SqlUserRepository"]
+__all__ = ["SqlUserRepository", "user_repository"]
 
 import random
 import string
@@ -16,11 +16,13 @@ from src.schemas import LinkedCalendarView
 from src.schemas.linked import LinkedCalendarCreate
 from src.schemas.users import CreateUser, ViewUser, UpdateUser, ViewUserScheduleKey
 from src.storages.sql.models import User, EventGroup, UserXFavoriteEventGroup, LinkedCalendar, UserScheduleKeys
+from src.storages.sql.models.event_groups import UserXHiddenEventGroup
 from src.storages.sql.storage import SQLAlchemyStorage
 
 _get_options = (
     selectinload(User.favorites_association),
     selectinload(User.linked_calendars),
+    selectinload(User.hidden_event_groups_association),
 )
 
 
@@ -57,63 +59,41 @@ def _generate_random_user_schedule_key() -> str:
 class SqlUserRepository:
     storage: SQLAlchemyStorage
 
-    def __init__(self, storage: SQLAlchemyStorage):
+    def update_storage(self, storage: SQLAlchemyStorage):
         self.storage = storage
 
     def _create_session(self) -> AsyncSession:
         return self.storage.create_session()
 
-    # ------------------ CRUD ------------------ #
-    async def create_or_read(self, user: CreateUser) -> ViewUser:
+    async def create(self, user: CreateUser) -> ViewUser:
         async with self._create_session() as session:
             user.id = await _get_available_user_ids(session)
-            created = await CRUD.create_if_not_exists(session, user)
-            if created is None:
-                created = await CRUD.read_by(session, only_first=True, email=user.email)
+            created = await CRUD.create(session, user)
             return created
-
-    async def batch_create_or_read(self, users: list[CreateUser]) -> list[ViewUser]:
-        async with self._create_session() as session:
-            available_ids = await _get_available_user_ids(session, len(users))
-            for user, id_ in zip(users, available_ids):
-                user.id = id_
-            q = insert(User).values([user.dict() for user in users])
-            q = (
-                q.on_conflict_do_update(index_elements=[User.email], set_={"id": User.id})
-                .returning(User)
-                .options(*_get_options)
-            )
-            db_users = await session.scalars(q)
-            await session.commit()
-            return [ViewUser.model_validate(user) for user in db_users]
-
-    async def create_or_update(self, user: CreateUser) -> ViewUser:
-        async with self._create_session() as session:
-            user.id = await _get_available_user_ids(session)
-            q = insert(User).values(**user.dict())
-            q = (
-                q.on_conflict_do_update(index_elements=[User.email], set_={**q.excluded, "id": User.id})
-                .returning(User)
-                .options(*_get_options)
-            )
-            user = await session.scalar(q)
-            await session.commit()
-            return ViewUser.model_validate(user)
 
     async def read(self, user_id: int) -> ViewUser:
         async with self._create_session() as session:
             return await CRUD.read(session, id=user_id)
+
+    async def read_all(self) -> list[ViewUser]:
+        async with self._create_session() as session:
+            return await CRUD.read_all(session)
 
     async def read_id_by_email(self, email: str) -> int:
         async with self._create_session() as session:
             user_id = await session.scalar(select(User.id).where(User.email == email))
             return user_id
 
-    async def batch_read(self, ids: list[int]) -> list[ViewUser]:
+    async def read_id_by_innohassle_id(self, innohassle_id: str) -> int | None:
         async with self._create_session() as session:
-            return await CRUD.batch_read(session, pkeys=[{"id": id_} for id_ in ids])
+            user_id = await session.scalar(select(User.id).where(User.innohassle_id == innohassle_id))
+            return user_id
 
-    # ^^^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^^^ #
+    async def update_innohassle_id(self, user_id: int, innohassle_id: str) -> None:
+        async with self._create_session() as session:
+            q = update(User).where(User.id == user_id).values(innohassle_id=innohassle_id)
+            await session.execute(q)
+            await session.commit()
 
     async def add_favorite(self, user_id: int, favorite_id: int) -> ViewUser:
         async with self._create_session() as session:
@@ -148,7 +128,6 @@ class SqlUserRepository:
                 .where(
                     UserXFavoriteEventGroup.group_id == favorite_id,
                 )
-                .where(UserXFavoriteEventGroup.predefined.is_(False))
             )
             await session.execute(q)
             user = await session.scalar(SELECT_USER_BY_ID(user_id))
@@ -157,23 +136,27 @@ class SqlUserRepository:
 
     async def set_hidden_event_group(self, user_id: int, group_id: int, hide: bool = True) -> "ViewUser":
         async with self._create_session() as session:
-            # find favorite where user_id and group_id
-            q = (
-                select(UserXFavoriteEventGroup)
-                .where(UserXFavoriteEventGroup.user_id == user_id)
-                .where(UserXFavoriteEventGroup.group_id == group_id)
-            )
-
-            event_group = await session.scalar(q)
-
-            # set hidden
-            if event_group:
-                event_group.hidden = hide
-
+            if hide:
+                q = (
+                    insert(UserXHiddenEventGroup)
+                    .values(
+                        user_id=user_id,
+                        group_id=group_id,
+                    )
+                    .on_conflict_do_nothing(
+                        index_elements=[UserXHiddenEventGroup.user_id, UserXHiddenEventGroup.group_id]
+                    )
+                )
+            else:
+                q = delete(UserXHiddenEventGroup).where(
+                    UserXHiddenEventGroup.user_id == user_id,
+                    UserXHiddenEventGroup.group_id == group_id,
+                )
+            await session.execute(q)
+            await session.commit()
             # from table
             q = select(User).where(User.id == user_id).options(*_get_options)
             user = await session.scalar(q)
-            await session.commit()
             return ViewUser.model_validate(user)
 
     async def set_hidden(self, user_id: int, target: Literal["music-room", "sports", "moodle"], hide: bool = True):
@@ -256,3 +239,6 @@ class SqlUserRepository:
             )
             await session.execute(q)
             await session.commit()
+
+
+user_repository = SqlUserRepository()

@@ -4,11 +4,12 @@ from fastapi import HTTPException
 from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 
-from src.api.dependencies import CURRENT_USER_ID_DEPENDENCY, Shared
+from src.api.dependencies import CURRENT_USER_ID_DEPENDENCY
 from src.api.users import router
-from src.exceptions import UserNotFoundException, DBEventGroupDoesNotExistInDb, EventGroupNotFoundException
-from src.repositories.event_groups import SqlEventGroupRepository
-from src.repositories.users import SqlUserRepository
+from src.exceptions import ObjectNotFound, DBEventGroupDoesNotExistInDb, EventGroupNotFoundException
+from src.repositories.event_groups.repository import event_group_repository
+from src.repositories.predefined.repository import predefined_repository
+from src.repositories.users.repository import user_repository
 from src.schemas import ViewUser
 from src.schemas.linked import LinkedCalendarView, LinkedCalendarCreate
 from src.schemas.users import ViewUserScheduleKey
@@ -19,9 +20,23 @@ async def get_me(user_id: CURRENT_USER_ID_DEPENDENCY) -> ViewUser:
     """
     Get current user info if authenticated
     """
-    user_repository = Shared.f(SqlUserRepository)
+
     user = await user_repository.read(user_id)
     return user
+
+
+class UserPredefinedGroupsResponse(BaseModel):
+    event_groups: list[int]
+
+
+@router.get("/me/predefined", responses={200: {"description": "Predefined event groups for user"}})
+async def get_predefined(user_id: CURRENT_USER_ID_DEPENDENCY) -> UserPredefinedGroupsResponse:
+    """
+    Get predefined event groups for user
+    """
+
+    groups = await predefined_repository.get_user_predefined(user_id)
+    return UserPredefinedGroupsResponse(event_groups=groups)
 
 
 @router.post(
@@ -33,7 +48,6 @@ async def add_favorite(user_id: CURRENT_USER_ID_DEPENDENCY, group_id: int) -> Vi
     Add favorite to current user
     """
     try:
-        user_repository = Shared.f(SqlUserRepository)
         updated_user = await user_repository.add_favorite(user_id, group_id)
         return updated_user
     except DBEventGroupDoesNotExistInDb as e:
@@ -48,7 +62,7 @@ async def delete_favorite(user_id: CURRENT_USER_ID_DEPENDENCY, group_id: int) ->
     """
     Delete favorite from current user
     """
-    user_repository = Shared.f(SqlUserRepository)
+
     updated_user = await user_repository.remove_favorite(user_id, group_id)
     return updated_user
 
@@ -59,22 +73,22 @@ async def hide_favorite(user_id: CURRENT_USER_ID_DEPENDENCY, group_id: int, hide
     Hide favorite from current user
     """
     # check if a group exists
-    event_group_repository = Shared.f(SqlEventGroupRepository)
+
     if await event_group_repository.read(group_id) is None:
-        raise UserNotFoundException()
-    user_repository = Shared.f(SqlUserRepository)
+        raise ObjectNotFound(f"Event group with id {group_id} does not exist")
+
     updated_user = await user_repository.set_hidden_event_group(user_id=user_id, group_id=group_id, hide=hide)
     return updated_user
 
 
 @router.post("/me/{target}/hide", responses={200: {"description": "Target hidden"}})
-async def hide_music_room(
+async def hide_target(
     user_id: CURRENT_USER_ID_DEPENDENCY, target: Literal["music-room", "sports", "moodle"], hide: bool = True
 ) -> ViewUser:
     """
     Hide music room, sports or moodle from current user
     """
-    user_repository = Shared.f(SqlUserRepository)
+
     updated_user = await user_repository.set_hidden(user_id=user_id, target=target, hide=hide)
     return updated_user
 
@@ -90,7 +104,6 @@ async def link_calendar(
     Add linked calendar to current user
     """
     try:
-        user_repository = Shared.f(SqlUserRepository)
         calendar = await user_repository.link_calendar(user_id, linked_calendar)
         return calendar
     except IntegrityError:
@@ -112,7 +125,6 @@ async def generate_user_schedule_key(
     """
     Generate an access key for the user schedule
     """
-    user_repository = Shared.f(SqlUserRepository)
 
     key = await user_repository.get_user_schedule_key_for_resource(user_id, resource_path)
     new = False
@@ -130,7 +142,7 @@ async def get_user_schedule_keys(user_id: CURRENT_USER_ID_DEPENDENCY) -> list[Vi
     """
     Get all access keys for the user schedule
     """
-    user_repository = Shared.f(SqlUserRepository)
+
     keys = await user_repository.get_user_schedule_keys(user_id)
     return keys
 
@@ -145,6 +157,6 @@ async def delete_user_schedule_key(access_key: str, resource_path: str, user_id:
     """
     Delete an access key for the user schedule
     """
-    user_repository = Shared.f(SqlUserRepository)
+
     await user_repository.delete_user_schedule_key(user_id, access_key, resource_path)
     return
