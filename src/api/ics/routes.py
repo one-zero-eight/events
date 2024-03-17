@@ -14,6 +14,7 @@ from src.config import settings
 from src.exceptions import EventGroupNotFoundException, ObjectNotFound, ForbiddenException
 from src.repositories.event_groups.repository import event_group_repository
 from src.repositories.predefined import PredefinedStorage
+from src.repositories.predefined.repository import predefined_repository
 from src.repositories.users.repository import user_repository
 from src.schemas import ViewUser
 from src.schemas.linked import LinkedCalendarView
@@ -106,13 +107,14 @@ async def get_music_room_current_user_schedule(user_id: CURRENT_USER_ID_DEPENDEN
 
 
 async def _get_personal_ics(user: ViewUser) -> AsyncGenerator[bytes, None]:
-    nonhidden = []
-    for association in user.favorites_association:
-        if not association.hidden:
-            nonhidden.append(association)
+    hidden = set(user.hidden_event_groups)
+    predefined = await predefined_repository.get_user_predefined(user.id)
+    all_user_event_groups = set(user.favorite_event_groups) | set(predefined)
+
+    nonhidden = all_user_event_groups - hidden
     paths = set()
-    for association in nonhidden:
-        event_group = await event_group_repository.read(association.group_id)
+    for event_group_id in nonhidden:
+        event_group = await event_group_repository.read(event_group_id)
         if event_group.path is None:
             raise HTTPException(
                 status_code=501,
