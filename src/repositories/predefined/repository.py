@@ -13,7 +13,7 @@ class PredefinedRepository:
         user = await user_repository.read(user_id)
         assert user is not None
         predefind_user = self.storage.get_user(user.email)
-        event_group_mapping = await event_group_repository.batch_read_ids_by_aliases(predefind_user.favorites)
+        event_group_mapping = await event_group_repository.batch_read_ids_by_aliases(predefind_user.groups)
         return list(event_group_mapping.values())
 
 
