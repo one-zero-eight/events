@@ -79,6 +79,15 @@ class SqlUserRepository:
         async with self._create_session() as session:
             return await CRUD.read_all(session)
 
+    async def read_mapping_by_emails(self, emails: list[str]) -> dict[str, int | None]:
+        async with self._create_session() as session:
+            q = select(User.email, User.id).where(User.email.in_(emails))
+            mapping = (await session.execute(q)).all()
+            result = dict.fromkeys(emails)
+            for email, user_id in mapping:
+                result[email] = user_id
+            return result
+
     async def read_id_by_email(self, email: str) -> int:
         async with self._create_session() as session:
             user_id = await session.scalar(select(User.id).where(User.email == email))
