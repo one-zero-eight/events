@@ -5,16 +5,11 @@ on:
     branches:
       - main
   workflow_dispatch:
-    deploy_staging:
-      description: 'Should deploy to staging server'
-      type: boolean
-      required: false
-      default: true
-    deploy_production:
-      description: 'Should deploy to production server'
-      type: boolean
-      required: false
-      default: false
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        type: environment
+        required: true
 
 env:
   # Use GitHub Container Registry
@@ -59,7 +54,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   deploy-staging:
-    if: github.repository_owner == 'one-zero-eight' && ((github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_staging == 'true') || (github.event_name == 'push' && github.ref == 'refs/heads/main'))
+    if: github.repository_owner == 'one-zero-eight' && ((github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging') || (github.event_name == 'push' && github.ref == 'refs/heads/main'))
     name: Deploy to staging server
     needs: build-and-push-image
     runs-on: self-hosted
@@ -83,7 +78,7 @@ jobs:
             bash "${{ secrets.DEPLOY_SCRIPT }}" "${{ needs.build-and-push-image.outputs.imageid }}"
 
   deploy-production:
-    if: github.repository_owner == 'one-zero-eight' && (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_production == 'true')
+    if: github.repository_owner == 'one-zero-eight' && (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
     name: Deploy to production server
     needs: build-and-push-image
     runs-on: self-hosted
