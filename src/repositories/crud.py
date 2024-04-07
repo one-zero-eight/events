@@ -19,45 +19,45 @@ UpdateType = TypeVar("UpdateType", bound=PydanticModel)
 class AbstractCRUDRepository(Generic[CreateType, ViewType, UpdateType], metaclass=ABCMeta):
     @abstractmethod
     async def create(self, session: AsyncSession, data: CreateType) -> ViewType:
-        ...
+        pass
 
     @abstractmethod
     async def create_if_not_exists(self, session: AsyncSession, data: CreateType) -> ViewType | None:
-        ...
+        pass
 
     @abstractmethod
     async def batch_create(self, session: AsyncSession, data: list[CreateType]) -> list[ViewType]:
-        ...
+        pass
 
     @abstractmethod
     async def read(self, session: AsyncSession, **pkeys) -> ViewType | None:
-        ...
+        pass
 
     @abstractmethod
     async def batch_read(self, session: AsyncSession, pkeys: list[dict[str, ...]]) -> list[ViewType]:
-        ...
+        pass
 
     @abstractmethod
     async def read_all(self, session: AsyncSession) -> list[ViewType]:
-        ...
+        pass
 
     @abstractmethod
     async def read_by(self, session: AsyncSession, only_first: bool, **columns) -> list[ViewType] | ViewType | None:
-        ...
+        pass
 
     @abstractmethod
     async def update(self, session: AsyncSession, data: UpdateType, **pkeys) -> ViewType:
-        ...
+        pass
 
     @abstractmethod
     async def batch_update(
         self, session: AsyncSession, data: list[UpdateType], pkeys: list[dict[str, ...]]
     ) -> list[ViewType]:
-        ...
+        pass
 
     @abstractmethod
     async def delete(self, session: AsyncSession, **pkeys) -> None:
-        ...
+        pass
 
 
 # define generic type
