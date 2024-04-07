@@ -115,7 +115,7 @@ class _GetScheduleAccessKeyResponse(BaseModel):
     access_key: ViewUserScheduleKey
 
 
-@router.get(
+@router.post(
     "/me/get-schedule-access-key",
     responses={200: {"description": "Schedule access key for given resource"}},
 )
