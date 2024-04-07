@@ -27,8 +27,6 @@ app = FastAPI(
     ],
     root_path=settings.app_root_path,
     root_path_in_servers=False,
-    swagger_ui_oauth2_redirect_url=None,
-    swagger_ui_parameters={"tryItOutEnabled": True, "persistAuthorization": True, "filter": True},
     generate_unique_id_function=docs.generate_unique_operation_id,
     lifespan=lifespan,
     docs_url=None,
@@ -66,4 +64,6 @@ async def swagger_ui_html(request: Request):
         swagger_js_url="https://api.innohassle.ru/swagger/swagger-ui-bundle.js",
         swagger_css_url="https://api.innohassle.ru/swagger/swagger-ui.css",
         swagger_favicon_url="https://api.innohassle.ru/swagger/favicon.png",
+        oauth2_redirect_url=None,
+        swagger_ui_parameters={"tryItOutEnabled": True, "persistAuthorization": True, "filter": True},
     )
