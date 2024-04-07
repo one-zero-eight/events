@@ -25,6 +25,13 @@ class MusicRoom(SettingsEntityModel):
     "API key for the Music Room API"
 
 
+class Sport(SettingsEntityModel):
+    """Innopolis Sport integration settings"""
+
+    api_url: str = "https://sport.innopolis.university/api"
+    "URL of the Sport API"
+
+
 class Accounts(SettingsEntityModel):
     """InNoHassle-Accounts integration settings"""
 
@@ -55,6 +62,8 @@ class Settings(SettingsEntityModel):
     "InNoHassle-Accounts integration settings"
     music_room: Optional[MusicRoom] = None
     "InNoHassle-MusicRoom integration settings"
+    sport: Sport | None = Sport()
+    "Innopolis Sport integration settings"
 
     @classmethod
     def from_yaml(cls, path: Path) -> "Settings":

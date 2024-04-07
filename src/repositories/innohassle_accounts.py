@@ -45,9 +45,9 @@ class InNoHassleAccounts:
     def get_authorized_client(self) -> httpx.AsyncClient:
         return httpx.AsyncClient(headers={"Authorization": f"Bearer {self.api_jwt_token}"}, base_url=self.api_url)
 
-    async def get_user_by_id(self, user_id: str) -> UserSchema | None:
+    async def get_user_by_id(self, innohassle_id: str) -> UserSchema | None:
         async with self.get_authorized_client() as client:
-            response = await client.get(f"/users/by-id/{user_id}")
+            response = await client.get(f"/users/by-id/{innohassle_id}")
             try:
                 response.raise_for_status()
                 return UserSchema.model_validate(response.json())
@@ -66,6 +66,12 @@ class InNoHassleAccounts:
                 if e.response.status_code == 404:
                     return None
                 raise e
+
+    async def get_sport_token(self, innohassle_id: str) -> str:
+        async with self.get_authorized_client() as client:
+            response = await client.get("/tokens/generate-sport-token", params={"innohassle_id": innohassle_id})
+            response.raise_for_status()
+            return response.json()["access_token"]
 
 
 innohassle_accounts = InNoHassleAccounts(

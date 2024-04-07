@@ -45,6 +45,16 @@ $defs:
     - api_key
     title: MusicRoom
     type: object
+  Sport:
+    additionalProperties: false
+    description: Innopolis Sport integration settings
+    properties:
+      api_url:
+        default: https://sport.innopolis.university/api
+        title: Api Url
+        type: string
+    title: Sport
+    type: object
 additionalProperties: false
 description: Settings for the application. Get settings from `settings.yaml` file.
 properties:
@@ -83,6 +93,12 @@ properties:
     - $ref: '#/$defs/MusicRoom'
     - type: 'null'
     default: null
+  sport:
+    anyOf:
+    - $ref: '#/$defs/Sport'
+    - type: 'null'
+    default:
+      api_url: https://sport.innopolis.university/api
   $schema:
     description: Path to the schema file
     title: Schema

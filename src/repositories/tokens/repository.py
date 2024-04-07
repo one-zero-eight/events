@@ -1,6 +1,5 @@
 __all__ = ["TokenRepository"]
 
-import datetime
 import time
 
 from authlib.jose import JWTClaims
@@ -10,10 +9,6 @@ from pydantic import BaseModel
 from src.repositories.innohassle_accounts import innohassle_accounts
 from src.repositories.users.repository import user_repository
 from src.schemas import CreateUser
-
-
-def aware_utcnow() -> datetime.datetime:
-    return datetime.datetime.now(datetime.timezone.utc)
 
 
 class UserTokenData(BaseModel):
