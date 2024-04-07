@@ -17,7 +17,7 @@ from src.repositories.predefined import PredefinedStorage
 from src.repositories.predefined.repository import predefined_repository
 from src.schemas import ViewUser
 
-TIMEOUT = 10
+TIMEOUT = 60
 MAX_SIZE = 10 * 1024 * 1024
 
 
@@ -193,7 +193,7 @@ async def _get_personal_sport_ics(user: ViewUser) -> bytes:
     _start = _now - datetime.timedelta(days=7)
     _end = _now + datetime.timedelta(days=7)
 
-    async with httpx.AsyncClient(headers={"Authorization": f"Bearer {sport_token}"}) as client:
+    async with httpx.AsyncClient(headers={"Authorization": f"Bearer {sport_token}"}, timeout=TIMEOUT) as client:
         response = await client.get(
             f"{settings.sport.api_url}/calendar/trainings",
             params={"start": _start.isoformat(), "end": _end.isoformat()},
