@@ -93,7 +93,8 @@ class EventGroupWithMissingPath(HTTPException):
     responses = {400: {"description": "Path is not defined for this event group"}}
 
 
-class DBException(Exception): ...
+class DBException(Exception):
+    pass
 
 
 class DBEventGroupDoesNotExistInDb(DBException):
