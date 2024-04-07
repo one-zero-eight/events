@@ -4,6 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.openapi.docs import get_swagger_ui_html
 from starlette.middleware.cors import CORSMiddleware
 
+import src.logging_  # noqa: F401
 from src.api import docs
 from src.api.lifespan import lifespan
 from src.api.routers import routers
@@ -45,10 +46,10 @@ for router in routers:
     app.include_router(router)
 
 if settings.environment == Environment.DEVELOPMENT:
+    from src.logging_ import logger
     import logging
-    import warnings
 
-    warnings.warn("Enable sqlalchemy logging")
+    logger.warn("Enable sqlalchemy logging")
     logging.basicConfig()
     logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
 

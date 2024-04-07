@@ -1,0 +1,38 @@
+version: 1
+disable_existing_loggers: False
+formatters:
+  src:
+    "()": colorlog.ColoredFormatter
+    format: '[%(black)s%(asctime)s%(reset)s] [%(log_color)s%(levelname)s%(reset)s] [%(cyan)sFile "%(relativePath)s", line %(lineno)d%(reset)s] %(message)s'
+  default:
+    "()": colorlog.ColoredFormatter
+    format: '[%(black)s%(asctime)s%(reset)s] [%(log_color)s%(levelname)s%(reset)s] [%(name)s] %(message)s'
+handlers:
+  src:
+    formatter: src
+    class: logging.StreamHandler
+    stream: ext://sys.stdout
+  default:
+    formatter: default
+    class: logging.StreamHandler
+    stream: ext://sys.stdout
+loggers:
+  src:
+    level: DEBUG
+    handlers:
+      - src
+    propagate: no
+  uvicorn.error:
+    level: INFO
+    handlers:
+      - default
+    propagate: no
+  uvicorn.access:
+    level: INFO
+    handlers:
+      - default
+    propagate: no
+  root:
+    level: INFO
+    handlers:
+      - default
