@@ -24,7 +24,7 @@ colorlog = "^6.8.2"
 [tool.poetry.group.prod]
 optional = true
 [tool.poetry.group.prod.dependencies]
-gunicorn = "20.1.0"
+gunicorn = "22.0.0"
 
 [tool.poetry.group.dev]
 optional = true
