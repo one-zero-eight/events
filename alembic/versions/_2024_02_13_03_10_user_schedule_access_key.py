@@ -5,6 +5,7 @@ Revises: 8ff07476cbc4
 Create Date: 2024-02-13 03:10:53.731890
 
 """
+
 # ruff: noqa: E501
 from typing import Sequence, Union
 

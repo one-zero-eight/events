@@ -1,10 +1,11 @@
 """upgrade empty to HEAD
 
 Revision ID: 8ff07476cbc4
-Revises: 
+Revises:
 Create Date: 2024-02-10 23:52:03.482605
 
 """
+
 # ruff: noqa: E501
 from typing import Sequence, Union
 

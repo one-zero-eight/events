@@ -5,6 +5,7 @@ Revises: cba1388a6e8f
 Create Date: 2024-02-13 05:37:56.186458
 
 """
+
 # ruff: noqa: E501
 from typing import Sequence, Union
 

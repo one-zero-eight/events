@@ -6,13 +6,16 @@ $defs:
     properties:
       api_url:
         default: https://api.innohassle.ru/accounts/v0
+        description: URL of the Accounts API
         title: Api Url
         type: string
       well_known_url:
         default: https://api.innohassle.ru/accounts/v0/.well-known
+        description: URL of the well-known endpoint for the Accounts API
         title: Well Known Url
         type: string
       api_jwt_token:
+        description: JWT token for accessing the Accounts API as a service
         format: password
         title: Api Jwt Token
         type: string
@@ -33,9 +36,11 @@ $defs:
     description: InNoHassle-MusicRoom integration settings
     properties:
       api_url:
+        description: URL of the Music Room API
         title: Api Url
         type: string
       api_key:
+        description: API key for the Music Room API
         format: password
         title: Api Key
         type: string
@@ -51,6 +56,7 @@ $defs:
     properties:
       api_url:
         default: https://sport.innopolis.university/api
+        description: URL of the Sport API
         title: Api Url
         type: string
     title: Sport
@@ -60,14 +66,17 @@ description: Settings for the application. Get settings from `settings.yaml` fil
 properties:
   app_root_path:
     default: ''
+    description: Prefix for the API path (e.g. '/api/v0')
     title: App Root Path
     type: string
   environment:
     allOf:
     - $ref: '#/$defs/Environment'
     default: development
+    description: App environment
   db_url:
     default: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
+    description: PostgreSQL database connection URL
     format: password
     title: Db Url
     type: string
@@ -77,12 +86,15 @@ properties:
     - https://innohassle.ru
     - https://pre.innohassle.ru
     - http://localhost:3000
+    description: 'Allowed origins for CORS: from which domains requests to the API
+      are allowed'
     items:
       type: string
     title: Cors Allow Origins
     type: array
   predefined_dir:
     default: predefined
+    description: Path to the directory with predefined data
     format: path
     title: Predefined Dir
     type: string
@@ -93,12 +105,14 @@ properties:
     - $ref: '#/$defs/MusicRoom'
     - type: 'null'
     default: null
+    description: InNoHassle-MusicRoom integration settings
   sport:
     anyOf:
     - $ref: '#/$defs/Sport'
     - type: 'null'
     default:
       api_url: https://sport.innopolis.university/api
+    description: Innopolis Sport integration settings
   $schema:
     description: Path to the schema file
     title: Schema
