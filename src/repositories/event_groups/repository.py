@@ -39,6 +39,8 @@ class SqlEventGroupRepository:
             return await CRUD.create(session, group)
 
     async def batch_create(self, groups: list[CreateEventGroup]) -> list[ViewEventGroup]:
+        if not groups:
+            return []
         async with self._create_session() as session:
             return await CRUD.batch_create(session, groups)
 
@@ -82,6 +84,8 @@ class SqlEventGroupRepository:
             return await CRUD.update(session, data=event_group, id=event_group_id)
 
     async def batch_update(self, event_groups: dict[int, "UpdateEventGroup"]) -> list["ViewEventGroup"]:
+        if not event_groups:
+            return []
         async with self._create_session() as session:
             data = list(event_groups.values())
 

@@ -36,6 +36,8 @@ class SqlTagRepository:
             return created
 
     async def batch_create_or_read(self, tags: list["CreateTag"]) -> list[ViewTag]:
+        if not tags:
+            return []
         async with self._create_session() as session:
             q = (
                 insert(Tag)
@@ -97,6 +99,9 @@ class SqlTagRepository:
             await session.commit()
 
     async def batch_set_tags_to_event_group(self, tags_mapping: dict[int, list[int]]) -> None:
+        if not tags_mapping:
+            return None
+
         async with self._create_session() as session:
             table = Tag.__tags_associations__[EventGroup.__tablename__]
             # clear all tags

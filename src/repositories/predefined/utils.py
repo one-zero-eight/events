@@ -20,13 +20,25 @@ async def setup_predefined_data():
 
     # ------------------- Predefined data -------------------
 
-    with (settings.predefined_dir / "innopolis_user_data.json").open(encoding="utf-8") as users_file:
-        users_json = json.load(users_file)
-    with (settings.predefined_dir / "categories.json").open(encoding="utf-8") as categories_file:
-        categories = Categories.model_validate_json(categories_file.read())
+    # check for file existing
+    users_path = settings.predefined_dir / "innopolis_user_data.json"
+    categories_path = settings.predefined_dir / "categories.json"
+    if not users_path.exists():
+        users_json = {"users": []}
+    else:
+        with (settings.predefined_dir / "innopolis_user_data.json").open(encoding="utf-8") as users_file:
+            users_json = json.load(users_file)
+    if not categories_path.exists():
+        categories = Categories()
+    else:
+        with (settings.predefined_dir / "categories.json").open(encoding="utf-8") as categories_file:
+            categories = Categories.model_validate_json(categories_file.read())
     categories_jsons = []
 
     for category in categories.categories:
+        category_path = settings.predefined_dir / category.path
+        if not category_path.exists():
+            continue
         with (settings.predefined_dir / category.path).open(encoding="utf-8") as category_file:
             category_json = json.load(category_file)
             categories_jsons.append(category_json)

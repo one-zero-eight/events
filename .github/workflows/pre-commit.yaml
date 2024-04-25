@@ -14,7 +14,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.12'
       #----------------------------------------------
       #       Install Poetry if not cached
       #----------------------------------------------
@@ -23,12 +23,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.local  # the path depends on the OS
-          key: poetry-1.7.1  # increment to reset cache
+          key: poetry-1.8.2  # increment to reset cache
       - name: Install Poetry
         if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
         with:
-          version: '1.7.1'
+          version: '1.8.2'
           virtualenvs-create: true
           virtualenvs-in-project: true
       #----------------------------------------------
