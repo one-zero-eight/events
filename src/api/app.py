@@ -53,6 +53,12 @@ if settings.environment == Environment.DEVELOPMENT:
     logging.basicConfig()
     logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
 
+# Prometheus metrics
+if True:
+    from prometheus_fastapi_instrumentator import Instrumentator
+
+    Instrumentator().instrument(app).expose(app)
+
 
 @app.get("/docs", tags=["System"], include_in_schema=False)
 async def swagger_ui_html(request: Request):
