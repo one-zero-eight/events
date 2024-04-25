@@ -57,7 +57,7 @@ if settings.environment == Environment.DEVELOPMENT:
 if True:
     from prometheus_fastapi_instrumentator import Instrumentator
 
-    Instrumentator().instrument(app).expose(app)
+    Instrumentator(excluded_handlers=["/metrics"]).instrument(app).expose(app)
 
 
 @app.get("/docs", tags=["System"], include_in_schema=False)
