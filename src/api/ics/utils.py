@@ -13,7 +13,6 @@ from pydantic import BaseModel, TypeAdapter
 from src.config import settings
 from src.repositories.event_groups.repository import event_group_repository
 from src.repositories.innohassle_accounts import innohassle_accounts
-from src.repositories.predefined import PredefinedStorage
 from src.repositories.predefined.repository import predefined_repository
 from src.schemas import ViewUser
 
@@ -23,6 +22,10 @@ MAX_SIZE = 10 * 1024 * 1024
 
 def aware_utcnow() -> datetime.datetime:
     return datetime.datetime.now(datetime.timezone.utc)
+
+
+def locate_ics_by_path(path: str) -> Path:
+    return settings.predefined_dir / "ics" / path
 
 
 async def _generate_ics_from_url(url: str, headers: dict = None) -> AsyncGenerator[bytes, None]:
@@ -93,7 +96,7 @@ async def _get_personal_ics(user: ViewUser) -> AsyncGenerator[bytes, None]:
                 status_code=501,
                 detail="Can not create .ics file for event group on the fly (set static .ics file for the event group",
             )
-        ics_path = PredefinedStorage.locate_ics_by_path(event_group.path)
+        ics_path = locate_ics_by_path(event_group.path)
         paths.add(ics_path)
     ical_generator = _generate_ics_from_multiple(user, *paths)
     return ical_generator

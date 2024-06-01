@@ -45,7 +45,7 @@ class SqlTagRepository:
                     index_elements=[Tag.alias, Tag.type],
                     set_={"id": Tag.id},
                 )
-                .values([tag.dict() for tag in tags])
+                .values([tag.model_dump() for tag in tags])
                 .options(
                     selectinload(Tag.ownerships),
                 )
@@ -133,4 +133,4 @@ class SqlTagRepository:
             await session.commit()
 
 
-tag_repository = SqlTagRepository()
+tag_repository: SqlTagRepository = SqlTagRepository()

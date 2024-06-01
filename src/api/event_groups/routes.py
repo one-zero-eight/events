@@ -1,14 +1,14 @@
 import aiofiles
 import icalendar
-from fastapi import UploadFile, HTTPException
+from fastapi import UploadFile, HTTPException, Body
 from sqlalchemy.exc import IntegrityError
 from starlette.responses import JSONResponse
 
 from src.api.dependencies import (
-    CURRENT_USER_ID_DEPENDENCY,
     VERIFY_PARSER_DEPENDENCY,
 )
 from src.api.event_groups import router
+from src.api.ics.utils import locate_ics_by_path
 from src.exceptions import (
     EventGroupNotFoundException,
     EventGroupWithMissingPath,
@@ -17,8 +17,7 @@ from src.exceptions import (
     ForbiddenException,
 )
 from src.repositories.event_groups.repository import event_group_repository
-from src.repositories.predefined.repository import PredefinedStorage
-from src.schemas import ViewEventGroup, ListEventGroupsResponse, CreateEventGroup, UpdateEventGroup, OwnershipEnum
+from src.schemas import ViewEventGroup, ListEventGroupsResponse, CreateEventGroup, UpdateEventGroup
 
 
 @router.post(
@@ -33,15 +32,34 @@ from src.schemas import ViewEventGroup, ListEventGroupsResponse, CreateEventGrou
 )
 async def create_event_group(
     event_group: CreateEventGroup,
-    current_user_id: CURRENT_USER_ID_DEPENDENCY,
+    # current_user_id: CURRENT_USER_ID_DEPENDENCY,
+    _: VERIFY_PARSER_DEPENDENCY,
 ):
     try:
         event_group_view = await event_group_repository.create(event_group)
-        await event_group_repository.setup_ownership(event_group_view.id, current_user_id, OwnershipEnum.owner)
-        return JSONResponse(status_code=201, content=event_group_view.dict())
+        # await event_group_repository.setup_ownership(event_group_view.id, current_user_id, OwnershipEnum.owner)
+        return JSONResponse(status_code=201, content=event_group_view.model_dump())
     except IntegrityError as integrity_error:
         detail = integrity_error.args[0]
         raise HTTPException(status_code=409, detail=detail)
+
+
+@router.post(
+    "/batch-create-or-read",
+    responses={
+        201: {"description": "List of created or existing event groups", "model": ListEventGroupsResponse},
+        **IncorrectCredentialsException.responses,
+        **NoCredentialsException.responses,
+    },
+    status_code=201,
+)
+async def batch_create_event_groups(
+    # current_user_id: CURRENT_USER_ID_DEPENDENCY,
+    _: VERIFY_PARSER_DEPENDENCY,
+    event_groups: list[CreateEventGroup] = Body(embed=True),
+) -> ListEventGroupsResponse:
+    created_groups = await event_group_repository.batch_create_or_read(event_groups)
+    return ListEventGroupsResponse.from_iterable(created_groups)
 
 
 @router.put(
@@ -205,13 +223,15 @@ async def set_event_group_ics(
 
     content = calendar.to_ical()
 
-    ics_path = PredefinedStorage.locate_ics_by_path(event_group_path)
+    ics_path = locate_ics_by_path(event_group_path)
 
-    async with aiofiles.open(ics_path, "rb") as f:
-        old_content = await f.read()
-        if old_content == content:
-            return JSONResponse(status_code=200, content={"detail": "File already exists and content is the same"})
-
+    if ics_path.exists():
+        async with aiofiles.open(ics_path, "rb") as f:
+            old_content = await f.read()
+            if old_content == content:
+                return JSONResponse(status_code=200, content={"detail": "File already exists and content is the same"})
+    # make directory if not exists
+    ics_path.parent.mkdir(parents=True, exist_ok=True)
     async with aiofiles.open(ics_path, "wb") as f:
         await f.write(content)
 

@@ -193,7 +193,7 @@ class SqlUserRepository:
                 insert(LinkedCalendar)
                 .values(
                     user_id=user_id,
-                    **calendar.dict(),
+                    **calendar.model_dump(),
                 )
                 .returning(LinkedCalendar)
             )
@@ -250,4 +250,4 @@ class SqlUserRepository:
             await session.commit()
 
 
-user_repository = SqlUserRepository()
+user_repository: SqlUserRepository = SqlUserRepository()

@@ -87,12 +87,12 @@ def CRUDFactory(
             _insert_query = insert(Model).returning(Model)
             if get_options:
                 _insert_query = _insert_query.options(*get_options)
-            obj = await session.scalar(_insert_query, params=data.dict())
+            obj = await session.scalar(_insert_query, params=data.model_dump())
             await session.commit()
             return ViewScheme.model_validate(obj)
 
         async def create_if_not_exists(self, session: AsyncSession, data: CreateScheme) -> ViewScheme | None:
-            q = postgres_insert(Model).values(**data.dict()).on_conflict_do_nothing().returning(Model)
+            q = postgres_insert(Model).values(**data.model_dump()).on_conflict_do_nothing().returning(Model)
             if get_options:
                 q = q.options(*get_options)
             obj = await session.scalar(q)
@@ -106,7 +106,7 @@ def CRUDFactory(
             _insert_query = insert(Model).returning(Model)
             if get_options:
                 _insert_query = _insert_query.options(*get_options)
-            objs = await session.scalars(_insert_query, params=[obj.dict() for obj in data])
+            objs = await session.scalars(_insert_query, params=[obj.model_dump() for obj in data])
             await session.commit()
             return [ViewScheme.model_validate(obj) for obj in objs]
 
@@ -158,7 +158,7 @@ def CRUDFactory(
 
         # ^^^^^^^^^^^^^^^^^^ READ ^^^^^^^^^^^^^^^^^^^ #
         async def update(self, session: AsyncSession, data: UpdateScheme, **pkeys) -> ViewScheme:
-            q = sql_update(Model).values(**pkeys, **data.dict(exclude_unset=True)).returning(Model)
+            q = sql_update(Model).values(**pkeys, **data.model_dump(exclude_unset=True)).returning(Model)
             if get_options:
                 q = q.options(*get_options)
             obj = await session.scalar(q)
@@ -173,7 +173,7 @@ def CRUDFactory(
 
             await session.execute(
                 sql_update(Model),
-                params=[{**pkey, **obj.dict(exclude_unset=True)} for pkey, obj in zip(pkeys, data)],
+                params=[{**pkey, **obj.model_dump(exclude_unset=True)} for pkey, obj in zip(pkeys, data)],
             )
             await session.commit()
 

@@ -1,4 +1,5 @@
 __all__ = [
+    "CreateEventGroupWithoutTags",
     "CreateEventGroup",
     "ViewEventGroup",
     "UpdateEventGroup",
@@ -12,7 +13,7 @@ from urllib.parse import quote
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 
 
-class CreateEventGroup(BaseModel):
+class CreateEventGroupWithoutTags(BaseModel):
     """
     Represents a group instance to be created.
     """
@@ -25,6 +26,10 @@ class CreateEventGroup(BaseModel):
     @field_validator("alias", mode="before")
     def encode_alias_to_uri(cls, v):
         return quote(v)
+
+
+class CreateEventGroup(CreateEventGroupWithoutTags):
+    tags: list["CreateTag"] = Field(default_factory=list)
 
 
 class ViewEventGroup(BaseModel):
@@ -66,14 +71,14 @@ class ListEventGroupsResponse(BaseModel):
     Represents a list of event groups.
     """
 
-    groups: list[ViewEventGroup]
+    event_groups: list[ViewEventGroup]
 
     @classmethod
     def from_iterable(cls, groups: Iterable[ViewEventGroup]) -> "ListEventGroupsResponse":
-        return cls(groups=groups)
+        return cls(event_groups=groups)
 
 
-from src.schemas.tags import ViewTag  # noqa E402
+from src.schemas.tags import ViewTag, CreateTag  # noqa E402
 from src.schemas.ownership import Ownership  # noqa E402
 
 ViewEventGroup.update_forward_refs()

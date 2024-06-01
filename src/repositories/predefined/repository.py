@@ -1,3 +1,4 @@
+from src.logging_ import logger
 from src.repositories.event_groups.repository import event_group_repository
 from src.repositories.predefined import PredefinedStorage
 from src.repositories.users.repository import user_repository
@@ -16,7 +17,9 @@ class PredefinedRepository:
         if predefind_user is None:
             return []
         event_group_mapping = await event_group_repository.batch_read_ids_by_aliases(predefind_user.groups)
-        return list(event_group_mapping.values())
+        if None in event_group_mapping.values():
+            logger.warning(f"User {user.email} has invalid predefined groups: {predefind_user.groups}")
+        return list(filter(None, event_group_mapping.values()))
 
 
 predefined_repository: PredefinedRepository = PredefinedRepository()

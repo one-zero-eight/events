@@ -33,7 +33,8 @@ class SqlEventRepository:
     async def create(self, event: "CreateEvent") -> "ViewEvent":
         async with self._create_session() as session:
             db_event = Event(
-                **event.dict(exclude={"patches"}), patches=[EventPatch(**patch.dict()) for patch in event.patches]
+                **event.model_dump(exclude={"patches"}),
+                patches=[EventPatch(**patch.model_dump()) for patch in event.patches],
             )
             session.add(db_event)
             await session.commit()
@@ -59,7 +60,7 @@ class SqlEventRepository:
         async with self._create_session() as session:
             q = (
                 postgres_insert(EventPatch)
-                .values(parent_id=event_id, **patch.dict())
+                .values(parent_id=event_id, **patch.model_dump())
                 .returning(EventPatch)
                 .options(joinedload(EventPatch.parent))
             )
@@ -78,7 +79,7 @@ class SqlEventRepository:
             q = (
                 update(EventPatch)
                 .where(EventPatch.id == patch_id)
-                .values(**patch.dict(exclude_unset=True))
+                .values(**patch.model_dump(exclude_unset=True))
                 .returning(EventPatch)
             )
             event_patch = await session.scalar(q)

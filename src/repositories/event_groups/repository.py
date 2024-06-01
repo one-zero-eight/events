@@ -1,23 +1,25 @@
 __all__ = ["SqlEventGroupRepository", "event_group_repository"]
 
-from typing import Optional
+from typing import Optional, cast, Iterable
 
 from sqlalchemy import select, update
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.repositories.crud import CRUDFactory, AbstractCRUDRepository
 from src.repositories.ownership import setup_ownership_method
 from src.schemas import ViewEventGroup, CreateEventGroup, UpdateEventGroup, OwnershipEnum
+from src.schemas.event_groups import CreateEventGroupWithoutTags
 from src.storages.sql import SQLAlchemyStorage
 from src.storages.sql.models import EventGroup
 
 CRUD: AbstractCRUDRepository[
-    CreateEventGroup,
+    CreateEventGroupWithoutTags,
     ViewEventGroup,
     UpdateEventGroup,
 ] = CRUDFactory(
     EventGroup,
-    CreateEventGroup,
+    CreateEventGroupWithoutTags,
     ViewEventGroup,
     UpdateEventGroup,
 )
@@ -35,14 +37,57 @@ class SqlEventGroupRepository:
     # ----------------- CRUD ----------------- #
 
     async def create(self, group: CreateEventGroup) -> ViewEventGroup:
-        async with self._create_session() as session:
-            return await CRUD.create(session, group)
+        from src.repositories.tags.repository import tag_repository
 
-    async def batch_create(self, groups: list[CreateEventGroup]) -> list[ViewEventGroup]:
+        tags_ids = []
+        if group.tags:
+            tags_ids = [tag.id for tag in await tag_repository.batch_create_or_read(group.tags)]
+
+        async with self._create_session() as session:
+            # without CRUD
+            q = insert(EventGroup).values(group.model_dump(exclude={"tags"})).returning(EventGroup)
+            obj = await session.scalar(q)
+            if tags_ids:  # add tags
+                q = (
+                    insert(EventGroup.tags_association)
+                    .values([{"object_id": obj.id, "tag_id": tag_id} for tag_id in tags_ids])
+                    .on_conflict_do_nothing()
+                )
+                await session.execute(q)
+            await session.commit()
+            return ViewEventGroup.model_validate(group)
+
+    async def batch_create(self, groups: list[CreateEventGroupWithoutTags]) -> list[ViewEventGroup]:
         if not groups:
             return []
+
         async with self._create_session() as session:
             return await CRUD.batch_create(session, groups)
+
+    async def batch_create_or_read(self, groups: list[CreateEventGroup]) -> list[ViewEventGroup]:
+        from src.repositories.tags.repository import tag_repository
+
+        async with self._create_session() as session:
+            insert_stmt = insert(EventGroup).values([group.model_dump(exclude={"tags"}) for group in groups])
+            update_dict = {c.name: c for c in cast(Iterable, insert_stmt.excluded) if not c.primary_key}
+
+            q = insert_stmt.on_conflict_do_update(index_elements=["alias"], set_=update_dict).returning(EventGroup.id)
+            obj_ids = (await session.scalars(q)).all()
+            await session.commit()
+
+        # set tags
+        _create_tags = list(set(tag for group in groups for tag in group.tags))
+        db_tags = await tag_repository.batch_create_or_read(_create_tags)
+        alias_x_tag = {(tag.alias, tag.type): tag for tag in db_tags}
+        event_group_id_x_tags_ids = dict()
+        for group, group_id in zip(groups, obj_ids):
+            tag_ids = [alias_x_tag[(tag.alias, tag.type)].id for tag in group.tags]
+            event_group_id_x_tags_ids[group_id] = tag_ids
+        await tag_repository.batch_set_tags_to_event_group(event_group_id_x_tags_ids)
+
+        objs = await session.scalars(select(EventGroup).where(EventGroup.id.in_(obj_ids)))
+
+        return [ViewEventGroup.model_validate(obj) for obj in objs]
 
     async def read(self, group_id: int) -> ViewEventGroup:
         async with self._create_session() as session:
@@ -57,10 +102,6 @@ class SqlEventGroupRepository:
     async def read_all(self) -> list[ViewEventGroup]:
         async with self._create_session() as session:
             return await CRUD.read_all(session)
-
-    async def batch_read(self, group_ids: list[int]) -> list[ViewEventGroup]:
-        async with self._create_session() as session:
-            return await CRUD.batch_read(session, pkeys=[{"id": group_id} for group_id in group_ids])
 
     async def read_by_path(self, path: str) -> ViewEventGroup:
         async with self._create_session() as session:
@@ -108,4 +149,4 @@ class SqlEventGroupRepository:
             await session.commit()
 
 
-event_group_repository = SqlEventGroupRepository()
+event_group_repository: SqlEventGroupRepository = SqlEventGroupRepository()

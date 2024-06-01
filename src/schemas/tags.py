@@ -8,7 +8,7 @@ from pydantic import BaseModel, Json, ConfigDict, field_validator
 from src.schemas.ownership import Ownership
 
 
-class CreateTag(BaseModel):
+class CreateTag(BaseModel, frozen=True):
     alias: str
     type: Optional[str] = None
     name: Optional[str] = None

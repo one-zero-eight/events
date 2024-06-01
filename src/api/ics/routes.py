@@ -8,11 +8,11 @@ from src.api.ics.utils import (
     _generate_ics_from_url,
     _get_personal_ics,
     _get_personal_sport_ics,
+    locate_ics_by_path,
 )
 from src.config import settings
 from src.exceptions import EventGroupNotFoundException, ObjectNotFound, ForbiddenException
 from src.repositories.event_groups.repository import event_group_repository
-from src.repositories.predefined import PredefinedStorage
 from src.repositories.users.repository import user_repository
 from src.schemas.linked import LinkedCalendarView
 
@@ -257,7 +257,7 @@ async def get_event_group_ics_by_alias(user_id: int, export_type: str, event_gro
     if event_group is None:
         raise EventGroupNotFoundException()
     if event_group.path:
-        ics_path = PredefinedStorage.locate_ics_by_path(event_group.path)
+        ics_path = locate_ics_by_path(event_group.path)
         return FileResponse(ics_path, media_type="text/calendar")
     else:
         # TODO: create ics file on the fly from events connected to event group
