@@ -2,7 +2,7 @@ __all__ = ["SqlEventGroupRepository", "event_group_repository"]
 
 from typing import Optional, cast, Iterable
 
-from sqlalchemy import select, update
+from sqlalchemy import select, update, delete
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -103,11 +103,11 @@ class SqlEventGroupRepository:
         async with self._create_session() as session:
             return await CRUD.read_all(session)
 
-    async def read_by_path(self, path: str) -> ViewEventGroup:
+    async def read_by_path(self, path: str) -> ViewEventGroup | None:
         async with self._create_session() as session:
             return await CRUD.read_by(session, only_first=True, path=path)
 
-    async def read_by_alias(self, alias: str) -> ViewEventGroup:
+    async def read_by_alias(self, alias: str) -> ViewEventGroup | None:
         async with self._create_session() as session:
             return await CRUD.read_by(session, only_first=True, alias=alias)
 
@@ -133,6 +133,12 @@ class SqlEventGroupRepository:
             return await CRUD.batch_update(
                 session, data=data, pkeys=[{"id": event_group_id} for event_group_id in event_groups.keys()]
             )
+
+    async def delete_by_alias(self, alias: str) -> None:
+        async with self._create_session() as session:
+            q = delete(EventGroup).where(EventGroup.alias == alias)
+            await session.execute(q)
+            await session.commit()
 
     # ^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^ #
 

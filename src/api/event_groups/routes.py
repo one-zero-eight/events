@@ -134,6 +134,28 @@ async def find_event_group_by_alias(
     return event_group
 
 
+@router.delete(
+    "/by-alias",
+    responses={
+        200: {"description": "Event group deleted successfully"},
+        **EventGroupNotFoundException.responses,
+    },
+)
+async def delete_event_group_by_alias(
+    alias: str,
+) -> None:
+    """
+    Delete event group by alias
+    """
+
+    event_group = await event_group_repository.read_by_alias(alias)
+
+    if event_group is None:
+        raise EventGroupNotFoundException()
+
+    await event_group_repository.delete_by_alias(alias)
+
+
 @router.get(
     "/{event_group_id}",
     responses={
