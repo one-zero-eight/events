@@ -21,7 +21,6 @@ class LinenChangeEntry(BaseModel):
 
 class CleaningParserConfig(BaseModel):
     start_date: datetime.date
-    end_date: datetime.date
     cleaning_entries: list[CleaningEntry]
     linen_change_entries: list[LinenChangeEntry]
 
@@ -141,11 +140,7 @@ class LinenChangeEvent(BaseModel):
 
         event.add("dtstart", icalendar.vDate(nearest_weekday(self.date, self.rrule["byday"])))
 
-        rrule = icalendar.vRecur(
-            freq=self.rrule["freq"],
-            byday=self.rrule["byday"],
-            until=datetime.datetime.strptime(self.rrule["until"], "%Y-%m-%d"),
-        )
+        rrule = icalendar.vRecur(freq=self.rrule["freq"], byday=self.rrule["byday"])
         event.add("rrule", rrule)
         event.add("uid", self.get_uid())
         color = get_color(self.location[0])
