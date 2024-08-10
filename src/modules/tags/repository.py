@@ -87,9 +87,12 @@ class SqlTagRepository:
             OwnershipClass = Tag.Ownership
             return await setup_ownership_method(OwnershipClass, session, tag_id, user_id, role_alias)
 
-    async def add_tags_to_event_group(self, event_group_id: int, tag_ids: list[int]) -> None:
+    async def set_tags_to_event_group(self, event_group_id: int, tag_ids: list[int]) -> None:
         async with self._create_session() as session:
             table = Tag.__tags_associations__[EventGroup.__tablename__]
+            q = delete(table).where(table.object_id == event_group_id)
+            await session.execute(q)
+
             q = (
                 insert(table)
                 .values([{"object_id": event_group_id, "tag_id": tag_id} for tag_id in tag_ids])
@@ -123,13 +126,6 @@ class SqlTagRepository:
                 q = insert(table).values(values).on_conflict_do_nothing()
                 await session.execute(q)
 
-            await session.commit()
-
-    async def remove_tags_from_event_group(self, event_group_id: int, tag_ids: list[int]) -> None:
-        async with self._create_session() as session:
-            table = Tag.__tags_associations__[EventGroup.__tablename__]
-            q = delete(table).where(table.object_id == event_group_id).where(table.tag_id.in_(tag_ids))
-            await session.execute(q)
             await session.commit()
 
 

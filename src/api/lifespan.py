@@ -26,13 +26,28 @@ async def setup_repositories() -> SQLAlchemyStorage:
     return storage
 
 
+def setup_predefined_data_from_file():
+    import json
+    from src.modules.predefined.storage import JsonPredefinedUsers
+    from src.modules.predefined.utils import setup_predefined_data_from_object
+
+    # check for file existing
+    users_path = settings.predefined_dir / "innopolis_user_data.json"
+    if not users_path.exists():
+        users_json = {"users": []}
+    else:
+        with users_path.open(encoding="utf-8") as users_file:
+            users_json = json.load(users_file)
+
+    user_storage = JsonPredefinedUsers.from_jsons(users_json)
+    setup_predefined_data_from_object(user_storage)
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    from src.modules.predefined.utils import setup_predefined_data
-
     # Application startup
     storage = await setup_repositories()
-    await setup_predefined_data()
+    setup_predefined_data_from_file()
     yield
 
     # Application shutdown

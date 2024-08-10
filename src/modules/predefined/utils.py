@@ -1,21 +1,13 @@
-import json
-
-
 from src.config import settings
-from src.modules.predefined import PredefinedStorage
+from src.modules.predefined.storage import JsonPredefinedUsers
 
 
-async def setup_predefined_data():
+def setup_predefined_data_from_object(user_storage: JsonPredefinedUsers):
     from src.modules.predefined.repository import predefined_repository
-    # ------------------- Predefined data -------------------
 
-    # check for file existing
+    predefined_repository.update_storage(user_storage)
+    # also save to file
     users_path = settings.predefined_dir / "innopolis_user_data.json"
-    if not users_path.exists():
-        users_json = {"users": []}
-    else:
-        with users_path.open(encoding="utf-8") as users_file:
-            users_json = json.load(users_file)
-
-    predefined_storage = PredefinedStorage.from_jsons(users_json)
-    predefined_repository.update_storage(predefined_storage)
+    users_path.parent.mkdir(parents=True, exist_ok=True)
+    with users_path.open("w", encoding="utf-8") as users_file:
+        users_file.write(user_storage.model_dump_json(indent=2))

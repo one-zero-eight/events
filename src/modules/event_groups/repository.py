@@ -76,20 +76,14 @@ class SqlEventGroupRepository:
             insert_stmt = insert(EventGroup).values(group.model_dump(exclude={"tags"}))
             update_dict = {c.name: c for c in cast(Iterable, insert_stmt.excluded) if not c.primary_key}
             q = insert_stmt.on_conflict_do_update(index_elements=["alias"], set_=update_dict).returning(EventGroup.id)
-            obj_id = (await session.scalar(q)).id
+            obj_id = await session.scalar(q)
+            await session.commit()
 
             tags_ids = []
             if group.tags:
                 tags_ids = [tag.id for tag in await tag_repository.batch_create_or_read(group.tags)]
 
-            if tags_ids:
-                q = (
-                    insert(EventGroup.tags_association)
-                    .values([{"object_id": obj_id, "tag_id": tag_id} for tag_id in tags_ids])
-                    .on_conflict_do_nothing()
-                )
-                await session.execute(q)
-            await session.commit()
+            await tag_repository.set_tags_to_event_group(obj_id, tags_ids)
             return obj_id
 
     async def batch_create_or_read(self, groups: list[CreateEventGroup]) -> list[ViewEventGroup]:
