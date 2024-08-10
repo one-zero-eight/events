@@ -236,7 +236,7 @@ async def set_event_group_ics(
     #     raise OperationIsNotAllowed()
 
     try:
-        from src.repositories.predefined.validators import validate_calendar
+        from src.api.parse.utils import validate_calendar
 
         calendar = icalendar.Calendar.from_ical(await ics_file.read())
         validate_calendar(calendar)
