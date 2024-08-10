@@ -1,8 +1,8 @@
+from fastapi import APIRouter
 from fastapi import HTTPException
 from starlette.responses import FileResponse, StreamingResponse, Response
 
 from src.api.dependencies import CURRENT_USER_ID_DEPENDENCY
-from src.api.ics import router
 from src.api.ics.utils import (
     _get_personal_music_room_ics,
     _generate_ics_from_url,
@@ -15,6 +15,8 @@ from src.exceptions import EventGroupNotFoundException, ObjectNotFound, Forbidde
 from src.repositories.event_groups.repository import event_group_repository
 from src.repositories.users.repository import user_repository
 from src.schemas.linked import LinkedCalendarView
+
+router = APIRouter(prefix="", tags=["ICS"])
 
 
 @router.get(

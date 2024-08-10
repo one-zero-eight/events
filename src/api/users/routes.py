@@ -1,11 +1,12 @@
 from typing import Literal
 
+from fastapi import APIRouter
 from fastapi import HTTPException
 from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 
 from src.api.dependencies import CURRENT_USER_ID_DEPENDENCY
-from src.api.users import router
+from src.exceptions import IncorrectCredentialsException, NoCredentialsException
 from src.exceptions import ObjectNotFound, DBEventGroupDoesNotExistInDb, EventGroupNotFoundException
 from src.repositories.event_groups.repository import event_group_repository
 from src.repositories.predefined.repository import predefined_repository
@@ -13,6 +14,15 @@ from src.repositories.users.repository import user_repository
 from src.schemas import ViewUser
 from src.schemas.linked import LinkedCalendarView, LinkedCalendarCreate
 from src.schemas.users import ViewUserScheduleKey
+
+router = APIRouter(
+    prefix="/users",
+    tags=["Users"],
+    responses={
+        **IncorrectCredentialsException.responses,
+        **NoCredentialsException.responses,
+    },
+)
 
 
 @router.get("/me", responses={200: {"description": "Current user info"}})

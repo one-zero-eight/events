@@ -1,10 +1,12 @@
+from fastapi import APIRouter
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
 
 from src.api.dependencies import VERIFY_PARSER_DEPENDENCY
-from src.api.root import router
 from src.config import settings, Environment
 from src.exceptions import IncorrectCredentialsException, NoCredentialsException
+
+router = APIRouter(prefix="")
 
 
 @router.get(

@@ -1,11 +1,13 @@
+from fastapi import APIRouter
 from fastapi import Body
 from pydantic import BaseModel
 
 from src.api.dependencies import VERIFY_PARSER_DEPENDENCY
-from src.api.tags import router
 from src.exceptions import IncorrectCredentialsException, NoCredentialsException
 from src.repositories.tags.repository import tag_repository
 from src.schemas import ViewTag, CreateTag
+
+router = APIRouter(prefix="/tags", tags=["Tags"])
 
 
 class ListTagsResponse(BaseModel):
