@@ -5,10 +5,7 @@ from typing import Annotated
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from src.exceptions import (
-    NoCredentialsException,
-    IncorrectCredentialsException,
-)
+from src.exceptions import IncorrectCredentialsException
 from src.modules.tokens.repository import TokenRepository
 
 bearer_scheme = HTTPBearer(
@@ -25,7 +22,7 @@ async def get_current_user_id(
     # Prefer header to cookie
     token = bearer and bearer.credentials
     if not token:
-        raise NoCredentialsException()
+        raise IncorrectCredentialsException(no_credentials=True)
     token_data = await TokenRepository.verify_user_token(token, IncorrectCredentialsException())
     return token_data.user_id
 
@@ -35,7 +32,7 @@ def verify_parser(
 ) -> bool:
     token = (bearer and bearer.credentials) or None
     if not token:
-        raise NoCredentialsException()
+        raise IncorrectCredentialsException(no_credentials=True)
     return TokenRepository.verify_parser_token(token, IncorrectCredentialsException())
 
 

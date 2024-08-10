@@ -5,14 +5,11 @@ from fastapi import UploadFile, HTTPException, Body
 from sqlalchemy.exc import IntegrityError
 from starlette.responses import JSONResponse
 
-from src.api.dependencies import (
-    VERIFY_PARSER_DEPENDENCY,
-)
+from src.api.dependencies import VERIFY_PARSER_DEPENDENCY
 from src.exceptions import (
     EventGroupNotFoundException,
     EventGroupWithMissingPath,
     IncorrectCredentialsException,
-    NoCredentialsException,
     ForbiddenException,
 )
 from src.modules.event_groups.repository import event_group_repository
@@ -28,7 +25,6 @@ router = APIRouter(prefix="/event-groups", tags=["Event Groups"])
         201: {"description": "Event group created successfully", "model": ViewEventGroup},
         409: {"description": "Integrity error, unique constraint violation. Return existing event group"},
         **IncorrectCredentialsException.responses,
-        **NoCredentialsException.responses,
     },
     status_code=201,
 )
@@ -51,7 +47,6 @@ async def create_event_group(
     responses={
         201: {"description": "List of created or existing event groups", "model": ListEventGroupsResponse},
         **IncorrectCredentialsException.responses,
-        **NoCredentialsException.responses,
     },
     status_code=201,
 )
@@ -71,7 +66,6 @@ async def batch_create_event_groups(
         **EventGroupNotFoundException.responses,
         **ForbiddenException.responses,
         **IncorrectCredentialsException.responses,
-        **NoCredentialsException.responses,
     },
 )
 async def update_event_group(
@@ -207,7 +201,6 @@ async def list_event_groups() -> ListEventGroupsResponse:
         **EventGroupWithMissingPath.responses,
         **EventGroupNotFoundException.responses,
         **IncorrectCredentialsException.responses,
-        **NoCredentialsException.responses,
     },
     status_code=201,
     tags=["ICS"],

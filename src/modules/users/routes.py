@@ -6,8 +6,8 @@ from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 
 from src.api.dependencies import CURRENT_USER_ID_DEPENDENCY
-from src.exceptions import IncorrectCredentialsException, NoCredentialsException
-from src.exceptions import ObjectNotFound, DBEventGroupDoesNotExistInDb, EventGroupNotFoundException
+from src.exceptions import IncorrectCredentialsException
+from src.exceptions import ObjectNotFound, EventGroupNotFoundException
 from src.modules.event_groups.repository import event_group_repository
 from src.modules.predefined.repository import predefined_repository
 from src.modules.users.linked import LinkedCalendarView, LinkedCalendarCreate
@@ -19,7 +19,6 @@ router = APIRouter(
     tags=["Users"],
     responses={
         **IncorrectCredentialsException.responses,
-        **NoCredentialsException.responses,
     },
 )
 
@@ -56,11 +55,8 @@ async def add_favorite(user_id: CURRENT_USER_ID_DEPENDENCY, group_id: int) -> Vi
     """
     Add favorite to current user
     """
-    try:
-        updated_user = await user_repository.add_favorite(user_id, group_id)
-        return updated_user
-    except DBEventGroupDoesNotExistInDb as e:
-        raise EventGroupNotFoundException() from e
+    updated_user = await user_repository.add_favorite(user_id, group_id)
+    return updated_user
 
 
 @router.delete(

@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from src.api.dependencies import VERIFY_PARSER_DEPENDENCY
-from src.exceptions import IncorrectCredentialsException, NoCredentialsException
+from src.exceptions import IncorrectCredentialsException
 
 router = APIRouter(prefix="", tags=["Predefined"])
 
@@ -13,7 +13,6 @@ router = APIRouter(prefix="", tags=["Predefined"])
             "description": "Predefined data updated successfully",
         },
         **IncorrectCredentialsException.responses,
-        **NoCredentialsException.responses,
     },
 )
 async def update_predefined_data(_: VERIFY_PARSER_DEPENDENCY):

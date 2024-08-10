@@ -3,7 +3,7 @@ from fastapi import Body
 from pydantic import BaseModel
 
 from src.api.dependencies import VERIFY_PARSER_DEPENDENCY
-from src.exceptions import IncorrectCredentialsException, NoCredentialsException
+from src.exceptions import IncorrectCredentialsException
 from src.modules.tags.repository import tag_repository
 from src.modules.tags.schemas import ViewTag, CreateTag
 
@@ -33,7 +33,6 @@ async def list_tags() -> ListTagsResponse:
     responses={
         200: {"description": "List of created or existing tags", "model": ListTagsResponse},
         **IncorrectCredentialsException.responses,
-        **NoCredentialsException.responses,
     },
 )
 async def batch_create_tags(_: VERIFY_PARSER_DEPENDENCY, tags: list[CreateTag] = Body(embed=True)) -> ListTagsResponse:

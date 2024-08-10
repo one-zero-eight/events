@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.expression import exists
 
-from src.exceptions import DBEventGroupDoesNotExistInDb
+from src.exceptions import EventGroupNotFoundException
 from src.modules.crud import CRUDFactory, AbstractCRUDRepository
 from src.modules.users.linked import LinkedCalendarCreate, LinkedCalendarView
 from src.modules.users.schemas import CreateUser, ViewUser, UpdateUser, ViewUserScheduleKey
@@ -109,7 +109,7 @@ class SqlUserRepository:
             favorite_exists = await session.scalar(exists(EventGroup.id).where(EventGroup.id == favorite_id).select())
 
             if not favorite_exists:
-                raise DBEventGroupDoesNotExistInDb(id=favorite_id)
+                raise EventGroupNotFoundException(detail=f"Event group with id {favorite_id} does not exist")
 
             q = (
                 insert(UserXFavoriteEventGroup)
