@@ -8,7 +8,6 @@ __all__ = [
 
 import datetime
 from typing import Optional, Iterable
-from urllib.parse import quote
 
 from pydantic import BaseModel, Field, ConfigDict, field_validator
 
@@ -24,10 +23,6 @@ class CreateEventGroupWithoutTags(BaseModel):
     name: str
     path: Optional[str] = None
     description: Optional[str] = None
-
-    @field_validator("alias", mode="before")
-    def encode_alias_to_uri(cls, v):
-        return quote(v)
 
 
 class CreateEventGroup(CreateEventGroupWithoutTags):
