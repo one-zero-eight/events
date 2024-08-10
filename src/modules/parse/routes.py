@@ -44,7 +44,7 @@ async def save_ics(calendar: icalendar.Calendar, event_group_path: str, event_gr
 
 @router.post(
     "/cleaning",
-    **IncorrectCredentialsException.responses,
+    responses={**IncorrectCredentialsException.responses},
 )
 async def parse_cleaning_schedule(_: VERIFY_PARSER_DEPENDENCY, config: CleaningParserConfig) -> None:
     cleaning_tag = CreateTag(alias="cleaning", name="Cleaning", type="category")

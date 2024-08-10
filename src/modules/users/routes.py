@@ -10,10 +10,9 @@ from src.exceptions import IncorrectCredentialsException, NoCredentialsException
 from src.exceptions import ObjectNotFound, DBEventGroupDoesNotExistInDb, EventGroupNotFoundException
 from src.modules.event_groups.repository import event_group_repository
 from src.modules.predefined.repository import predefined_repository
-from src.modules.users.repository import user_repository
-from src.schemas import ViewUser
 from src.modules.users.linked import LinkedCalendarView, LinkedCalendarCreate
-from src.modules.users.schemas import ViewUserScheduleKey
+from src.modules.users.repository import user_repository
+from src.modules.users.schemas import ViewUser, ViewUserScheduleKey
 
 router = APIRouter(
     prefix="/users",

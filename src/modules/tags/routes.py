@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from src.api.dependencies import VERIFY_PARSER_DEPENDENCY
 from src.exceptions import IncorrectCredentialsException, NoCredentialsException
 from src.modules.tags.repository import tag_repository
-from src.schemas import ViewTag, CreateTag
+from src.modules.tags.schemas import ViewTag, CreateTag
 
 router = APIRouter(prefix="/tags", tags=["Tags"])
 

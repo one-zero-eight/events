@@ -8,9 +8,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.modules.crud import CRUDFactory, AbstractCRUDRepository
 from src.modules.ownership import setup_ownership_method
-from src.schemas import ViewEventGroup, CreateEventGroup, UpdateEventGroup
 from src.modules.ownership import OwnershipEnum
-from src.modules.event_groups.schemas import CreateEventGroupWithoutTags
+from src.modules.event_groups.schemas import (
+    CreateEventGroupWithoutTags,
+    ViewEventGroup,
+    CreateEventGroup,
+    UpdateEventGroup,
+)
 from src.storages.sql import SQLAlchemyStorage
 from src.storages.sql.models import EventGroup
 

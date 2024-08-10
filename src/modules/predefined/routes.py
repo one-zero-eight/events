@@ -3,7 +3,7 @@ from fastapi import APIRouter
 from src.api.dependencies import VERIFY_PARSER_DEPENDENCY
 from src.exceptions import IncorrectCredentialsException, NoCredentialsException
 
-router = APIRouter("", tags=["Predefined"])
+router = APIRouter(prefix="", tags=["Predefined"])
 
 
 @router.post(
