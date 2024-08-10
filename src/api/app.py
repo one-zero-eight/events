@@ -3,6 +3,7 @@ __all__ = ["app"]
 from fastapi import FastAPI, Request
 from fastapi.openapi.docs import get_swagger_ui_html
 from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import RedirectResponse
 
 import src.logging_  # noqa: F401
 from src.api import docs
@@ -58,6 +59,12 @@ if True:
     from prometheus_fastapi_instrumentator import Instrumentator
 
     Instrumentator(excluded_handlers=["/metrics"]).instrument(app).expose(app)
+
+
+@app.get("/", tags=["System"], include_in_schema=False)
+async def redirect_from_root(request: Request):
+    # Redirect to docs
+    return RedirectResponse(request.url_for("swagger_ui_html"), status_code=302)
 
 
 @app.get("/docs", tags=["System"], include_in_schema=False)

@@ -9,10 +9,10 @@ from src.storages.sql import SQLAlchemyStorage
 
 
 async def setup_repositories() -> SQLAlchemyStorage:
-    from src.repositories.users.repository import user_repository
-    from src.repositories.event_groups.repository import event_group_repository
-    from src.repositories.tags.repository import tag_repository
-    from src.repositories.innohassle_accounts import innohassle_accounts
+    from src.modules.users.repository import user_repository
+    from src.modules.event_groups.repository import event_group_repository
+    from src.modules.tags.repository import tag_repository
+    from src.modules.innohassle_accounts import innohassle_accounts
 
     # ------------------- Repositories Dependencies -------------------
 
@@ -28,7 +28,7 @@ async def setup_repositories() -> SQLAlchemyStorage:
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    from src.repositories.predefined.utils import setup_predefined_data
+    from src.modules.predefined.utils import setup_predefined_data
 
     # Application startup
     storage = await setup_repositories()

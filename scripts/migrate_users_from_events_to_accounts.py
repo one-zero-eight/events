@@ -1,7 +1,7 @@
 import argparse
 
 from src.config import settings
-from src.repositories.users.repository import user_repository
+from src.modules.users.repository import user_repository
 from src.storages.sql import SQLAlchemyStorage
 
 
