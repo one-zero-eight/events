@@ -1,4 +1,5 @@
 import datetime
+import re
 from typing import Generator
 
 import icalendar
@@ -15,6 +16,7 @@ class Entry(BaseModel):
     location: str | None = None
     location_ru: str | None = None
     when: list[str] = Field(examples=[["1 10:00-12:00", "2-6 10:00-12:00"]])
+    buddy: bool = False
 
     @field_validator("when", mode="before")
     def string_to_list(cls, v):
@@ -31,10 +33,17 @@ class AcademicGroup(BaseModel):
     labs: Entry | None = None
 
 
+class BuddyGroup(BaseModel):
+    number: str
+    name: str
+    tg: str
+
+
 class BootcampParserConfig(BaseModel):
     when: str = Field(examples=["2024.08"])
-    academic_groups: list[AcademicGroup]
     general_events: list[Entry]
+    academic_groups: list[AcademicGroup]
+    buddy_groups: list[BuddyGroup]
 
 
 class BootcampEvent(BaseModel):
@@ -45,12 +54,17 @@ class BootcampEvent(BaseModel):
     rrule: icalendar.vRecur | None
     description: str | None
     location: str | None
+    buddy: bool = False
+    sequence: int = 0
 
     def get_uid(self) -> str:
         """
         Get unique id of the event
         """
-        string_to_hash = str(("bootcamp", self.summary, self.location, self.dtstart))
+        if self.buddy:
+            string_to_hash = str(("bootcamp", "buddy", self.dtstart))
+        else:
+            string_to_hash = str(("bootcamp", self.summary, self.location, self.dtstart))
         hash_ = crc32(string_to_hash.encode("utf-8"))
         return "%x#bootcamp@innohassle.ru" % abs(hash_)
 
@@ -68,7 +82,9 @@ class BootcampEvent(BaseModel):
         event.add("dtend", icalendar.vDatetime(self.dtend))
         if self.rrule:
             event.add("rrule", self.rrule)
+
         event.add("uid", self.get_uid())
+        event.add("sequence", self.sequence)
         if "Breakfast" in self.summary or "Lunch" in self.summary or "Dinner" in self.summary:
             color = get_color("Lunch")
         else:
@@ -102,6 +118,7 @@ class BootcampParser:
                     rrule=rrule,
                     description=entry.instructor,
                     location=(entry.location_ru or entry.location) if ru else entry.location,
+                    buddy=entry.buddy,
                 )
                 events.append(event)
         return events
@@ -174,10 +191,45 @@ class BootcampParser:
 
         return events
 
-    def parse(self) -> Generator[tuple[AcademicGroup, list[BootcampEvent]], None, None]:
+    def parse_buddy_group(self, buddy_group: BuddyGroup) -> list[BootcampEvent]:
+        events = []
+
+        for entry in self.config.general_events:
+            # if buddy name is cyrillic, then it's a ru buddy group
+            is_ru = re.match(r"[\u0400-\u04FF]", buddy_group.name)
+
+            if is_ru:
+                subject = entry.subject_ru or entry.subject
+                location = entry.location_ru or entry.location
+            else:
+                subject = entry.subject
+                location = entry.location
+
+            if entry.buddy:
+                for when in entry.when:
+                    dtstart, dtend, rrule = self.when_str_to_datetimes(when)
+                    event = BootcampEvent(
+                        summary=f"{subject} {buddy_group.name}",
+                        dtstart=dtstart,
+                        dtend=dtend,
+                        rrule=rrule,
+                        location=location or buddy_group.tg,
+                        description=f"{buddy_group.name} {buddy_group.tg}",
+                        buddy=True,
+                        sequence=1,
+                    )
+                    events.append(event)
+
+        return events
+
+    def parse(self) -> Generator[tuple[AcademicGroup | BuddyGroup, list[BootcampEvent]], None, None]:
         general_events = self.parse_general_events()
         ru_general_events = self.parse_general_events(ru=True)
 
         for academic_group in self.config.academic_groups:
             events = self.parse_academic_group(academic_group, general_events, ru_general_events)
             yield academic_group, events
+
+        for buddy_group in self.config.buddy_groups:
+            events = self.parse_buddy_group(buddy_group)
+            yield buddy_group, events

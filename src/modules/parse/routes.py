@@ -11,7 +11,7 @@ from src.api.dependencies import VERIFY_PARSER_DEPENDENCY
 from src.exceptions import IncorrectCredentialsException
 from src.modules.event_groups.repository import event_group_repository
 from src.modules.event_groups.schemas import CreateEventGroup
-from src.modules.parse.bootcamp import BootcampParserConfig, BootcampParser
+from src.modules.parse.bootcamp import BootcampParserConfig, BootcampParser, AcademicGroup, BuddyGroup
 from src.modules.parse.cleaning import CleaningParserConfig, CleaningParser, CleaningEvent, LinenChangeEvent
 from src.modules.parse.utils import sluggify, locate_ics_by_path, get_base_calendar
 from src.modules.tags.schemas import CreateTag
@@ -113,25 +113,42 @@ async def parse_cleaning_schedule(_: VERIFY_PARSER_DEPENDENCY, config: CleaningP
 async def parse_bootcamp_schedule(_: VERIFY_PARSER_DEPENDENCY, config: BootcampParserConfig) -> None:
     bootcamp_tag = CreateTag(alias="bootcamp2024", name="Bootcamp", type="category")
     academic_tag = CreateTag(alias="academic", name="Academic", type="bootcamp2024")
+    buddy_tag = CreateTag(alias="buddy", name="Buddy", type="bootcamp2024")
     parser = BootcampParser(config)
 
-    for academic_group, events in parser.parse():
+    for group, events in parser.parse():
         calendar = get_base_calendar()
-        calendar["x-wr-calname"] = f"Bootcamp: {academic_group.name}"
 
         for event in events:
             vevent = event.get_vevent()
             calendar.add_component(vevent)
 
-        group_alias = f"bootcamp-academic-{sluggify(academic_group.name)}"
-        path = f"bootcamp/{group_alias}.ics"
+        if isinstance(group, AcademicGroup):
+            calendar["x-wr-calname"] = f"Bootcamp: {group.name}"
+            group_alias = f"bootcamp-academic-{sluggify(group.name)}"
+            path = f"bootcamp/{group_alias}.ics"
 
-        event_group = CreateEventGroup(
-            alias=group_alias,
-            name=f"{academic_group.name}",
-            description=f"Bootcamp schedule for {academic_group.name}",
-            tags=[bootcamp_tag, academic_tag],
-            path=path,
-        )
+            event_group = CreateEventGroup(
+                alias=group_alias,
+                name=f"{group.name}",
+                description=f"Bootcamp schedule for {group.name} buddy group",
+                tags=[bootcamp_tag, academic_tag],
+                path=path,
+            )
+        elif isinstance(group, BuddyGroup):
+            calendar["x-wr-calname"] = f"Bootcamp: Buddy group {group.number}"
+            group_alias = f"bootcamp-buddy-group-{group.number}"
+            path = f"bootcamp/{group_alias}.ics"
+
+            event_group = CreateEventGroup(
+                alias=group_alias,
+                name=f"{group.number} - {group.name}",
+                description=f"Bootcamp schedule for buddy group {group.number}",
+                tags=[bootcamp_tag, buddy_tag],
+                path=path,
+            )
+        else:
+            raise NotImplementedError
+
         event_group_id = await event_group_repository.create_or_update(event_group)
         await save_ics(calendar, path, event_group_id)
