@@ -1,3 +1,5 @@
+from urllib.parse import unquote
+
 import aiofiles
 import icalendar
 from fastapi import APIRouter
@@ -116,12 +118,12 @@ async def find_event_group_by_path(
         **EventGroupNotFoundException.responses,
     },
 )
-async def find_event_group_by_alias(
-    alias: str,
-) -> ViewEventGroup:
+async def find_event_group_by_alias(alias: str) -> ViewEventGroup:
     """
     Get event group info by alias
     """
+
+    alias = unquote(alias)
 
     event_group = await event_group_repository.read_by_alias(alias)
 
@@ -137,13 +139,12 @@ async def find_event_group_by_alias(
         **EventGroupNotFoundException.responses,
     },
 )
-async def delete_event_group_by_alias(
-    alias: str,
-) -> None:
+async def delete_event_group_by_alias(alias: str) -> None:
     """
     Delete event group by alias
     """
 
+    alias = unquote(alias)
     event_group = await event_group_repository.read_by_alias(alias)
 
     if event_group is None:

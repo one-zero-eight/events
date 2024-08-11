@@ -1,3 +1,5 @@
+from urllib.parse import unquote
+
 from fastapi import APIRouter
 from fastapi import HTTPException
 from starlette.responses import FileResponse, StreamingResponse, Response
@@ -254,6 +256,7 @@ async def get_event_group_ics_by_alias(user_id: int, export_type: str, event_gro
     Get event group .ics file by id
     """
 
+    event_group_alias = unquote(event_group_alias)
     event_group = await event_group_repository.read_by_alias(event_group_alias)
 
     if event_group is None:
