@@ -69,7 +69,10 @@ class BootcampEvent(BaseModel):
         if self.rrule:
             event.add("rrule", self.rrule)
         event.add("uid", self.get_uid())
-        color = get_color(self.summary)
+        if "Breakfast" in self.summary or "Lunch" in self.summary or "Dinner" in self.summary:
+            color = get_color("Lunch")
+        else:
+            color = get_color(self.summary)
         event.add("color", color)
 
         return event

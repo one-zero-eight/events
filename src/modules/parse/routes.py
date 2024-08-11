@@ -111,8 +111,8 @@ async def parse_cleaning_schedule(_: VERIFY_PARSER_DEPENDENCY, config: CleaningP
     responses={**IncorrectCredentialsException.responses},
 )
 async def parse_bootcamp_schedule(_: VERIFY_PARSER_DEPENDENCY, config: BootcampParserConfig) -> None:
-    bootcamp_tag = CreateTag(alias="bootcamp", name="Bootcamp", type="category")
-    academic_tag = CreateTag(alias="academic", name="Academic", type="bootcamp")
+    bootcamp_tag = CreateTag(alias="bootcamp2024", name="Bootcamp", type="category")
+    academic_tag = CreateTag(alias="academic", name="Academic", type="bootcamp2024")
     parser = BootcampParser(config)
 
     for academic_group, events in parser.parse():
@@ -128,7 +128,7 @@ async def parse_bootcamp_schedule(_: VERIFY_PARSER_DEPENDENCY, config: BootcampP
 
         event_group = CreateEventGroup(
             alias=group_alias,
-            name=f"Bootcamp: {academic_group.name}",
+            name=f"{academic_group.name}",
             description=f"Bootcamp schedule for {academic_group.name}",
             tags=[bootcamp_tag, academic_tag],
             path=path,
