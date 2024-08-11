@@ -26,10 +26,10 @@ class JsonPredefinedUsers(BaseModel):
         return user_storage
 
     def get_users(self) -> list[InJsonUser]:
-        return self.user_storage.users.copy()
+        return self.users.copy()
 
     def get_user(self, email: str) -> InJsonUser | None:
-        for user in self.user_storage.users:
+        for user in self.users:
             if user.email == email:
                 return user
         return None
