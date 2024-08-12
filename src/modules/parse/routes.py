@@ -11,7 +11,7 @@ from src.api.dependencies import VERIFY_PARSER_DEPENDENCY
 from src.exceptions import IncorrectCredentialsException
 from src.modules.event_groups.repository import event_group_repository
 from src.modules.event_groups.schemas import CreateEventGroup
-from src.modules.parse.bootcamp import BootcampParserConfig, BootcampParser, AcademicGroup, BuddyGroup
+from src.modules.parse.bootcamp import BootcampParserConfig, BootcampParser, AcademicGroup, BuddyGroup, Workshop
 from src.modules.parse.cleaning import CleaningParserConfig, CleaningParser, CleaningEvent, LinenChangeEvent
 from src.modules.parse.utils import sluggify, locate_ics_by_path, get_base_calendar
 from src.modules.tags.schemas import CreateTag
@@ -114,6 +114,8 @@ async def parse_bootcamp_schedule(_: VERIFY_PARSER_DEPENDENCY, config: BootcampP
     bootcamp_tag = CreateTag(alias="bootcamp2024", name="Bootcamp", type="category")
     academic_tag = CreateTag(alias="academic", name="Academic", type="bootcamp2024")
     buddy_tag = CreateTag(alias="buddy", name="Buddy", type="bootcamp2024")
+    workshop_tag = CreateTag(alias="bootcamp2024-workshops", name="Workshops", type="category")
+
     parser = BootcampParser(config)
 
     for group, events in parser.parse():
@@ -147,6 +149,28 @@ async def parse_bootcamp_schedule(_: VERIFY_PARSER_DEPENDENCY, config: BootcampP
                 tags=[bootcamp_tag, buddy_tag],
                 path=path,
             )
+        elif isinstance(group, Workshop):
+            calendar["x-wr-calname"] = f"Bootcamp: Workshop {group.subject}"
+            dtstart, dtend, _ = parser.when_str_to_datetimes(group.when)
+            timeslot = dtstart.strftime("%b %d")
+            group_alias = f"bootcamp-workshop-{sluggify(group.subject)}-{sluggify(timeslot)}"
+            path = f"bootcamp/{group_alias}.ics"
+
+            # by date "Aug 12"
+            timeslot_tag = CreateTag(
+                alias=f"bootcamp2024-workshops-timeslot-{sluggify(timeslot)}",
+                name=f"{timeslot}",
+                type="bootcamp2024-workshops-timeslot",
+            )
+
+            event_group = CreateEventGroup(
+                alias=group_alias,
+                name=f"{group.subject}",
+                description=f"Bootcamp workshop {group.subject}",
+                tags=[workshop_tag, timeslot_tag],
+                path=path,
+            )
+
         else:
             raise NotImplementedError
 
