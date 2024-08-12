@@ -152,14 +152,21 @@ async def parse_bootcamp_schedule(_: VERIFY_PARSER_DEPENDENCY, config: BootcampP
         elif isinstance(group, Workshop):
             calendar["x-wr-calname"] = f"Bootcamp: Workshop {group.subject}"
             dtstart, dtend, _ = parser.when_str_to_datetimes(group.when)
-            timeslot = dtstart.strftime("%b %d")
-            group_alias = f"bootcamp-workshop-{sluggify(group.subject)}-{sluggify(timeslot)}"
+            date = dtstart.strftime("%b %d")
+            timeslot = f"{dtstart.strftime('%H:%M')}-{dtend.strftime('%H:%M')}"
+            group_alias = f"bootcamp-workshop-{sluggify(group.subject)}-{sluggify(date)}"
             path = f"bootcamp/{group_alias}.ics"
 
             # by date "Aug 12"
+            date_tag = CreateTag(
+                alias=f"bootcamp2024-workshops-date-{sluggify(date)}",
+                name=date,
+                type="bootcamp2024-workshops",
+            )
+            # by timeslot
             timeslot_tag = CreateTag(
                 alias=f"bootcamp2024-workshops-timeslot-{sluggify(timeslot)}",
-                name=f"{timeslot}",
+                name=timeslot,
                 type="bootcamp2024-workshops-timeslot",
             )
 
@@ -167,7 +174,7 @@ async def parse_bootcamp_schedule(_: VERIFY_PARSER_DEPENDENCY, config: BootcampP
                 alias=group_alias,
                 name=f"{group.subject}",
                 description=f"Bootcamp workshop {group.subject}",
-                tags=[workshop_tag, timeslot_tag],
+                tags=[workshop_tag, date_tag, timeslot_tag],
                 path=path,
             )
 
