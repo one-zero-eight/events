@@ -228,12 +228,12 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
     def make_deadline(event: icalendar.Event) -> icalendar.Event:
         new = icalendar.Event()
         end: datetime.datetime = event["dtend"].dt
-        new["summary"] = "[DEADLINE] " + event["summary"]
         new["dtstart"] = icalendar.vDate(end.date())
         new["uid"] = event["uid"]
         new["dtstamp"] = event["dtstamp"]
-        tag = (event["categories"]).to_ical().decode(encoding="utf-8")
-        course_name = tag.split("]")[1]
+        categories = (event["categories"]).to_ical().decode(encoding="utf-8")
+        course_name = categories.split("]")[1]
+        new["summary"] = event["summary"] + f" - {course_name}"
         new["description"] = "\n".join(
             [
                 f"Course: {course_name}",
@@ -245,8 +245,6 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
 
     def create_quiz(opens: icalendar.Event, closes: icalendar.Event) -> icalendar.Event:
         new = icalendar.Event()
-        quiz_name = opens["SUMMARY"]
-        new["summary"] = "[QUIZ] " + quiz_name.split("opens")[0]
 
         start: datetime.datetime = opens["dtstart"].dt
         start = start.astimezone(pytz.timezone("Europe/Moscow"))
@@ -261,9 +259,9 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
 
         new["uid"] = opens["uid"]
         new["dtstamp"] = opens["dtstamp"]
-        tag = (opens["categories"]).to_ical().decode(encoding="utf-8")
-
-        course_name = tag.split("]")[1]
+        categories = (opens["categories"]).to_ical().decode(encoding="utf-8")
+        course_name = categories.split("]")[1]
+        new["summary"] = opens["summary"].split("opens")[0] + f"- {course_name}"
         new["description"] = "\n".join(
             [
                 f"Course: {course_name}\n",
@@ -301,6 +299,10 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
                     deadline = make_deadline(event)
                     fixed_events.append(deadline)
             else:
+                categories = (event["categories"]).to_ical().decode(encoding="utf-8")
+                if categories:
+                    course_name = categories.split("]")[1]
+                    event["summary"] = event["summary"] + f" - {course_name}"
                 fixed_events.append(event)
         quizes_halfs.sort(key=lambda x: int(x["UID"].split("@")[0]))
         fixed_events += [create_quiz(a, b) for a, b in pairwise(quizes_halfs)]
