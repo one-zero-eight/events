@@ -9,6 +9,7 @@ from zlib import crc32
 import aiofiles
 import httpx
 import icalendar
+import pytz
 from fastapi import HTTPException
 from pydantic import BaseModel, TypeAdapter
 
@@ -227,15 +228,19 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
     def make_deadline(event: icalendar.Event) -> icalendar.Event:
         new = icalendar.Event()
         end: datetime.datetime = event["dtend"].dt
-        new["description"] = event["description"] + f"\n Due to: {(end + datetime.timedelta(hours=3)).time()}"
         new["summary"] = "[DEADLINE] " + event["summary"]
         new["dtstart"] = icalendar.vDate(end.date())
         new["uid"] = event["uid"]
         new["dtstamp"] = event["dtstamp"]
         tag = (event["categories"]).to_ical().decode(encoding="utf-8")
         course_name = tag.split("]")[1]
-        new["description"] = f"Course: {course_name}\n" + event["description"]
-        new["color"] = "darkorange"
+        new["description"] = "\n".join(
+            [
+                f"Course: {course_name}",
+                event["description"],
+                f"Due to: {(end.astimezone(pytz.timezone("Europe/Moscow"))).time()}",
+            ]
+        )
         return new
 
     def create_quiz(opens: icalendar.Event, closes: icalendar.Event) -> icalendar.Event:
@@ -244,7 +249,9 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
         new["summary"] = "[QUIZ] " + quiz_name.split("opens")[0]
 
         start: datetime.datetime = opens["dtstart"].dt
+        start = start.astimezone(pytz.timezone("Europe/Moscow"))
         end: datetime.datetime = closes["dtend"].dt
+        end = end.astimezone(pytz.timezone("Europe/Moscow"))
 
         if start.date() != end.date():
             new["dtstart"] = icalendar.vDate(end.date())
@@ -257,9 +264,13 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
         tag = (opens["categories"]).to_ical().decode(encoding="utf-8")
 
         course_name = tag.split("]")[1]
-        new["description"] = f"Course: {course_name}\n" + opens["description"] + ""
-
-        new["description"] = new["description"] + f"\n Due to: {(end + datetime.timedelta(hours=3)).time()}"
+        new["description"] = "\n".join(
+            [
+                f"Course: {course_name}\n",
+                opens["description"],
+                f"Due to: {(end + datetime.timedelta(hours=3)).time()}",
+            ]
+        )
 
         new["color"] = "darkorange"
         return new
@@ -279,21 +290,22 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
         quizes_halfs = []
         for event in vevents:
             event: icalendar.Event
-            duration = event["DTEND"].dt - event["DTSTART"].dt
-            if duration == datetime.timedelta(0):
-                event_name = event["SUMMARY"]
+            event_timedelta = event["dtend"].dt - event["dtstart"].dt
+            if event_timedelta == datetime.timedelta():
+                event_name = event["summary"]
                 if "closes" in event_name or "opens" in event_name:
                     # QUIZ TYPE
                     quizes_halfs.append(event)
                 else:
                     # DEADLINE TYPE
                     deadline = make_deadline(event)
-                    fixed_events += [deadline]
-                continue
-            fixed_events += [event]
+                    fixed_events.append(deadline)
+            else:
+                fixed_events.append(event)
         quizes_halfs.sort(key=lambda x: int(x["UID"].split("@")[0]))
         fixed_events += [create_quiz(a, b) for a, b in pairwise(quizes_halfs)]
         for event in fixed_events:
+            event["color"] = "darkorange"
             fixed_calendar.add_component(event)
 
         return fixed_calendar
