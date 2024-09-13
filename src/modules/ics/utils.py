@@ -3,13 +3,13 @@ import datetime
 from itertools import pairwise
 from pathlib import Path
 from typing import AsyncGenerator, Optional
+from urllib.parse import quote
 from zlib import crc32
 
 import aiofiles
 import httpx
 import icalendar
 from fastapi import HTTPException
-from icalendar import vDDDTypes
 from pydantic import BaseModel, TypeAdapter
 
 from src.config import settings
@@ -223,31 +223,46 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
     """
     Get schedule in ICS format for the user from user link to moodle calendar;
     """
-    timezone_delta = datetime.timedelta(hours=3)
 
     def make_deadline(event: icalendar.Event) -> icalendar.Event:
-        description = event["DESCRIPTION"]
-        end = event["DTEND"].dt
-        date = end.date()
-        begin = datetime.datetime(day=date.day, year=date.year, month=date.month)
-        name = event["SUMMARY"]
-        event["SUMMARY"] = "[DEADLINE] " + name
-        event["DESCRIPTION"] = description + f"\n Due to: {(end - timezone_delta).time()}"
-        event["DTSTART"] = vDDDTypes(begin)
-        return event
+        new = icalendar.Event()
+        end: datetime.datetime = event["dtend"].dt
+        new["description"] = event["description"] + f"\n Due to: {(end + datetime.timedelta(hours=3)).time()}"
+        new["summary"] = "[DEADLINE] " + event["summary"]
+        new["dtstart"] = icalendar.vDate(end.date())
+        new["uid"] = event["uid"]
+        new["dtstamp"] = event["dtstamp"]
+        tag = (event["categories"]).to_ical().decode(encoding="utf-8")
+        course_name = tag.split("]")[1]
+        new["description"] = f"Course: {course_name}\n" + event["description"]
+        new["color"] = "darkorange"
+        return new
 
     def create_quiz(opens: icalendar.Event, closes: icalendar.Event) -> icalendar.Event:
+        new = icalendar.Event()
         quiz_name = opens["SUMMARY"]
-        opens["SUMMARY"] = "[QUIZ] " + quiz_name.split("opens")[0]
-        opens["DTSTART"] = vDDDTypes(opens["DTSTART"].dt + timezone_delta)
-        opens["DTEND"] = vDDDTypes(closes["DTEND"].dt + timezone_delta)
-        return opens
+        new["summary"] = "[QUIZ] " + quiz_name.split("opens")[0]
 
-    def add_course_tag_and_color(event: icalendar.Event):
-        tag = (event["CATEGORIES"]).to_ical().decode(encoding="utf-8")
+        start: datetime.datetime = opens["dtstart"].dt
+        end: datetime.datetime = closes["dtend"].dt
+
+        if start.date() != end.date():
+            new["dtstart"] = icalendar.vDate(end.date())
+        else:
+            new["dtstart"] = icalendar.vDatetime(start)
+            new["dtend"] = icalendar.vDatetime(end)
+
+        new["uid"] = opens["uid"]
+        new["dtstamp"] = opens["dtstamp"]
+        tag = (opens["categories"]).to_ical().decode(encoding="utf-8")
+
         course_name = tag.split("]")[1]
-        event["DESCRIPTION"] = f"Course: {course_name}\n" + event["DESCRIPTION"]
-        event["COLOR"] = "darkorange"
+        new["description"] = f"Course: {course_name}\n" + opens["description"] + ""
+
+        new["description"] = new["description"] + f"\n Due to: {(end + datetime.timedelta(hours=3)).time()}"
+
+        new["color"] = "darkorange"
+        return new
 
     async def read_moodle_schedule(url: str) -> icalendar.Calendar:
         _generator = generate_ics_from_url(url)
@@ -279,14 +294,16 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
         quizes_halfs.sort(key=lambda x: int(x["UID"].split("@")[0]))
         fixed_events += [create_quiz(a, b) for a, b in pairwise(quizes_halfs)]
         for event in fixed_events:
-            add_course_tag_and_color(event)
             fixed_calendar.add_component(event)
 
         return fixed_calendar
 
+    token = user.moodle_calendar_authtoken
+    assert token is not None
+    encoded_token = quote(token)
     user_moodle_calendar_url = (
         f"https://moodle.innopolis.university/calendar/export_execute.php?"
-        f"userid={user.moodle_userid}&authtoken={user.moodle_calendar_authtoken}&preset_what=all&preset_time=custom"
+        f"userid={user.moodle_userid}&authtoken={encoded_token}&preset_what=all&preset_time=custom"
     )
     moodle_calendar = await read_moodle_schedule(user_moodle_calendar_url)
     calendar = await _async_fix_moodle_events(moodle_calendar)
