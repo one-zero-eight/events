@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+from itertools import pairwise
 from pathlib import Path
 from typing import AsyncGenerator, Optional
 from zlib import crc32
@@ -8,12 +9,13 @@ import aiofiles
 import httpx
 import icalendar
 from fastapi import HTTPException
+from icalendar import vDDDTypes
 from pydantic import BaseModel, TypeAdapter
 
 from src.config import settings
 from src.modules.event_groups.repository import event_group_repository
 from src.modules.innohassle_accounts import innohassle_accounts
-from src.modules.parse.utils import aware_utcnow, locate_ics_by_path, get_base_calendar
+from src.modules.parse.utils import aware_utcnow, get_base_calendar, locate_ics_by_path
 from src.modules.predefined.repository import predefined_repository
 from src.modules.users.schemas import ViewUser
 
@@ -21,7 +23,7 @@ TIMEOUT = 60
 MAX_SIZE = 10 * 1024 * 1024
 
 
-async def _generate_ics_from_url(url: str, headers: dict = None) -> AsyncGenerator[bytes, None]:
+async def generate_ics_from_url(url: str, headers: dict = None) -> AsyncGenerator[bytes, None]:
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(url, timeout=TIMEOUT, headers=headers)
@@ -56,7 +58,7 @@ async def _generate_ics_from_multiple(user: ViewUser, *ics: Path) -> AsyncGenera
     main_calendar["x-wr-calname"] = f"{user.email} schedule from innohassle.ru"
     ical_bytes = main_calendar.to_ical()
     # remove END:VCALENDAR
-    ical_bytes = ical_bytes[:-13]
+    ical_bytes = ical_bytes.removesuffix(b"END:VCALENDAR\r\n")
     yield ical_bytes
 
     for calendar in calendars:
@@ -69,7 +71,7 @@ async def _generate_ics_from_multiple(user: ViewUser, *ics: Path) -> AsyncGenera
     yield b"END:VCALENDAR"
 
 
-async def _get_personal_ics(user: ViewUser) -> AsyncGenerator[bytes, None]:
+async def get_personal_event_groups_ics(user: ViewUser) -> AsyncGenerator[bytes, None]:
     hidden = set(user.hidden_event_groups)
     predefined = await predefined_repository.get_user_predefined(user.id)
     all_user_event_groups = set(user.favorite_event_groups) | set(predefined)
@@ -89,7 +91,7 @@ async def _get_personal_ics(user: ViewUser) -> AsyncGenerator[bytes, None]:
     return ical_generator
 
 
-async def _get_personal_music_room_ics(user: ViewUser) -> AsyncGenerator[bytes, None]:
+async def get_personal_music_room_ics(user: ViewUser) -> AsyncGenerator[bytes, None]:
     if settings.music_room is None:
         raise HTTPException(status_code=404, detail="Music room is not configured")
     # check if user registered in music room
@@ -105,7 +107,7 @@ async def _get_personal_music_room_ics(user: ViewUser) -> AsyncGenerator[bytes, 
                 raise HTTPException(status_code=404, detail="User not found in music room service")
         else:
             raise HTTPException(status_code=500, detail="Error in music room service")
-    ical_generator = _generate_ics_from_url(
+    ical_generator = generate_ics_from_url(
         f"{settings.music_room.api_url}/participants/{participant_id}/bookings.ics",
         headers={"Authorization": f"Bearer {settings.music_room.api_key.get_secret_value()}"},
     )
@@ -129,7 +131,7 @@ class Training(BaseModel):
     extendedProps: ExtendedProps
 
 
-async def _get_personal_sport_ics(user: ViewUser) -> bytes:
+async def get_personal_sport_ics(user: ViewUser) -> bytes:
     """
     GET /calendar/trainings
 
@@ -169,6 +171,27 @@ async def _get_personal_sport_ics(user: ViewUser) -> bytes:
     ]
     """
 
+    def _training_to_vevent(training: Training) -> icalendar.Event:
+        string_to_hash = str(training.extendedProps.id)
+        hash_ = crc32(string_to_hash.encode("utf-8"))
+        uid = "sport-%x@innohassle.ru" % abs(hash_)
+
+        vevent = icalendar.Event()
+        vevent.add("uid", uid)
+
+        vevent.add("summary", training.title)
+        if training.allDay:
+            vevent.add("dtstart", icalendar.vDate(training.start.date()))
+            vevent.add("dtend", icalendar.vDate(training.end.date()))
+        else:
+            vevent.add("dtstart", icalendar.vDatetime(training.start))
+            vevent.add("dtend", icalendar.vDatetime(training.end))
+        vevent.add("location", training.extendedProps.training_class)
+        vevent.add("x-sport-training-id", training.extendedProps.id)
+        vevent.add("x-sport-checked-in", training.extendedProps.checked_in)
+        vevent.add("x-sport-can-checkin", training.extendedProps.can_check_in)
+        return vevent
+
     main_calendar = get_base_calendar()
     main_calendar["x-wr-calname"] = f"{user.email} Sport schedule from innohassle.ru"
 
@@ -196,23 +219,75 @@ async def _get_personal_sport_ics(user: ViewUser) -> bytes:
     return ical_bytes
 
 
-def _training_to_vevent(training: Training) -> icalendar.Event:
-    string_to_hash = str(training.extendedProps.id)
-    hash_ = crc32(string_to_hash.encode("utf-8"))
-    uid = "sport-%x@innohassle.ru" % abs(hash_)
+async def get_moodle_ics(user: ViewUser) -> bytes:
+    """
+    Get schedule in ICS format for the user from user link to moodle calendar;
+    """
+    timezone_delta = datetime.timedelta(hours=3)
 
-    vevent = icalendar.Event()
-    vevent.add("uid", uid)
+    def make_deadline(event: icalendar.Event) -> icalendar.Event:
+        description = event["DESCRIPTION"]
+        end = event["DTEND"].dt
+        date = end.date()
+        begin = datetime.datetime(day=date.day, year=date.year, month=date.month)
+        name = event["SUMMARY"]
+        event["SUMMARY"] = "[DEADLINE] " + name
+        event["DESCRIPTION"] = description + f"\n Due to: {(end - timezone_delta).time()}"
+        event["DTSTART"] = vDDDTypes(begin)
+        return event
 
-    vevent.add("summary", training.title)
-    if training.allDay:
-        vevent.add("dtstart", icalendar.vDate(training.start.date()))
-        vevent.add("dtend", icalendar.vDate(training.end.date()))
-    else:
-        vevent.add("dtstart", icalendar.vDatetime(training.start))
-        vevent.add("dtend", icalendar.vDatetime(training.end))
-    vevent.add("location", training.extendedProps.training_class)
-    vevent.add("x-sport-training-id", training.extendedProps.id)
-    vevent.add("x-sport-checked-in", training.extendedProps.checked_in)
-    vevent.add("x-sport-can-checkin", training.extendedProps.can_check_in)
-    return vevent
+    def create_quiz(opens: icalendar.Event, closes: icalendar.Event) -> icalendar.Event:
+        quiz_name = opens["SUMMARY"]
+        opens["SUMMARY"] = "[QUIZ] " + quiz_name.split("opens")[0]
+        opens["DTSTART"] = vDDDTypes(opens["DTSTART"].dt + timezone_delta)
+        opens["DTEND"] = vDDDTypes(closes["DTEND"].dt + timezone_delta)
+        return opens
+
+    def add_course_tag_and_color(event: icalendar.Event):
+        tag = (event["CATEGORIES"]).to_ical().decode(encoding="utf-8")
+        course_name = tag.split("]")[1]
+        event["DESCRIPTION"] = f"Course: {course_name}\n" + event["DESCRIPTION"]
+        event["COLOR"] = "darkorange"
+
+    async def read_moodle_schedule(url: str) -> icalendar.Calendar:
+        _generator = generate_ics_from_url(url)
+        content = "".join([bytes_data.decode("utf-8") async for bytes_data in _generator if bytes_data is not None])
+        calendar = icalendar.Calendar.from_ical(content)
+        return calendar
+
+    async def _async_fix_moodle_events(calendar: icalendar.Calendar) -> icalendar.Calendar:
+        fixed_calendar = get_base_calendar()
+        fixed_calendar["x-wr-calname"] = "Moodle"
+
+        vevents = calendar.walk(name="VEVENT")
+        fixed_events = []
+        quizes_halfs = []
+        for event in vevents:
+            event: icalendar.Event
+            duration = event["DTEND"].dt - event["DTSTART"].dt
+            if duration == datetime.timedelta(0):
+                event_name = event["SUMMARY"]
+                if "closes" in event_name or "opens" in event_name:
+                    # QUIZ TYPE
+                    quizes_halfs.append(event)
+                else:
+                    # DEADLINE TYPE
+                    deadline = make_deadline(event)
+                    fixed_events += [deadline]
+                continue
+            fixed_events += [event]
+        quizes_halfs.sort(key=lambda x: int(x["UID"].split("@")[0]))
+        fixed_events += [create_quiz(a, b) for a, b in pairwise(quizes_halfs)]
+        for event in fixed_events:
+            add_course_tag_and_color(event)
+            fixed_calendar.add_component(event)
+
+        return fixed_calendar
+
+    user_moodle_calendar_url = (
+        f"https://moodle.innopolis.university/calendar/export_execute.php?"
+        f"userid={user.moodle_userid}&authtoken={user.moodle_calendar_authtoken}&preset_what=all&preset_time=custom"
+    )
+    moodle_calendar = await read_moodle_schedule(user_moodle_calendar_url)
+    calendar = await _async_fix_moodle_events(moodle_calendar)
+    return calendar.to_ical()

@@ -9,10 +9,11 @@ from src.config import settings
 from src.exceptions import EventGroupNotFoundException, ObjectNotFound, ForbiddenException
 from src.modules.event_groups.repository import event_group_repository
 from src.modules.ics.utils import (
-    _get_personal_music_room_ics,
-    _generate_ics_from_url,
-    _get_personal_ics,
-    _get_personal_sport_ics,
+    generate_ics_from_url,
+    get_personal_event_groups_ics,
+    get_personal_sport_ics,
+    get_personal_music_room_ics,
+    get_moodle_ics,
 )
 from src.modules.parse.utils import locate_ics_by_path
 from src.modules.users.linked import LinkedCalendarView
@@ -38,7 +39,7 @@ async def get_current_user_schedule(user_id: CURRENT_USER_ID_DEPENDENCY) -> Stre
 
     user = await user_repository.read(user_id)
 
-    ical_generator = await _get_personal_ics(user)
+    ical_generator = await get_personal_event_groups_ics(user)
 
     return StreamingResponse(
         content=ical_generator,
@@ -72,7 +73,7 @@ async def get_user_schedule(user_id: int, access_key: str) -> StreamingResponse:
     if not await user_repository.check_user_schedule_key(user_id, access_key, resource_path):
         raise ForbiddenException()
 
-    ical_generator = await _get_personal_ics(user)
+    ical_generator = await get_personal_event_groups_ics(user)
 
     return StreamingResponse(
         content=ical_generator,
@@ -99,7 +100,7 @@ async def get_music_room_current_user_schedule(user_id: CURRENT_USER_ID_DEPENDEN
     if user is None:
         raise ObjectNotFound()
 
-    ical_generator = await _get_personal_music_room_ics(user)
+    ical_generator = await get_personal_music_room_ics(user)
 
     return StreamingResponse(content=ical_generator, media_type="text/calendar")
 
@@ -129,7 +130,7 @@ async def get_music_room_user_schedule(user_id: int, access_key: str) -> Streami
     if not await user_repository.check_user_schedule_key(user_id, access_key, resource_path):
         raise ForbiddenException()
 
-    ical_generator = await _get_personal_music_room_ics(user)
+    ical_generator = await get_personal_music_room_ics(user)
 
     return StreamingResponse(content=ical_generator, media_type="text/calendar")
 
@@ -138,7 +139,7 @@ async def get_music_room_user_schedule(user_id: int, access_key: str) -> Streami
     "/users/me/sport.ics",
     responses={
         200: {
-            "description": "ICS file with schedule of the music room booking",
+            "description": "ICS file with your sport check-ins",
             "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
         },
     },
@@ -153,7 +154,7 @@ async def get_sport_current_user_schedule(user_id: CURRENT_USER_ID_DEPENDENCY) -
     if user is None:
         raise ObjectNotFound()
 
-    ical_bytes = await _get_personal_sport_ics(user)
+    ical_bytes = await get_personal_sport_ics(user)
     return Response(content=ical_bytes, media_type="text/calendar")
 
 
@@ -161,7 +162,7 @@ async def get_sport_current_user_schedule(user_id: CURRENT_USER_ID_DEPENDENCY) -
     "/users/{user_id}/sport.ics",
     responses={
         200: {
-            "description": "ICS file with schedule of the music room booking",
+            "description": "ICS file with your sport check-ins",
             "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
         },
         **ObjectNotFound.responses,
@@ -182,7 +183,69 @@ async def get_sport_user_schedule(user_id: int, access_key: str) -> Response:
     if not await user_repository.check_user_schedule_key(user_id, access_key, resource_path):
         raise ForbiddenException()
 
-    ical_bytes = await _get_personal_sport_ics(user)
+    ical_bytes = await get_personal_sport_ics(user)
+    return Response(content=ical_bytes, media_type="text/calendar")
+
+
+@router.get(
+    "/users/me/moodle.ics",
+    responses={
+        200: {
+            "description": "ICS file with your schedule from moodle",
+            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
+        },
+        **ObjectNotFound.responses,
+        **ForbiddenException.responses,
+    },
+    tags=["Users"],
+)
+async def get_moodle_user_schedule(user_id: CURRENT_USER_ID_DEPENDENCY) -> Response:
+    """
+    Get schedule in ICS format for the current user
+    """
+
+    user = await user_repository.read(user_id)
+    if user is None:
+        raise ObjectNotFound()
+
+    if user.moodle_userid is None or user.moodle_calendar_authtoken is None:
+        raise HTTPException(status_code=404, detail="Moodle for user is not configured")
+
+    ical_bytes = await get_moodle_ics(user)
+
+    return Response(content=ical_bytes, media_type="text/calendar")
+
+
+@router.get(
+    "/users/{user_id}/moodle.ics",
+    responses={
+        200: {
+            "description": "ICS file with your schedule from moodle",
+            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
+        },
+        **ObjectNotFound.responses,
+        **ForbiddenException.responses,
+    },
+    tags=["Users"],
+)
+async def get_moodle_current_user_schedule(user_id: int, access_key: str) -> Response:
+    """
+    Get schedule in ICS format for the user; requires access key for `/users/{user_id}/moodle.ics` resource
+    """
+
+    user = await user_repository.read(user_id)
+    if user is None:
+        raise ObjectNotFound()
+
+    resource_path = f"/users/{user_id}/moodle.ics"
+    if not await user_repository.check_user_schedule_key(user_id, access_key, resource_path):
+        raise ForbiddenException()
+
+    if user.moodle_userid is None or user.moodle_calendar_authtoken is None:
+        raise HTTPException(status_code=404, detail="Moodle for user is not configured")
+
+    ical_bytes = await get_moodle_ics(user)
+
     return Response(content=ical_bytes, media_type="text/calendar")
 
 
@@ -212,7 +275,7 @@ async def get_user_linked_schedule(user_id: int, linked_alias: str) -> Streaming
 
     linked_calendar: LinkedCalendarView = user.linked_calendars[linked_alias]
 
-    ical_generator = _generate_ics_from_url(linked_calendar.url)
+    ical_generator = generate_ics_from_url(linked_calendar.url)
 
     return StreamingResponse(content=ical_generator, media_type="text/calendar")
 
@@ -234,7 +297,7 @@ async def get_music_room_schedule() -> StreamingResponse:
     if settings.music_room is None:
         raise HTTPException(status_code=404, detail="Music room is not configured")
 
-    ical_generator = _generate_ics_from_url(f"{settings.music_room.api_url}/music-room.ics")
+    ical_generator = generate_ics_from_url(f"{settings.music_room.api_url}/music-room.ics")
 
     return StreamingResponse(content=ical_generator, media_type="text/calendar")
 

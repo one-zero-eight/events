@@ -165,3 +165,10 @@ async def delete_user_schedule_key(access_key: str, resource_path: str, user_id:
 
     await user_repository.delete_user_schedule_key(user_id, access_key, resource_path)
     return
+
+
+@router.post("/me/set-moodle", responses={200: {"description": "Moodle stuff is configured successfully"}})
+async def set_user_moodle_data(
+    moodle_userid: int, moodle_calendar_authtoken: str, user_id: CURRENT_USER_ID_DEPENDENCY
+) -> None:
+    await user_repository.set_user_moodle_data(user_id, moodle_userid, moodle_calendar_authtoken)

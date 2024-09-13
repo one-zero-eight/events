@@ -248,5 +248,20 @@ class SqlUserRepository:
             await session.execute(q)
             await session.commit()
 
+    async def set_user_moodle_data(self, user_id: int, moodle_userid: int, moodle_calendar_authtoken: str) -> None:
+        async with self._create_session() as session:
+            q = (
+                update(User)
+                .where(User.id == user_id)
+                .values(
+                    {
+                        "moodle_userid": moodle_userid,
+                        "moodle_calendar_authtoken": moodle_calendar_authtoken,
+                    }
+                )
+            )
+            await session.execute(q)
+            await session.commit()
+
 
 user_repository: SqlUserRepository = SqlUserRepository()

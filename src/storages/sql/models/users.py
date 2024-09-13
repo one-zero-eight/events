@@ -48,6 +48,8 @@ class User(Base, IdMixin):
     music_room_hidden: Mapped[bool] = mapped_column(nullable=False, default=False, server_default=false())
     sports_hidden: Mapped[bool] = mapped_column(nullable=False, default=False, server_default=false())
     moodle_hidden: Mapped[bool] = mapped_column(nullable=False, default=False, server_default=false())
+    moodle_userid: Mapped[int | None] = mapped_column(nullable=True)
+    moodle_calendar_authtoken: Mapped[str | None] = mapped_column(nullable=True)
 
 
 class UserScheduleKeys(Base, IdMixin):

@@ -33,6 +33,8 @@ class ViewUser(BaseModel):
     music_room_hidden: bool
     sports_hidden: bool
     moodle_hidden: bool
+    moodle_userid: int | None = None
+    moodle_calendar_authtoken: str | None = None
 
     @field_validator("linked_calendars", mode="before")
     def calendars_to_dict(cls, v):
