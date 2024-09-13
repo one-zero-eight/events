@@ -303,6 +303,17 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
                 if categories:
                     course_name = categories.split("]")[1]
                     event["summary"] = event["summary"] + f" - {course_name}"
+
+                start = event["dtstart"]
+                if start:
+                    start = start.dt.astimezone(pytz.timezone("Europe/Moscow"))
+                    event["dtstart"] = icalendar.vDatetime(start)
+
+                end = event["dtend"]
+                if end:
+                    end = end.dt.astimezone(pytz.timezone("Europe/Moscow"))
+                    event["dtend"] = icalendar.vDatetime(end)
+
                 fixed_events.append(event)
         quizes_halfs.sort(key=lambda x: int(x["UID"].split("@")[0]))
         fixed_events += [create_quiz(a, b) for a, b in pairwise(quizes_halfs)]
