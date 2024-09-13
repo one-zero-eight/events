@@ -303,6 +303,12 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
                 if categories:
                     course_name = categories.split("]")[1]
                     event["summary"] = event["summary"] + f" - {course_name}"
+                    event["description"] = "\n".join(
+                        [
+                            f"Course: {course_name}\n",
+                            event["description"],
+                        ]
+                    )
 
                 start = event["dtstart"]
                 if start:
