@@ -24,7 +24,7 @@ This is the API for events service in InNoHassle ecosystem.
     - 🏋️ [Sports Classes](https://sport.innopolis.university)
     - 🧹 [Dorm Cleaning](https://hotel.innopolis.university/studentaccommodation/)
     - 🎵 [Music Room Booking](https://innohassle.ru/music-room)
-    - 📖 [Moodle Events](https://moodle.innopolis.university/) _(in progress)_
+    - 📖 [Moodle Events](https://moodle.innopolis.university/)
 - 🌟 Personalized Schedule
     - ⭐ Favorites Management
     - 👀 Hide/Unhide Groups
