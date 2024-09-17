@@ -60,10 +60,6 @@ lint.ignore = [
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-[tool.coverage.run]
-omit = [
-    "src/dev.py"
-]
 [tool.coverage.report]
 exclude_also = [
     # Don't complain about missing debug-only code:
