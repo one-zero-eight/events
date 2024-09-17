@@ -261,7 +261,11 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
         new["dtstamp"] = opens["dtstamp"]
         categories = (opens["categories"]).to_ical().decode(encoding="utf-8")
         course_name = categories.split("]")[1]
-        new["summary"] = opens["summary"].split("opens")[0] + f"- {course_name}"
+        if "opens" in opens["summary"]:
+            new["summary"] = opens["summary"].split("opens")[0] + f"- {course_name}"
+        else:
+            new["summary"] = opens["summary"].split("открывается")[0] + f"- {course_name}"
+
         new["description"] = "\n".join(
             [
                 f"Course: {course_name}\n",
