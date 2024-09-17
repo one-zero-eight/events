@@ -289,9 +289,15 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
         for event in vevents:
             event: icalendar.Event
             event_timedelta = event["dtend"].dt - event["dtstart"].dt
+            event_name: str = event["summary"]
+
             if event_timedelta == datetime.timedelta():
-                event_name = event["summary"]
-                if "closes" in event_name or "opens" in event_name:
+                if (
+                    "closes" in event_name
+                    or "opens" in event_name
+                    or "закрывается" in event_name
+                    or "открывается" in event_name
+                ):
                     # QUIZ TYPE
                     quizes_halfs.append(event)
                 else:
@@ -299,6 +305,9 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
                     deadline = make_deadline(event)
                     fixed_events.append(deadline)
             else:
+                if "Attendance" in event_name:
+                    continue
+
                 categories = (event["categories"]).to_ical().decode(encoding="utf-8")
                 if categories:
                     course_name = categories.split("]")[1]
