@@ -27,6 +27,8 @@ loggers:
     handlers:
       - default
     propagate: no
+  httpx:
+    level: WARNING
   uvicorn.access:
     level: INFO
     handlers:
