@@ -70,8 +70,7 @@ properties:
     title: App Root Path
     type: string
   environment:
-    allOf:
-    - $ref: '#/$defs/Environment'
+    $ref: '#/$defs/Environment'
     default: development
     description: App environment
   db_url:
