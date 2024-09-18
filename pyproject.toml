@@ -25,7 +25,7 @@ prometheus-fastapi-instrumentator = "^7.0.0"
 [tool.poetry.group.prod]
 optional = true
 [tool.poetry.group.prod.dependencies]
-gunicorn = "22.0.0"
+gunicorn = "23.0.0"
 
 [tool.poetry.group.dev]
 optional = true
