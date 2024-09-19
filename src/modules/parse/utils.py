@@ -115,16 +115,9 @@ def sluggify(s: str) -> str:
 
 
 def validate_calendar(calendar: icalendar.Calendar):
-    unique_ids = set()
     for event in calendar.walk("VEVENT"):
         event: icalendar.Event
         validate_vevent(event)
-
-        uid = event["UID"]
-        if uid in unique_ids:
-            raise ValueError(f"Event UID ({uid}) is not unique", event)
-
-        unique_ids.add(uid)
 
 
 def validate_vevent(event: icalendar.Event):
