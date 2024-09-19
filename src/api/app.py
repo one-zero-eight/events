@@ -1,9 +1,8 @@
 __all__ = ["app"]
 
-from fastapi import FastAPI, Request
-from fastapi.openapi.docs import get_swagger_ui_html
+from fastapi import FastAPI
+from fastapi_swagger import patch_fastapi
 from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import RedirectResponse
 
 import src.logging_  # noqa: F401
 from src.api import docs
@@ -35,6 +34,8 @@ app = FastAPI(
     redoc_url=None,
 )
 
+patch_fastapi(app)
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_allow_origins,
@@ -59,25 +60,3 @@ if True:
     from prometheus_fastapi_instrumentator import Instrumentator
 
     Instrumentator(excluded_handlers=["/metrics"]).instrument(app).expose(app)
-
-
-@app.get("/", tags=["System"], include_in_schema=False)
-async def redirect_from_root(request: Request):
-    # Redirect to docs
-    return RedirectResponse(request.url_for("swagger_ui_html"), status_code=302)
-
-
-@app.get("/docs", tags=["System"], include_in_schema=False)
-async def swagger_ui_html(request: Request):
-    root_path = request.scope.get("root_path", "").rstrip("/")
-    openapi_url = root_path + app.openapi_url
-
-    return get_swagger_ui_html(
-        openapi_url=openapi_url,
-        title=app.title + " - Swagger UI",
-        swagger_js_url="https://api.innohassle.ru/swagger/swagger-ui-bundle.js",
-        swagger_css_url="https://api.innohassle.ru/swagger/swagger-ui.css",
-        swagger_favicon_url="https://api.innohassle.ru/swagger/favicon.png",
-        oauth2_redirect_url=None,
-        swagger_ui_parameters={"tryItOutEnabled": True, "persistAuthorization": True, "filter": True},
-    )

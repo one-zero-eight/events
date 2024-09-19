@@ -21,6 +21,7 @@ pyyaml = "^6.0.1"
 uvicorn = "^0.30.0"
 colorlog = "^6.8.2"
 prometheus-fastapi-instrumentator = "^7.0.0"
+fastapi-swagger = "^0.2.3"
 
 [tool.poetry.group.prod]
 optional = true
