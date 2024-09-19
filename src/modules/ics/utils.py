@@ -14,6 +14,7 @@ from fastapi import HTTPException
 from pydantic import BaseModel, TypeAdapter
 
 from src.config import settings
+from src.logging_ import logger
 from src.modules.event_groups.repository import event_group_repository
 from src.modules.innohassle_accounts import innohassle_accounts
 from src.modules.parse.utils import aware_utcnow, get_base_calendar, locate_ics_by_path
@@ -228,22 +229,35 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
     def make_deadline(event: icalendar.Event) -> icalendar.Event:
         new = icalendar.Event()
         end: datetime.datetime = event["dtend"].dt
+        end = end.astimezone(pytz.timezone("Europe/Moscow"))
         new["dtstart"] = icalendar.vDate(end.date())
         new["uid"] = event["uid"]
         new["dtstamp"] = event["dtstamp"]
         categories = (event["categories"]).to_ical().decode(encoding="utf-8")
         course_name = categories.split("]")[1]
         new["summary"] = event["summary"] + f" - {course_name}"
-        new["description"] = "\n".join(
-            [
-                f"Course: {course_name}",
-                event["description"],
-                f"Due to: {(end.astimezone(pytz.timezone("Europe/Moscow"))).time()}",
-            ]
-        )
+
+        new["description"] = f"Course: {course_name}\nDue to: {end.timetz().isoformat()}"
+
         return new
 
-    def create_quiz(opens: icalendar.Event, closes: icalendar.Event) -> icalendar.Event:
+    def create_quiz(opens: icalendar.Event, closes: icalendar.Event) -> icalendar.Event | None:
+        if "opens" in opens["summary"] and "closes" in closes["summary"]:
+            quiz_name = opens["summary"].split("opens")[0].strip()
+            closes_name = closes["summary"].split("closes")[0].strip()
+            if quiz_name != closes_name:
+                logger.warning(f"Quiz pair is not correct: {opens['summary']} and {closes['summary']}")
+                return None
+        elif "открывается" in opens["summary"] and "закрывается" in closes["summary"]:
+            quiz_name = opens["summary"].split("открывается")[0].strip()
+            closes_name = closes["summary"].split("закрывается")[0].strip()
+            if quiz_name != closes_name:
+                logger.warning(f"Quiz pair is not correct: {opens['summary']} and {closes['summary']}")
+                return None
+        else:
+            logger.warning(f"Quiz pair is not correct: {opens['summary']} and {closes['summary']}")
+            return None
+
         new = icalendar.Event()
 
         start: datetime.datetime = opens["dtstart"].dt
@@ -261,17 +275,17 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
         new["dtstamp"] = opens["dtstamp"]
         categories = (opens["categories"]).to_ical().decode(encoding="utf-8")
         course_name = categories.split("]")[1]
-        if "opens" in opens["summary"]:
-            new["summary"] = opens["summary"].split("opens")[0] + f"- {course_name}"
-        else:
-            new["summary"] = opens["summary"].split("открывается")[0] + f"- {course_name}"
+        new["summary"] = quiz_name + f" - {course_name}"
 
         new["description"] = "\n".join(
-            [
-                f"Course: {course_name}\n",
-                opens["description"],
-                f"Due to: {(end + datetime.timedelta(hours=3)).time()}",
-            ]
+            filter(
+                bool,
+                [
+                    f"Course: {course_name}",
+                    opens["description"],
+                    f"Due to: {end.timetz().isoformat()}",
+                ],
+            )
         )
 
         new["color"] = "darkorange"
@@ -318,7 +332,7 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
                     event["summary"] = event["summary"] + f" - {course_name}"
                     event["description"] = "\n".join(
                         [
-                            f"Course: {course_name}\n",
+                            f"Course: {course_name}",
                             event["description"],
                         ]
                     )
@@ -335,7 +349,7 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
 
                 fixed_events.append(event)
         quizes_halfs.sort(key=lambda x: int(x["UID"].split("@")[0]))
-        fixed_events += [create_quiz(a, b) for a, b in pairwise(quizes_halfs)]
+        fixed_events += list(filter(None, [create_quiz(a, b) for a, b in pairwise(quizes_halfs)]))
         for event in fixed_events:
             event["color"] = "darkorange"
             fixed_calendar.add_component(event)
