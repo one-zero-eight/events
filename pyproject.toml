@@ -31,7 +31,7 @@ gunicorn = "23.0.0"
 [tool.poetry.group.dev]
 optional = true
 [tool.poetry.group.dev.dependencies]
-ruff = "^0.6.5"
+ruff = "^0.6.6"
 pre-commit = "^3.7.0"
 
 [tool.ruff]
