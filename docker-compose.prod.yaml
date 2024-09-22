@@ -4,15 +4,15 @@
 # Run all services:
 # docker compose -f docker-compose.yaml -f docker-compose.prod.yaml up --pull always --detach
 
-version: "3"
-
 # Override the default settings for production
 services:
   api:
     # Pull the image from GitHub Container Registry instead of building locally
-    image: "ghcr.io/one-zero-eight/innohassle-events:main"
+    image: "ghcr.io/one-zero-eight/innohassle-events@${DOCKER_TAG_API:-main}"
     build: !reset null
     # ports: !reset [] # TODO: Do not expose any ports
+    env_file: .env.api
 
   db:
     ports: !reset [] # Do not expose any ports
+    env_file: .env.db

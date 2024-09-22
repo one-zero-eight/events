@@ -30,7 +30,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Poetry. Respects $POETRY_VERSION and $POETRY_HOME
-ENV POETRY_VERSION=1.8.2
+ENV POETRY_VERSION=1.8.3
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=${POETRY_HOME} python3 - --version ${POETRY_VERSION} && \
     chmod a+x /opt/poetry/bin/poetry
@@ -39,7 +39,7 @@ RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=${POETRY_HOME} pyt
 # and install only runtime deps using poetry
 WORKDIR $PYSETUP_PATH
 COPY ./poetry.lock ./pyproject.toml ./
-RUN poetry install --only main,prod
+RUN poetry install
 
 
 ###########################################################
@@ -60,5 +60,5 @@ USER poetry
 WORKDIR /code
 
 EXPOSE 8000
-ENTRYPOINT /docker-entrypoint.sh $0 $@
-CMD [ "gunicorn", "--worker-class uvicorn.workers.UvicornWorker", "--bind 0.0.0.0:8000", "--workers 1", "src.api.app:app" ]
+ENTRYPOINT [ "/docker-entrypoint.sh" ]
+CMD [ "gunicorn", "--worker-class", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000", "--workers", "1", "src.api.app:app" ]

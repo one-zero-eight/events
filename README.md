@@ -34,7 +34,7 @@ This is the API for events service in InNoHassle ecosystem.
 
 ### Technologies
 
-- [Python 3.11](https://www.python.org/downloads/release/python-3117/) & [Poetry](https://python-poetry.org/docs/)
+- [Python 3.12](https://www.python.org/downloads/) & [Poetry](https://python-poetry.org/docs/)
 - [FastAPI](https://fastapi.tiangolo.com/) & [Pydantic](https://docs.pydantic.dev/latest/)
 - Database and ORM: [PostgreSQL](https://www.postgresql.org/), [SQLAlchemy](https://www.sqlalchemy.org/),
   [Alembic](https://alembic.sqlalchemy.org/en/latest/)
@@ -46,11 +46,11 @@ This is the API for events service in InNoHassle ecosystem.
 
 ### Getting started
 
-1. Install [Python 3.11+](https://www.python.org/downloads/release/python-3117/)
+1. Install [Python 3.12](https://www.python.org/downloads/)
 2. Install [Poetry](https://python-poetry.org/docs/)
 3. Install project dependencies with [Poetry](https://python-poetry.org/docs/cli/#options-2).
    ```bash
-   poetry install --no-root --with dev
+   poetry install
    ```
 4. Set up [pre-commit](https://pre-commit.com/) hooks:
 

@@ -52,6 +52,8 @@ jobs:
           push: ${{ github.repository_owner == 'one-zero-eight' && 'true' || 'false' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   deploy-staging:
     if: github.repository_owner == 'one-zero-eight' && ((github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'staging') || (github.event_name == 'push' && github.ref == 'refs/heads/main'))
@@ -73,6 +75,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           fingerprint: ${{ secrets.SSH_FINGERPRINT }}
           script_stop: true # Stop script on error
+          command_timeout: 30m
           script: |
             cd "${{ secrets.DEPLOY_DIRECTORY }}"
             bash "${{ secrets.DEPLOY_SCRIPT }}" "${{ needs.build-and-push-image.outputs.imageid }}"
@@ -97,6 +100,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           fingerprint: ${{ secrets.SSH_FINGERPRINT }}
           script_stop: true # Stop script on error
+          command_timeout: 30m
           script: |
             cd "${{ secrets.DEPLOY_DIRECTORY }}"
             bash "${{ secrets.DEPLOY_SCRIPT }}" "${{ needs.build-and-push-image.outputs.imageid }}"
