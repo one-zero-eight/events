@@ -6,7 +6,7 @@ updates:
     schedule:
       interval: "daily"
     groups:
-      everything:
+      poetry:
         patterns:
           - "*"
 
