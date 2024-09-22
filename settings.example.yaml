@@ -1,6 +1,8 @@
 # Check settings.schema.yaml for more details
 $schema: "./settings.schema.yaml"
 # ---------- Application settings ----- #
+environment: development
+
 db_url: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
 accounts:
   # JWT secret

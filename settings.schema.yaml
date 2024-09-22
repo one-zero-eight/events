@@ -80,17 +80,12 @@ properties:
     title: Db Url
     type: string
     writeOnly: true
-  cors_allow_origins:
-    default:
-    - https://innohassle.ru
-    - https://pre.innohassle.ru
-    - http://localhost:3000
+  cors_allow_origin_regex:
+    default: .*
     description: 'Allowed origins for CORS: from which domains requests to the API
-      are allowed'
-    items:
-      type: string
-    title: Cors Allow Origins
-    type: array
+      are allowed. Specify as a regex: `https://.*.innohassle.ru`'
+    title: Cors Allow Origin Regex
+    type: string
   predefined_dir:
     default: predefined
     description: Path to the directory with predefined data

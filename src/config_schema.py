@@ -54,8 +54,8 @@ class Settings(SettingsEntityModel):
     "App environment"
     db_url: SecretStr = "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres"
     "PostgreSQL database connection URL"
-    cors_allow_origins: list[str] = ["https://innohassle.ru", "https://pre.innohassle.ru", "http://localhost:3000"]
-    "Allowed origins for CORS: from which domains requests to the API are allowed"
+    cors_allow_origin_regex: str = ".*"
+    "Allowed origins for CORS: from which domains requests to the API are allowed. Specify as a regex: `https://.*.innohassle.ru`"
     predefined_dir: Path = Path("./predefined")
     "Path to the directory with predefined data"
     accounts: Accounts
