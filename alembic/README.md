@@ -11,7 +11,7 @@ Upgrade to the latest revision
 ```bash
 alembic upgrade head
 ```
-Upgrade to she specific revision
+Upgrade to the specific revision
 ```bash
 alembic upgrade <revision>
 ```
