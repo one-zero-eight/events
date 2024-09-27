@@ -22,7 +22,7 @@ pre-commit = "^3.7.0"
 prometheus-fastapi-instrumentator = "^7.0.0"
 pydantic = "^2.7.1"
 pyyaml = "^6.0.1"
-ruff = "^0.6.6"
+ruff = "^0.6.8"
 sqlalchemy = { extras = ["asyncpg"], version = "^2.0.30" }
 uvicorn = "^0.30.0"
 
