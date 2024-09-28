@@ -98,19 +98,19 @@ async def get_personal_music_room_ics(user: ViewUser) -> AsyncGenerator[bytes, N
         raise HTTPException(status_code=404, detail="Music room is not configured")
     # check if user registered in music room
     async with httpx.AsyncClient() as client:
-        url = f"{settings.music_room.api_url}/participants/participant_id"
+        url = f"{settings.music_room.api_url}/users/user_id"
         query_params = {"email": user.email}
         headers = {"Authorization": f"Bearer {settings.music_room.api_key.get_secret_value()}"}
         response = await client.get(url, params=query_params, headers=headers)
         response.raise_for_status()
         if response.status_code == 200:
-            participant_id = response.json()
-            if participant_id is None:
+            user_id = response.json()
+            if user_id is None:
                 raise HTTPException(status_code=404, detail="User not found in music room service")
         else:
             raise HTTPException(status_code=500, detail="Error in music room service")
     ical_generator = generate_ics_from_url(
-        f"{settings.music_room.api_url}/participants/{participant_id}/bookings.ics",
+        f"{settings.music_room.api_url}/users/{user_id}/bookings.ics",
         headers={"Authorization": f"Bearer {settings.music_room.api_key.get_secret_value()}"},
     )
     return ical_generator
