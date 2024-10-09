@@ -7,7 +7,6 @@ from starlette.middleware.cors import CORSMiddleware
 import src.logging_  # noqa: F401
 from src.api import docs
 from src.api.lifespan import lifespan
-from src.api.routers import routers
 from src.config import settings
 from src.config_schema import Environment
 
@@ -44,8 +43,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-for router in routers:
-    app.include_router(router)
+from src.modules.event_groups.routes import router as router_event_groups  # noqa: E402
+from src.modules.ics.routes import router as router_ics  # noqa: E402
+from src.modules.parse.routes import router as router_parse  # noqa: E402
+from src.modules.predefined.routes import router as router_predefined  # noqa: E402
+from src.modules.tags.routes import router as router_tags  # noqa: E402
+from src.modules.users.routes import router as router_users  # noqa: E402
+
+app.include_router(router_event_groups)
+app.include_router(router_ics)
+app.include_router(router_parse)
+app.include_router(router_predefined)
+app.include_router(router_tags)
+app.include_router(router_users)
 
 if settings.environment == Environment.DEVELOPMENT:
     from src.logging_ import logger

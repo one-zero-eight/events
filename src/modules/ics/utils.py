@@ -255,7 +255,6 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
                 logger.warning(f"Quiz pair is not correct: {opens['summary']} and {closes['summary']}")
                 return None
         else:
-            logger.warning(f"Quiz pair is not correct: {opens['summary']} and {closes['summary']}")
             return None
 
         new = icalendar.Event()
