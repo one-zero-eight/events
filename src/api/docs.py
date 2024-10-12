@@ -24,9 +24,8 @@ Backend is developed using FastAPI framework on Python.
 Note: API is unstable. Endpoints and models may change in the future.
 
 Useful links:
-- [Backend source code](https://github.com/one-zero-eight/InNoHassle-Events)
-- [Frontend source code](https://github.com/one-zero-eight/InNoHassle-Website)
-- [Website](https://innohassle.ru/schedule)
+- [Events API source code](https://github.com/one-zero-eight/events)
+- [InNoHassle Website](https://innohassle.ru/schedule)
 """
 
 CONTACT_INFO = {
