@@ -20,9 +20,6 @@ services:
     env_file: .env # You can specify some Uvicorn settings in .env file
     environment:
       - TZ=Europe/Moscow # Set the timezone for correct calendar image generation
-    networks:
-      - default
-      - music-room
 
   db:
     # See more: https://hub.docker.com/_/postgres
@@ -43,9 +40,3 @@ services:
 
 volumes:
   postgres:
-
-networks:
-  # Connect to a 'music-room' network for integration with Music room API
-  music-room:
-    external: true
-    name: music-room
