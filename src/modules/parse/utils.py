@@ -149,7 +149,7 @@ def validate_vevent(event: icalendar.Event):
             event["RRULE"].to_ical().decode(), dtstart=vddd_dtstart.dt
         )
         rrule_dates = rrule.__iter__()
-        rrule_first_dt = next(rrule_dates)
+        rrule_first_dt = next(rrule_dates, None)
 
         if rrule_first_dt:
             rrule_first_date = rrule_first_dt.date()
@@ -163,6 +163,8 @@ def validate_vevent(event: icalendar.Event):
 
             if rrule_first_date != vdd_date:
                 raise ValueError("DTSTART is not compatible with RRULE", event)
+        else:
+            raise ValueError("RRULE produces empty list", event)
 
 
 def aware_utcnow() -> datetime.datetime:
