@@ -6,4 +6,6 @@ environment: development
 db_url: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
 accounts:
   # JWT secret
+  # generate service token for development (https://api.innohassle.ru/accounts/v0)
+  # /tokens/generate-service-token
   api_jwt_token: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
