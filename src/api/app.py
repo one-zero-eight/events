@@ -58,8 +58,9 @@ app.include_router(router_tags)
 app.include_router(router_users)
 
 if settings.environment == Environment.DEVELOPMENT:
-    from src.logging_ import logger
     import logging
+
+    from src.logging_ import logger
 
     logger.warn("Enable sqlalchemy logging")
     logging.basicConfig()

@@ -1,11 +1,10 @@
-from fastapi import APIRouter
-from fastapi import Body
+from fastapi import APIRouter, Body
 from pydantic import BaseModel
 
 from src.api.dependencies import VERIFY_PARSER_DEPENDENCY
 from src.exceptions import IncorrectCredentialsException
 from src.modules.tags.repository import tag_repository
-from src.modules.tags.schemas import ViewTag, CreateTag
+from src.modules.tags.schemas import CreateTag, ViewTag
 
 router = APIRouter(prefix="/tags", tags=["Tags"])
 

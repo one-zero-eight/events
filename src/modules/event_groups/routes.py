@@ -2,8 +2,7 @@ from urllib.parse import unquote
 
 import aiofiles
 import icalendar
-from fastapi import APIRouter
-from fastapi import UploadFile, HTTPException, Body
+from fastapi import APIRouter, Body, HTTPException, UploadFile
 from sqlalchemy.exc import IntegrityError
 from starlette.responses import JSONResponse
 
@@ -11,11 +10,11 @@ from src.api.dependencies import VERIFY_PARSER_DEPENDENCY
 from src.exceptions import (
     EventGroupNotFoundException,
     EventGroupWithMissingPath,
-    IncorrectCredentialsException,
     ForbiddenException,
+    IncorrectCredentialsException,
 )
 from src.modules.event_groups.repository import event_group_repository
-from src.modules.event_groups.schemas import ViewEventGroup, ListEventGroupsResponse, CreateEventGroup, UpdateEventGroup
+from src.modules.event_groups.schemas import CreateEventGroup, ListEventGroupsResponse, UpdateEventGroup, ViewEventGroup
 from src.modules.parse.utils import locate_ics_by_path
 
 router = APIRouter(prefix="/event-groups", tags=["Event Groups"])

@@ -2,10 +2,10 @@ __all__ = ["LinkedCalendar"]
 
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, String, Boolean, UniqueConstraint
-from sqlalchemy.orm import mapped_column, Mapped, relationship
+from sqlalchemy import Boolean, ForeignKey, String, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.storages.sql.models.__mixin__ import IdMixin, NameMixin, DescriptionMixin
+from src.storages.sql.models.__mixin__ import DescriptionMixin, IdMixin, NameMixin
 from src.storages.sql.models.base import Base
 
 if TYPE_CHECKING:

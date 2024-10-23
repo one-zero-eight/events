@@ -17,9 +17,10 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # Read settings YAML file
-from pathlib import Path  # noqa: E402
-from yaml import safe_load  # noqa: E402
 import os  # noqa: E402
+from pathlib import Path  # noqa: E402
+
+from yaml import safe_load  # noqa: E402
 
 app_settings_path = os.getenv("SETTINGS_PATH", "settings.yaml")
 app_settings = safe_load(Path(app_settings_path).read_text())

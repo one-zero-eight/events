@@ -1,20 +1,19 @@
 __all__ = ["Event", "EventPatch"]
 
 import datetime
+from typing import TYPE_CHECKING
 
-from sqlalchemy import ForeignKey, Text, String
+from sqlalchemy import ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.storages.sql.models import Base
 from src.storages.sql.models.__mixin__ import (
+    DescriptionMixin,
     IdMixin,
     NameMixin,
-    DescriptionMixin,
-    UpdateCreateDateTimeMixin,
     OwnershipsMixinFactory,
+    UpdateCreateDateTimeMixin,
 )
-from src.storages.sql.models import Base
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from src.storages.sql.models.event_groups import EventGroup

@@ -2,7 +2,7 @@ __all__ = ["setup_ownership_method", "Ownership", "OwnershipEnum"]
 
 from enum import StrEnum
 
-from pydantic import BaseModel, field_validator, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 from sqlalchemy import delete
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession

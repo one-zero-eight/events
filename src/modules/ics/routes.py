@@ -1,19 +1,18 @@
 from urllib.parse import unquote
 
-from fastapi import APIRouter
-from fastapi import HTTPException
-from starlette.responses import FileResponse, StreamingResponse, Response
+from fastapi import APIRouter, HTTPException
+from starlette.responses import FileResponse, Response, StreamingResponse
 
 from src.api.dependencies import CURRENT_USER_ID_DEPENDENCY
 from src.config import settings
-from src.exceptions import EventGroupNotFoundException, ObjectNotFound, ForbiddenException
+from src.exceptions import EventGroupNotFoundException, ForbiddenException, ObjectNotFound
 from src.modules.event_groups.repository import event_group_repository
 from src.modules.ics.utils import (
     generate_ics_from_url,
-    get_personal_event_groups_ics,
-    get_personal_sport_ics,
-    get_personal_music_room_ics,
     get_moodle_ics,
+    get_personal_event_groups_ics,
+    get_personal_music_room_ics,
+    get_personal_sport_ics,
 )
 from src.modules.parse.utils import locate_ics_by_path
 from src.modules.users.linked import LinkedCalendarView

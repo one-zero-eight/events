@@ -4,17 +4,17 @@ import random
 import string
 from typing import Literal
 
-from sqlalchemy import select, delete, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy.sql.expression import exists
 
 from src.exceptions import EventGroupNotFoundException
-from src.modules.crud import CRUDFactory, AbstractCRUDRepository
+from src.modules.crud import AbstractCRUDRepository, CRUDFactory
 from src.modules.users.linked import LinkedCalendarCreate, LinkedCalendarView
-from src.modules.users.schemas import CreateUser, ViewUser, UpdateUser, ViewUserScheduleKey
-from src.storages.sql.models import User, EventGroup, UserXFavoriteEventGroup, LinkedCalendar, UserScheduleKeys
+from src.modules.users.schemas import CreateUser, UpdateUser, ViewUser, ViewUserScheduleKey
+from src.storages.sql.models import EventGroup, LinkedCalendar, User, UserScheduleKeys, UserXFavoriteEventGroup
 from src.storages.sql.models.event_groups import UserXHiddenEventGroup
 from src.storages.sql.storage import SQLAlchemyStorage
 

@@ -2,7 +2,7 @@ __all__ = ["CreateUser", "ViewUser", "UpdateUser", "ViewUserScheduleKey"]
 
 from typing import Optional
 
-from pydantic import Field, BaseModel, field_validator, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from src.modules.users.linked import LinkedCalendarView
 

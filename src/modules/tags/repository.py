@@ -5,11 +5,11 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from src.modules.crud import CRUDFactory, AbstractCRUDRepository
+from src.modules.crud import AbstractCRUDRepository, CRUDFactory
 from src.modules.ownership import OwnershipEnum, setup_ownership_method
-from src.modules.tags.schemas import CreateTag, ViewTag, UpdateTag
+from src.modules.tags.schemas import CreateTag, UpdateTag, ViewTag
 from src.storages.sql import SQLAlchemyStorage
-from src.storages.sql.models import Tag, EventGroup
+from src.storages.sql.models import EventGroup, Tag
 
 CRUD: AbstractCRUDRepository[
     CreateTag,

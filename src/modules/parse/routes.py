@@ -11,9 +11,9 @@ from src.api.dependencies import VERIFY_PARSER_DEPENDENCY
 from src.exceptions import IncorrectCredentialsException
 from src.modules.event_groups.repository import event_group_repository
 from src.modules.event_groups.schemas import CreateEventGroup
-from src.modules.parse.bootcamp import BootcampParserConfig, BootcampParser, AcademicGroup, BuddyGroup, Workshop
-from src.modules.parse.cleaning import CleaningParserConfig, CleaningParser, CleaningEvent, LinenChangeEvent
-from src.modules.parse.utils import sluggify, locate_ics_by_path, get_base_calendar
+from src.modules.parse.bootcamp import AcademicGroup, BootcampParser, BootcampParserConfig, BuddyGroup, Workshop
+from src.modules.parse.cleaning import CleaningEvent, CleaningParser, CleaningParserConfig, LinenChangeEvent
+from src.modules.parse.utils import get_base_calendar, locate_ics_by_path, sluggify
 from src.modules.tags.schemas import CreateTag
 
 router = APIRouter(prefix="/parse", tags=["Parse"])

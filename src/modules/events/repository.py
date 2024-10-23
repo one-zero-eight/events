@@ -7,12 +7,12 @@ from sqlalchemy.orm import joinedload, selectinload
 
 from src.modules.crud import CRUDFactory
 from src.modules.events.schemas import (
+    AddEventPatch,
     CreateEvent,
     UpdateEvent,
-    ViewEvent,
-    AddEventPatch,
-    ViewEventPatch,
     UpdateEventPatch,
+    ViewEvent,
+    ViewEventPatch,
 )
 from src.storages.sql import SQLAlchemyStorage
 from src.storages.sql.models import Event, EventPatch

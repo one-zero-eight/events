@@ -9,10 +9,10 @@ from src.storages.sql import SQLAlchemyStorage
 
 
 async def setup_repositories() -> SQLAlchemyStorage:
-    from src.modules.users.repository import user_repository
     from src.modules.event_groups.repository import event_group_repository
-    from src.modules.tags.repository import tag_repository
     from src.modules.innohassle_accounts import innohassle_accounts
+    from src.modules.tags.repository import tag_repository
+    from src.modules.users.repository import user_repository
 
     # ------------------- Repositories Dependencies -------------------
 
@@ -28,6 +28,7 @@ async def setup_repositories() -> SQLAlchemyStorage:
 
 def setup_predefined_data_from_file():
     import json
+
     from src.modules.predefined.storage import JsonPredefinedUsers
     from src.modules.predefined.utils import setup_predefined_data_from_object
 

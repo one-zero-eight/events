@@ -9,9 +9,9 @@ Create Date: 2024-02-13 03:10:53.731890
 # ruff: noqa: E501
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "cba1388a6e8f"

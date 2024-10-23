@@ -4,7 +4,7 @@ import asyncio
 import inspect
 import logging.config
 import os
-from typing import Dict, Any
+from typing import Any, Dict
 
 import fastapi.routing
 import yaml
@@ -18,7 +18,7 @@ class RelativePathFilter(logging.Filter):
         return True
 
 
-with open("logging.yaml", "r") as f:
+with open("logging.yaml") as f:
     config = yaml.safe_load(f)
     logging.config.dictConfig(config)
 

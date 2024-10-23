@@ -4,7 +4,7 @@ import datetime
 from typing import Optional
 
 from icalendar import vRecur
-from pydantic import BaseModel, Field, field_validator, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class CreateEvent(BaseModel):
