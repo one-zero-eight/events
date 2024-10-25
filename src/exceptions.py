@@ -1,4 +1,4 @@
-from typing import ClassVar, Any
+from typing import Any, ClassVar
 
 from fastapi import HTTPException
 from starlette import status

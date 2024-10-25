@@ -1,10 +1,10 @@
 import datetime
 import re
 from typing import Generator
+from zlib import crc32
 
 import icalendar
-from pydantic import BaseModel, Field, ConfigDict, field_validator
-from zlib import crc32
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from src.modules.parse.utils import get_color
 
@@ -76,7 +76,7 @@ class BootcampEvent(BaseModel):
         else:
             string_to_hash = str(("bootcamp", self.summary, self.location, self.dtstart))
         hash_ = crc32(string_to_hash.encode("utf-8"))
-        return "%x#bootcamp@innohassle.ru" % abs(hash_)
+        return f"{abs(hash_):x}#bootcamp@innohassle.ru"
 
     def get_vevent(self) -> icalendar.Event:
         """

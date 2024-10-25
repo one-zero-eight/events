@@ -92,7 +92,7 @@ class CleaningEvent(BaseModel):
         string_to_hash = str(("cleaning", self.summary, self.location, self.date.isoformat()))
         hash_ = crc32(string_to_hash.encode("utf-8"))
 
-        return "%x#cleaning@innohassle.ru" % abs(hash_)
+        return f"{abs(hash_):x}#cleaning@innohassle.ru"
 
     def get_vevent(self) -> icalendar.Event:
         """
@@ -126,7 +126,7 @@ class LinenChangeEvent(BaseModel):
         """
         string_to_hash = str(("linen", self.summary, self.location))
         hash_ = crc32(string_to_hash.encode("utf-8"))
-        return "%x#linen@innohassle.ru" % abs(hash_)
+        return f"{abs(hash_):x}#linen@innohassle.ru"
 
     def get_vevent(self) -> icalendar.Event:
         """

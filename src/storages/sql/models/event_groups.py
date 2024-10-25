@@ -1,19 +1,19 @@
 __all__ = ["EventGroup", "UserXFavoriteEventGroup", "UserXHiddenEventGroup"]
 
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy import JSON, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from src.storages.sql.models import Base
 from src.storages.sql.models.__mixin__ import (
-    TagsMixinFactory,
+    DescriptionMixin,
     IdMixin,
     NameMixin,
-    DescriptionMixin,
     OwnershipsMixinFactory,
+    TagsMixinFactory,
     UpdateCreateDateTimeMixin,
 )
-from src.storages.sql.models import Base
 
 if TYPE_CHECKING:
     from src.storages.sql.models.events import Event

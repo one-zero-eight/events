@@ -49,7 +49,7 @@ async def generate_ics_from_url(url: str, headers: dict = None) -> AsyncGenerato
 
 async def _generate_ics_from_multiple(user: ViewUser, *ics: Path) -> AsyncGenerator[bytes, None]:
     async def _async_read_schedule(ics_path: Path):
-        async with aiofiles.open(ics_path, "r") as f:
+        async with aiofiles.open(ics_path) as f:
             content = await f.read()
             _cal = icalendar.Calendar.from_ical(content)
             return _cal
@@ -176,7 +176,7 @@ async def get_personal_sport_ics(user: ViewUser) -> bytes:
     def _training_to_vevent(training: Training) -> icalendar.Event:
         string_to_hash = str(training.extendedProps.id)
         hash_ = crc32(string_to_hash.encode("utf-8"))
-        uid = "sport-%x@innohassle.ru" % abs(hash_)
+        uid = f"sport-{abs(hash_):x}@innohassle.ru"
 
         vevent = icalendar.Event()
         vevent.add("uid", uid)

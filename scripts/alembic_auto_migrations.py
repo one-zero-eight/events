@@ -1,5 +1,5 @@
-import sys
 import pathlib
+import sys
 
 import alembic.config
 

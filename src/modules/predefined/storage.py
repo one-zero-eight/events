@@ -1,6 +1,6 @@
 __all__ = ["JsonPredefinedUsers"]
 
-from pydantic import BaseModel, Field, field_validator, TypeAdapter
+from pydantic import BaseModel, Field, TypeAdapter, field_validator
 
 
 class JsonPredefinedUsers(BaseModel):

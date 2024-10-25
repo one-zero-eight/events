@@ -3,7 +3,7 @@ __all__ = ["CreateTag", "ViewTag", "UpdateTag"]
 import json
 from typing import Optional
 
-from pydantic import BaseModel, Json, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, Json, field_validator
 
 
 class CreateTag(BaseModel, frozen=True):

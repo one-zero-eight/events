@@ -4,14 +4,13 @@ from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, false
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.orm import relationship, mapped_column, Mapped
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.storages.sql.models.__mixin__ import IdMixin
 from src.storages.sql.models.base import Base
 
 if TYPE_CHECKING:
-    from src.storages.sql.models.event_groups import UserXHiddenEventGroup
-    from src.storages.sql.models.event_groups import UserXFavoriteEventGroup
+    from src.storages.sql.models.event_groups import UserXFavoriteEventGroup, UserXHiddenEventGroup
     from src.storages.sql.models.linked import LinkedCalendar
 
 

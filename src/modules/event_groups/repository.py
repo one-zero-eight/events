@@ -1,20 +1,19 @@
 __all__ = ["SqlEventGroupRepository", "event_group_repository"]
 
-from typing import Optional, cast, Iterable
+from typing import Iterable, Optional, cast
 
-from sqlalchemy import select, update, delete
+from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.modules.crud import CRUDFactory, AbstractCRUDRepository
-from src.modules.ownership import setup_ownership_method
-from src.modules.ownership import OwnershipEnum
+from src.modules.crud import AbstractCRUDRepository, CRUDFactory
 from src.modules.event_groups.schemas import (
-    CreateEventGroupWithoutTags,
-    ViewEventGroup,
     CreateEventGroup,
+    CreateEventGroupWithoutTags,
     UpdateEventGroup,
+    ViewEventGroup,
 )
+from src.modules.ownership import OwnershipEnum, setup_ownership_method
 from src.storages.sql import SQLAlchemyStorage
 from src.storages.sql.models import EventGroup
 

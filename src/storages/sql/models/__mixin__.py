@@ -9,9 +9,9 @@ __all__ = [
 
 import datetime
 
-from sqlalchemy import ForeignKey, String, Text, DateTime, func
-from sqlalchemy.ext.associationproxy import association_proxy, AssociationProxy
-from sqlalchemy.orm import DeclarativeBase, declared_attr, relationship, Mapped, mapped_column
+from sqlalchemy import DateTime, ForeignKey, String, Text, func
+from sqlalchemy.ext.associationproxy import AssociationProxy, association_proxy
+from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column, relationship
 
 
 def TagsMixinFactory(tablename: str, Base: type[DeclarativeBase]):

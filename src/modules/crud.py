@@ -1,10 +1,10 @@
 __all__ = ["AbstractCRUDRepository", "CRUDFactory"]
 
-from abc import abstractmethod, ABCMeta
-from typing import Type, TypeVar, Generic
+from abc import ABCMeta, abstractmethod
+from typing import Generic, Type, TypeVar
 
 from pydantic import BaseModel as PydanticModel
-from sqlalchemy import or_, and_, ColumnElement
+from sqlalchemy import ColumnElement, and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.base import ExecutableOption
 
@@ -71,7 +71,8 @@ def CRUDFactory(
     UpdateScheme: Type[UpdateType] = None,
     get_options: tuple[ExecutableOption, ...] = (),
 ) -> AbstractCRUDRepository[CreateType, ViewType, UpdateType]:
-    from sqlalchemy import delete, insert, select, update as sql_update
+    from sqlalchemy import delete, insert, select
+    from sqlalchemy import update as sql_update
     from sqlalchemy.dialects.postgresql import insert as postgres_insert
     from sqlalchemy.inspection import inspect
 

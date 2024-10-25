@@ -42,7 +42,7 @@ async def main():
 
     type_adapter = TypeAdapter(list[InputUser])
 
-    with open(args.input_file, "r") as file:
+    with open(args.input_file) as file:
         data = file.read()
         users = type_adapter.validate_json(data)
 

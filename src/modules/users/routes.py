@@ -1,16 +1,14 @@
 from typing import Literal
 
-from fastapi import APIRouter
-from fastapi import HTTPException
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 
 from src.api.dependencies import CURRENT_USER_ID_DEPENDENCY
-from src.exceptions import IncorrectCredentialsException
-from src.exceptions import ObjectNotFound, EventGroupNotFoundException
+from src.exceptions import EventGroupNotFoundException, IncorrectCredentialsException, ObjectNotFound
 from src.modules.event_groups.repository import event_group_repository
 from src.modules.predefined.repository import predefined_repository
-from src.modules.users.linked import LinkedCalendarView, LinkedCalendarCreate
+from src.modules.users.linked import LinkedCalendarCreate, LinkedCalendarView
 from src.modules.users.repository import user_repository
 from src.modules.users.schemas import ViewUser, ViewUserScheduleKey
 

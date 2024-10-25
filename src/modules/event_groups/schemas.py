@@ -7,11 +7,11 @@ __all__ = [
 ]
 
 import datetime
-from typing import Optional, Iterable
+from typing import Iterable, Optional
 
-from pydantic import BaseModel, Field, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from src.modules.tags.schemas import ViewTag, CreateTag
+from src.modules.tags.schemas import CreateTag, ViewTag
 
 
 class CreateEventGroupWithoutTags(BaseModel):
