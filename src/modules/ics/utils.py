@@ -121,7 +121,7 @@ class Training(BaseModel):
         id: int
         group_id: int
         can_grade: bool
-        training_class: str
+        training_class: str | None
         group_accredited: bool
         can_check_in: bool
         checked_in: bool
@@ -188,7 +188,8 @@ async def get_personal_sport_ics(user: ViewUser) -> bytes:
         else:
             vevent.add("dtstart", icalendar.vDatetime(training.start))
             vevent.add("dtend", icalendar.vDatetime(training.end))
-        vevent.add("location", training.extendedProps.training_class)
+        if training.extendedProps.training_class is not None:
+            vevent.add("location", training.extendedProps.training_class)
         vevent.add("x-sport-training-id", training.extendedProps.id)
         vevent.add("x-sport-checked-in", training.extendedProps.checked_in)
         vevent.add("x-sport-can-checkin", training.extendedProps.can_check_in)
