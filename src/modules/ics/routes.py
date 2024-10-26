@@ -1,11 +1,15 @@
+from collections import defaultdict
+from typing import Annotated
 from urllib.parse import unquote
 
-from fastapi import APIRouter, HTTPException
+import icalendar
+from fastapi import APIRouter, Header, HTTPException
 from starlette.responses import FileResponse, Response, StreamingResponse
 
 from src.api.dependencies import CURRENT_USER_ID_DEPENDENCY
 from src.config import settings
 from src.exceptions import EventGroupNotFoundException, ForbiddenException, ObjectNotFound
+from src.logging_ import logger
 from src.modules.event_groups.repository import event_group_repository
 from src.modules.ics.utils import (
     generate_ics_from_url,
@@ -313,19 +317,46 @@ async def get_music_room_schedule() -> StreamingResponse:
     },
     tags=["Event Groups"],
 )
-async def get_event_group_ics_by_alias(user_id: int, export_type: str, event_group_alias: str):
+async def get_event_group_ics_by_alias(
+    user_id: int,
+    export_type: str,
+    event_group_alias: str,
+    user_agent: Annotated[str | None, Header()] = None,
+):
     """
     Get event group .ics file by id
     """
 
     event_group_alias = unquote(event_group_alias)
     event_group = await event_group_repository.read_by_alias(event_group_alias)
+    logger.info(f"User-Agent: {user_agent}")
 
     if event_group is None:
         raise EventGroupNotFoundException()
     if event_group.path:
         ics_path = locate_ics_by_path(event_group.path)
-        return FileResponse(ics_path, media_type="text/calendar")
+
+        if user_agent == "Google-Calendar-Importer":  # patch reccurences for Google Calendar
+            with ics_path.open() as f:
+                calendar: icalendar.Calendar = icalendar.Calendar.from_ical(f.read())
+            events = []
+            with_rrule: dict[str, icalendar.Event] = {}
+            with_reccurence_id: dict[str, list[icalendar.Event]] = defaultdict(list)
+            for event in calendar.walk("VEVENT"):  # type: icalendar.Event
+                if event.get("RRULE"):
+                    with_rrule[event.get("UID")] = event
+                if recurrence_id := event.get("RECURRENCE-ID"):
+                    with_reccurence_id[event.get("UID")].append(recurrence_id)
+                events.append(event)
+            for uid, recurrence_ids in with_reccurence_id.items():
+                parent: icalendar.Event = with_rrule[uid]
+                if not parent.get("EXDATE"):
+                    parent.add("EXDATE", recurrence_ids[0] if len(recurrence_ids) == 1 else recurrence_ids)
+            calendar.subcomponents = list(filter(lambda component: component.name != "VEVENT", calendar.subcomponents))
+            calendar.subcomponents.extend(events)
+            return Response(content=calendar.to_ical(), media_type="text/calendar")
+        else:
+            return FileResponse(ics_path, media_type="text/calendar")
     else:
         # TODO: create ics file on the fly from events connected to event group
         raise HTTPException(
