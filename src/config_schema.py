@@ -33,20 +33,16 @@ class Sport(SettingsEntityModel):
 
 
 class Accounts(SettingsEntityModel):
-    """InNoHassle-Accounts integration settings"""
+    """InNoHassle Accounts integration settings"""
 
     api_url: str = "https://api.innohassle.ru/accounts/v0"
     "URL of the Accounts API"
-    well_known_url: str = "https://api.innohassle.ru/accounts/v0/.well-known"
-    "URL of the well-known endpoint for the Accounts API"
     api_jwt_token: SecretStr
     "JWT token for accessing the Accounts API as a service"
 
 
 class Settings(SettingsEntityModel):
-    """
-    Settings for the application. Get settings from `settings.yaml` file.
-    """
+    """Settings for the application. Get settings from `settings.yaml` file."""
 
     app_root_path: str = ""
     "Prefix for the API path (e.g. '/api/v0')"
@@ -59,9 +55,9 @@ class Settings(SettingsEntityModel):
     predefined_dir: Path = Path("./predefined")
     "Path to the directory with predefined data"
     accounts: Accounts
-    "InNoHassle-Accounts integration settings"
+    "InNoHassle Accounts integration settings"
     music_room: Optional[MusicRoom] = None
-    "InNoHassle-MusicRoom integration settings"
+    "InNoHassle MusicRoom integration settings"
     sport: Sport | None = Sport()
     "Innopolis Sport integration settings"
 
