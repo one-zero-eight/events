@@ -24,6 +24,10 @@ app = FastAPI(
             "url": "https://api.innohassle.ru/events/v0",
             "description": "Production environment",
         },
+        {
+            "url": "https://api.innohassle.ru/events/staging-v0",
+            "description": "Staging environment",
+        },
     ],
     root_path=settings.app_root_path,
     root_path_in_servers=False,
