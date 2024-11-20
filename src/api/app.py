@@ -35,6 +35,7 @@ app = FastAPI(
     lifespan=lifespan,
     docs_url=None,
     redoc_url=None,
+    swagger_ui_oauth2_redirect_url=None,
 )
 
 patch_fastapi(app)
