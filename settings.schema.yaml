@@ -69,8 +69,10 @@ properties:
     default: development
     description: App environment
   db_url:
-    default: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
     description: PostgreSQL database connection URL
+    examples:
+    - postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
+    - postgresql+asyncpg://postgres:postgres@db:5432/postgres
     format: password
     title: Db Url
     type: string
@@ -96,17 +98,15 @@ properties:
     default: null
     description: InNoHassle MusicRoom integration settings
   sport:
-    anyOf:
-    - $ref: '#/$defs/Sport'
-    - type: 'null'
+    $ref: '#/$defs/Sport'
     default:
       api_url: https://sport.innopolis.university/api
-    description: Innopolis Sport integration settings
   $schema:
     description: Path to the schema file
     title: Schema
     type: string
 required:
+- db_url
 - accounts
 title: Settings
 type: object

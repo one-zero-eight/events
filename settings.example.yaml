@@ -1,9 +1,7 @@
 # Check settings.schema.yaml for more details
 $schema: "./settings.schema.yaml"
 # ---------- Application settings ----- #
-environment: development
-
-db_url: postgresql+asyncpg://postgres:postgres@localhost:5432/postgres
+db_url: null
 accounts:
   # Get from https://api.innohassle.ru/accounts/v0/tokens/generate-service-token?sub=events-local-dev&scopes=users&only_for_me=true
-  api_jwt_token: "secret"
+  api_jwt_token: null
