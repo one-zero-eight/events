@@ -46,7 +46,8 @@ This is the API for events service in InNoHassle ecosystem.
 
 ### Set up for development
 
-1. Install [Python 3.12+](https://www.python.org/downloads/), Install [Poetry](https://python-poetry.org/docs/)
+1. Install [Python 3.12+](https://www.python.org/downloads/), [Poetry](https://python-poetry.org/docs/),
+   [Docker](https://docs.docker.com/engine/install/)
 2. Install project dependencies with [Poetry](https://python-poetry.org/docs/cli/#options-2).
    ```bash
    poetry install
