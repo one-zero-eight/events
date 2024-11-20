@@ -1,6 +1,7 @@
 __all__ = ["SqlEventGroupRepository", "event_group_repository"]
 
-from typing import Iterable, Optional, cast
+from collections.abc import Iterable
+from typing import cast
 
 from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert
@@ -114,10 +115,10 @@ class SqlEventGroupRepository:
         async with self._create_session() as session:
             return await CRUD.read(session, id=group_id)
 
-    async def get_only_path(self, group_id: int) -> Optional[str]:
+    async def get_only_path(self, group_id: int) -> str | None:
         async with self._create_session() as session:
             q = select(EventGroup.path).where(EventGroup.id == group_id).where(EventGroup.path.isnot(None))
-            path: Optional[str] = await session.scalar(q)
+            path: str | None = await session.scalar(q)
             return path
 
     async def read_all(self) -> list[ViewEventGroup]:

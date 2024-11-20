@@ -1,6 +1,5 @@
 __all__ = ["CreateUser", "ViewUser", "UpdateUser", "ViewUserScheduleKey"]
 
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -12,10 +11,10 @@ class CreateUser(BaseModel):
     Represents a user instance to be created.
     """
 
-    id: Optional[int] = None
+    id: int | None = None
     email: str
     innohassle_id: str
-    name: Optional[str] = None
+    name: str | None = None
 
 
 class ViewUser(BaseModel):
@@ -26,7 +25,7 @@ class ViewUser(BaseModel):
     id: int
     email: str
     innohassle_id: str | None = None
-    name: Optional[str] = None
+    name: str | None = None
     favorite_event_groups: list[int] = Field(default_factory=list)
     hidden_event_groups: list[int] = Field(default_factory=list)
     linked_calendars: dict[str, LinkedCalendarView] = Field(default_factory=dict)
@@ -61,5 +60,5 @@ class UpdateUser(BaseModel):
     Represents a user instance to be updated.
     """
 
-    email: Optional[str] = None
-    name: Optional[str] = None
+    email: str | None = None
+    name: str | None = None

@@ -1,16 +1,15 @@
 __all__ = ["CreateTag", "ViewTag", "UpdateTag"]
 
 import json
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Json, field_validator
 
 
 class CreateTag(BaseModel, frozen=True):
     alias: str
-    type: Optional[str] = None
-    name: Optional[str] = None
-    satellite: Optional[Json] = None
+    type: str | None = None
+    name: str | None = None
+    satellite: Json | None = None
 
     @field_validator("satellite", mode="before")
     def _validate_satellite(cls, v):
@@ -22,9 +21,9 @@ class CreateTag(BaseModel, frozen=True):
 class ViewTag(BaseModel):
     id: int
     alias: str
-    type: Optional[str] = None
-    name: Optional[str] = None
-    satellite: Optional[dict] = None
+    type: str | None = None
+    name: str | None = None
+    satellite: dict | None = None
 
     # ownerships: list[Ownership] = Field(default_factory=list)
     @field_validator("satellite", mode="before")
@@ -37,10 +36,10 @@ class ViewTag(BaseModel):
 
 
 class UpdateTag(BaseModel):
-    alias: Optional[str] = None
-    type: Optional[str] = None
-    name: Optional[str] = None
-    satellite: Optional[Json] = None
+    alias: str | None = None
+    type: str | None = None
+    name: str | None = None
+    satellite: Json | None = None
 
     @field_validator("satellite", mode="before")
     def _validate_satellite(cls, v):

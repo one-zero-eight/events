@@ -1,7 +1,7 @@
 __all__ = ["AbstractCRUDRepository", "CRUDFactory"]
 
 from abc import ABCMeta, abstractmethod
-from typing import Generic, Type, TypeVar
+from typing import Generic, TypeVar
 
 from pydantic import BaseModel as PydanticModel
 from sqlalchemy import ColumnElement, and_, or_
@@ -65,10 +65,10 @@ ModelType = TypeVar("ModelType", bound=Base)
 
 
 def CRUDFactory(
-    Model: Type[ModelType],
-    CreateScheme: Type[CreateType],
-    ViewScheme: Type[ViewType],
-    UpdateScheme: Type[UpdateType] = None,
+    Model: type[ModelType],
+    CreateScheme: type[CreateType],
+    ViewScheme: type[ViewType],
+    UpdateScheme: type[UpdateType] = None,
     get_options: tuple[ExecutableOption, ...] = (),
 ) -> AbstractCRUDRepository[CreateType, ViewType, UpdateType]:
     from sqlalchemy import delete, insert, select

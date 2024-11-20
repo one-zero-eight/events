@@ -4,7 +4,7 @@ import asyncio
 import inspect
 import logging.config
 import os
-from typing import Any, Dict
+from typing import Any
 
 import fastapi.routing
 import yaml
@@ -26,7 +26,7 @@ logger = logging.getLogger("src")
 logger.addFilter(RelativePathFilter())
 
 
-async def run_endpoint_function(*, dependant: Dependant, values: Dict[str, Any], is_coroutine: bool) -> Any:
+async def run_endpoint_function(*, dependant: Dependant, values: dict[str, Any], is_coroutine: bool) -> Any:
     # Only called by get_request_handler. Has been split into its own function to
     # facilitate profiling endpoints, since inner functions are harder to profile.
     assert dependant.call is not None, "dependant.call must be a function"

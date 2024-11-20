@@ -168,7 +168,7 @@ def validate_vevent(event: icalendar.Event):
 
 
 def aware_utcnow() -> datetime.datetime:
-    return datetime.datetime.now(datetime.timezone.utc)
+    return datetime.datetime.now(datetime.UTC)
 
 
 def locate_ics_by_path(path: str) -> Path:

@@ -35,3 +35,4 @@ lint.ignore = [
     "PLR"
 ]
 lint.extend-select = ["I", "UP", "PL"]
+target-version = "py312"

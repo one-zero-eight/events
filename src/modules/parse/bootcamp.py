@@ -1,6 +1,6 @@
 import datetime
 import re
-from typing import Generator
+from collections.abc import Generator
 from zlib import crc32
 
 import icalendar

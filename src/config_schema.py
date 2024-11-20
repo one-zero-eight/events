@@ -1,9 +1,8 @@
 from enum import StrEnum
 from pathlib import Path
-from typing import Optional
 
 import yaml
-from pydantic import BaseModel, ConfigDict, SecretStr
+from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
 
 class Environment(StrEnum):
@@ -48,7 +47,12 @@ class Settings(SettingsEntityModel):
     "Prefix for the API path (e.g. '/api/v0')"
     environment: Environment = Environment.DEVELOPMENT
     "App environment"
-    db_url: SecretStr = "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres"
+    db_url: SecretStr = Field(
+        examples=[
+            "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres",
+            "postgresql+asyncpg://postgres:postgres@db:5432/postgres",
+        ]
+    )
     "PostgreSQL database connection URL"
     cors_allow_origin_regex: str = ".*"
     "Allowed origins for CORS: from which domains requests to the API are allowed. Specify as a regex: `https://.*.innohassle.ru`"
@@ -56,9 +60,9 @@ class Settings(SettingsEntityModel):
     "Path to the directory with predefined data"
     accounts: Accounts
     "InNoHassle Accounts integration settings"
-    music_room: Optional[MusicRoom] = None
+    music_room: MusicRoom | None = None
     "InNoHassle MusicRoom integration settings"
-    sport: Sport | None = Sport()
+    sport: Sport = Sport()
     "Innopolis Sport integration settings"
 
     @classmethod

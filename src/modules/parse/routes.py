@@ -1,7 +1,7 @@
 __all__ = ["router"]
 
+from collections.abc import Iterable
 from itertools import groupby
-from typing import Iterable
 
 import aiofiles
 import icalendar

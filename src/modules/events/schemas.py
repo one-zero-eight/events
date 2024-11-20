@@ -1,7 +1,6 @@
 __all__ = ["CreateEvent", "ViewEvent", "UpdateEvent", "AddEventPatch", "ViewEventPatch", "UpdateEventPatch"]
 
 import datetime
-from typing import Optional
 
 from icalendar import vRecur
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -9,22 +8,22 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 class CreateEvent(BaseModel):
     name: str
-    description: Optional[str] = None
+    description: str | None = None
     patches: list["AddEventPatch"] = Field(default_factory=list)
 
 
 class ViewEvent(BaseModel):
     id: int
     name: str
-    description: Optional[str] = None
+    description: str | None = None
 
     patches: list["ViewEventPatch"] = Field(default_factory=list)
     model_config = ConfigDict(from_attributes=True)
 
 
 class UpdateEvent(BaseModel):
-    name: Optional[str] = None
-    description: Optional[str] = None
+    name: str | None = None
+    description: str | None = None
 
 
 class AddEventPatch(BaseModel):
@@ -32,13 +31,13 @@ class AddEventPatch(BaseModel):
 
     # --- .ics fields --- #
     summary: str
-    description: Optional[str] = None
-    location: Optional[str] = None
+    description: str | None = None
+    location: str | None = None
 
     dtstart: datetime.datetime
     dtend: datetime.datetime
 
-    rrule: Optional[str | dict] = None
+    rrule: str | dict | None = None
 
     @field_validator("rrule", mode="before")
     def _validate_rrule(cls, v) -> str:
@@ -62,13 +61,13 @@ class ViewEventPatch(BaseModel):
 
     # --- .ics fields --- #
     summary: str
-    description: Optional[str] = None
-    location: Optional[str] = None
+    description: str | None = None
+    location: str | None = None
 
     dtstart: datetime.datetime
     dtend: datetime.datetime
 
-    rrule: Optional[vRecur] = None
+    rrule: vRecur | None = None
 
     @field_validator("rrule", mode="before")
     def _validate_rrule(cls, v):
@@ -81,14 +80,14 @@ class ViewEventPatch(BaseModel):
 
 class UpdateEventPatch(BaseModel):
     # --- .ics fields --- #
-    summary: Optional[str] = None
-    description: Optional[str] = None
-    location: Optional[str] = None
+    summary: str | None = None
+    description: str | None = None
+    location: str | None = None
 
-    dtstart: Optional[datetime.datetime] = None
-    dtend: Optional[datetime.datetime] = None
+    dtstart: datetime.datetime | None = None
+    dtend: datetime.datetime | None = None
 
-    rrule: Optional[vRecur] = None
+    rrule: vRecur | None = None
 
     @field_validator("rrule", mode="before")
     def _validate_rrule(cls, v):

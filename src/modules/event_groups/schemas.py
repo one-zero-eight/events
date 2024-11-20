@@ -7,7 +7,7 @@ __all__ = [
 ]
 
 import datetime
-from typing import Iterable, Optional
+from collections.abc import Iterable
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -21,8 +21,8 @@ class CreateEventGroupWithoutTags(BaseModel):
 
     alias: str
     name: str
-    path: Optional[str] = None
-    description: Optional[str] = None
+    path: str | None = None
+    description: str | None = None
 
 
 class CreateEventGroup(CreateEventGroupWithoutTags):
@@ -38,9 +38,9 @@ class ViewEventGroup(BaseModel):
     alias: str
     updated_at: datetime.datetime
     created_at: datetime.datetime
-    path: Optional[str] = None
-    name: Optional[str] = None
-    description: Optional[str] = None
+    path: str | None = None
+    name: str | None = None
+    description: str | None = None
     tags: list[ViewTag] = Field(default_factory=list)
 
     # ownerships: list["Ownership"] = Field(default_factory=list)
@@ -57,10 +57,10 @@ class UpdateEventGroup(BaseModel):
     Represents a group instance to be updated.
     """
 
-    alias: Optional[str] = None
-    name: Optional[str] = None
-    description: Optional[str] = None
-    path: Optional[str] = None
+    alias: str | None = None
+    name: str | None = None
+    description: str | None = None
+    path: str | None = None
 
 
 class ListEventGroupsResponse(BaseModel):

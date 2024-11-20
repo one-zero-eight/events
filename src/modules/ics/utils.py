@@ -1,8 +1,8 @@
 import asyncio
 import datetime
+from collections.abc import AsyncGenerator
 from itertools import pairwise
 from pathlib import Path
-from typing import AsyncGenerator, Optional
 from urllib.parse import quote
 from zlib import crc32
 
@@ -35,7 +35,7 @@ async def generate_ics_from_url(url: str, headers: dict = None) -> AsyncGenerato
             raise HTTPException(status_code=e.response.status_code, detail=e.response.text) from e
 
         # read from stream
-        size: Optional[int] = int(response.headers.get("Content-Length"))
+        size: int | None = int(response.headers.get("Content-Length"))
 
         if size is None or size > MAX_SIZE:
             raise HTTPException(status_code=400, detail="File is too big or Content-Length is not specified")
