@@ -56,10 +56,6 @@ def check_and_prompt_api_jwt_token():
     Prompt the user to set it if it is missing, allow them to input it,
     and open the required URL in the default web browser.
     """
-    if not SETTINGS_FILE.exists():
-        print("❌ No `settings.yaml` found. Skipping JWT token check.")
-        return
-
     settings = get_settings()
     accounts = settings.get("accounts", {})
     api_jwt_token = accounts.get("api_jwt_token")
@@ -69,9 +65,8 @@ def check_and_prompt_api_jwt_token():
         print(f"  ➡️ Opening the following URL to generate a token:\n  {ACCOUNTS_TOKEN_URL}")
 
         webbrowser.open(ACCOUNTS_TOKEN_URL)
-        print("  🔑 Please paste the generated token below:")
 
-        token = input("  Enter the token here (or press Enter to skip):\n>").strip()
+        token = input("  🔑 Please paste the generated token below (or press Enter to skip):\n  > ").strip()
 
         if token:
             try:
