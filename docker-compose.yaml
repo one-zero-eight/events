@@ -17,13 +17,12 @@ services:
     volumes:
       - "./predefined:/code/predefined:rw" # Read-write predefined data
       - "./settings.yaml:/code/settings.yaml:ro" # Read-only settings file
-    env_file: .env # You can specify some Uvicorn settings in .env file
     environment:
       - TZ=Europe/Moscow # Set the timezone for correct calendar image generation
 
   db:
     # See more: https://hub.docker.com/_/postgres
-    image: "postgres:16.4"
+    image: "postgres:17.1"
     restart: always
     # The commits were slow on our servers, so we turned off the synchronous_commit
     command: postgres -c synchronous_commit=off
@@ -31,12 +30,13 @@ services:
       - "postgres:/var/lib/postgresql/data"
     ports:
       - "5432:5432"
-    env_file: .env # Set POSTGRES_PASSWORD in .env file
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       timeout: 5s
       retries: 5
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
 
 volumes:
   postgres:
