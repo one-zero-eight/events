@@ -49,15 +49,17 @@ def OwnershipsMixinFactory(tablename: str, Base: type[DeclarativeBase]):
     from src.storages.sql.models.users import User
 
     class Mixin:
-        class Ownership(Base):
-            __tablename__ = f"{tablename}_x_ownerships"
-            object_id: Mapped[int] = mapped_column(ForeignKey(f"{tablename}.id"), primary_key=True)
-            user_id: Mapped[int] = mapped_column(ForeignKey(User.id), primary_key=True)
-
-            user: Mapped["User"] = relationship("User")
-
-            role_alias: Mapped[str] = mapped_column(String(255), nullable=False, default="default")
-
+        Ownership = type(
+            f"Ownership_{tablename}",
+            (Base,),
+            {
+                "__tablename__": f"{tablename}_x_ownerships",
+                "object_id": mapped_column(ForeignKey(f"{tablename}.id"), primary_key=True),
+                "user_id": mapped_column(ForeignKey(User.id), primary_key=True),
+                "user": relationship("User"),
+                "role_alias": mapped_column(String(255), nullable=False, default="default"),
+            },
+        )
         User.__ownerships_tables__[tablename] = Ownership.__table__
 
         @declared_attr
