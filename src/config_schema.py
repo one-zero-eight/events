@@ -48,7 +48,6 @@ class Settings(SettingsEntityModel):
     environment: Environment = Environment.DEVELOPMENT
     "App environment"
     db_url: SecretStr = Field(
-        ...,
         examples=[
             "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres",
             "postgresql+asyncpg://postgres:postgres@db:5432/postgres",
