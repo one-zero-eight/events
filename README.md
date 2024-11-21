@@ -35,7 +35,7 @@ This is the API for events service in InNoHassle ecosystem.
 ### Technologies
 
 - [Python 3.12](https://www.python.org/downloads/) & [Poetry](https://python-poetry.org/docs/)
-- [FastAPI](https://fastapi.tiangolo.com/) & [Pydantic](https://docs.pydantic.dev/latest/)
+- [FastAPI](https://fastapi.tiangolo.com/)
 - Database and ORM: [PostgreSQL](https://www.postgresql.org/), [SQLAlchemy](https://www.sqlalchemy.org/),
   [Alembic](https://alembic.sqlalchemy.org/en/latest/)
 - Formatting and linting: [Ruff](https://docs.astral.sh/ruff/), [pre-commit](https://pre-commit.com/)
@@ -66,6 +66,17 @@ This is the API for events service in InNoHassle ecosystem.
 > [!TIP]
 > Edit `settings.yaml` according to your needs, you can view schema in
 > [config_schema.py](src/config_schema.py) and in [settings.schema.yaml](settings.schema.yaml)
+
+**Set up PyCharm integrations**
+
+1. Run configurations ([docs](https://www.jetbrains.com/help/pycharm/run-debug-configuration.html#createExplicitly)).
+   Right-click the `__main__.py` file in the project explorer, select `Run '__main__'` from the context menu.
+2. Ruff ([plugin](https://plugins.jetbrains.com/plugin/20574-ruff)).
+   It will lint and format your code. Make sure to enable `Use ruff format` option in plugin settings.
+3. Pydantic ([plugin](https://plugins.jetbrains.com/plugin/12861-pydantic)). It will fix PyCharm issues with
+   type-hinting.
+4. Conventional commits ([plugin](https://plugins.jetbrains.com/plugin/13389-conventional-commit)). It will help you
+   to write [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ### Deployment
 
