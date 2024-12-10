@@ -1,30 +1,44 @@
 name: Bandit Scan
 
-on: [push]
+on: [ push ]
 
 jobs:
- bandit:
-   name: Run Bandit Scan
-   runs-on: ubuntu-latest
+  bandit:
+    name: Run Bandit Scan
+    runs-on: ubuntu-latest
 
-   steps:
-   - name: Checkout code
-     uses: actions/checkout@v4
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-   - name: Set up Python
-     uses: actions/setup-python@v5
-     with:
-       python-version: 3.12
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.12
 
-   - name: Install Bandit
-     run: pip install bandit
+      - name: Install Bandit
+        run: pip install bandit
 
-   - name: Run Bandit Scan
-     run: bandit -ll -ii -r . -f json -o bandit-report.json
+      - name: Run Bandit Scan
+        run: bandit -ll -ii -r . -f json -o bandit-report.json
 
-   - name: Upload Artifact
-     uses: actions/upload-artifact@v4
-     if: always()
-     with:
-        name: bandit-findings.json
-        path: bandit-report.json
+      - name: Parse Bandit Report and Generate Summary
+        run: |
+          echo "### Bandit Security Scan Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "#### Summary" >> $GITHUB_STEP_SUMMARY
+          python - <<EOF
+          import json
+          with open('bandit-report.json') as f:
+              data = json.load(f)
+              summary = f"| Issue | Severity | Location |\n|---|---|---|\n"
+              for result in data.get('results', []):
+                  summary += f"| {result['issue_text']} | {result['issue_severity']} | {result['filename']}:{result['line_number']} |\n"
+              print(summary, file=open("$GITHUB_STEP_SUMMARY", "a"))
+          EOF
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-findings.json
+          path: bandit-report.json
