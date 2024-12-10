@@ -15,7 +15,7 @@ contents [by default](https://github.blog/changelog/2021-04-13-table-of-contents
 
 ## About
 
-This is the API for events service in InNoHassle ecosystem.
+This is the API for events service in InNoHassle ecosystem. Lets...
 
 ### Features
 
