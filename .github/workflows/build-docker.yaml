@@ -25,6 +25,7 @@ jobs:
       contents: read
       packages: write
       pull-requests: write
+      security-events: write
 
     outputs:
       imageid: ${{ steps.build.outputs.imageid }}
