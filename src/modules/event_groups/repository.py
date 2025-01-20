@@ -169,10 +169,21 @@ class SqlEventGroupRepository:
             return 0
 
         async with self._create_session() as session:
-            q = delete(EventGroup.tags_association).where(EventGroup.tags_association.c.tag_id == tag.id)
-            deleted = await session.execute(q)
+            # select event groups with that tag
+            q = (
+                select(EventGroup.id)
+                .join(EventGroup.tags_association)
+                .where(EventGroup.tags_association.any(tag_id=tag.id))
+            )
+            event_group_ids = (await session.execute(q)).scalars().all()
+            if not event_group_ids:
+                return 0
+
+            # delete event groups
+            q = delete(EventGroup).where(EventGroup.id.in_(event_group_ids))
+            await session.execute(q)
             await session.commit()
-            return cast(deleted.rowcount, int)
+            return len(event_group_ids)
 
     # ^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^ #
 
