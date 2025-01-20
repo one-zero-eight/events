@@ -4,6 +4,7 @@ from urllib.parse import unquote
 
 import icalendar
 from fastapi import APIRouter, Header, HTTPException
+from icalendar import vDDDTypes
 from starlette.responses import FileResponse, Response, StreamingResponse
 
 from src.api.dependencies import CURRENT_USER_ID_DEPENDENCY
@@ -341,14 +342,14 @@ async def get_event_group_ics_by_alias(
                 calendar: icalendar.Calendar = icalendar.Calendar.from_ical(f.read())
             events = []
             with_rrule: dict[str, icalendar.Event] = {}
-            with_reccurence_id: dict[str, list[icalendar.Event]] = defaultdict(list)
+            with_recurrence_id: dict[str, list[icalendar.Event]] = defaultdict(list)
             for event in calendar.walk("VEVENT"):  # type: icalendar.Event
                 if event.get("RRULE"):
                     with_rrule[event.get("UID")] = event
                 if recurrence_id := event.get("RECURRENCE-ID"):
-                    with_reccurence_id[event.get("UID")].append(recurrence_id)
+                    with_recurrence_id[event.get("UID")].append(vDDDTypes.from_ical(recurrence_id))
                 events.append(event)
-            for uid, recurrence_ids in with_reccurence_id.items():
+            for uid, recurrence_ids in with_recurrence_id.items():
                 parent: icalendar.Event = with_rrule[uid]
                 if not parent.get("EXDATE"):
                     parent.add("EXDATE", recurrence_ids[0] if len(recurrence_ids) == 1 else recurrence_ids)
