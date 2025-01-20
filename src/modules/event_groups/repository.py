@@ -15,6 +15,7 @@ from src.modules.event_groups.schemas import (
     ViewEventGroup,
 )
 from src.modules.ownership import OwnershipEnum, setup_ownership_method
+from src.modules.tags.repository import tag_repository
 from src.storages.sql import SQLAlchemyStorage
 from src.storages.sql.models import EventGroup
 
@@ -161,6 +162,17 @@ class SqlEventGroupRepository:
             q = delete(EventGroup).where(EventGroup.alias == alias)
             await session.execute(q)
             await session.commit()
+
+    async def delete_by_tag_alias(self, tag_alias: str) -> int:
+        tag = await tag_repository.read_by_alias(tag_alias)
+        if tag is None:
+            return 0
+
+        async with self._create_session() as session:
+            q = delete(EventGroup.tags_association).where(EventGroup.tags_association.c.tag_id == tag.id)
+            deleted = await session.execute(q)
+            await session.commit()
+            return cast(deleted.rowcount, int)
 
     # ^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^ #
 

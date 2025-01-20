@@ -82,6 +82,10 @@ class SqlTagRepository:
 
     # ^^^^^^^^^^^^^^^^^^^^ CRUD ^^^^^^^^^^^^^^^^^^^^ #
 
+    async def read_by_alias(self, alias: str) -> ViewTag | None:
+        async with self._create_session() as session:
+            return await CRUD.read_by(session, only_first=True, alias=alias)
+
     async def setup_ownership(self, tag_id: int, user_id: int, role_alias: OwnershipEnum) -> None:
         async with self._create_session() as session:
             OwnershipClass = Tag.Ownership
