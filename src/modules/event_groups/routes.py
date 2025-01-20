@@ -162,18 +162,14 @@ async def delete_event_group_by_alias(
 async def delete_event_group_by_tag_alias(
     tag_alias: str,
     _: VERIFY_PARSER_DEPENDENCY,
-):
+) -> int:
     """
     Delete event groups by its tag alias
     """
 
     tag_alias = unquote(tag_alias)
-    event_group = await event_group_repository.delete_by_tag_alias(tag_alias)
-
-    if event_group is None:
-        raise EventGroupNotFoundException()
-
-    await event_group_repository.delete_by_tag_alias(tag_alias)
+    deleted_count = await event_group_repository.delete_by_tag_alias(tag_alias)
+    return deleted_count
 
 
 @router.get(
