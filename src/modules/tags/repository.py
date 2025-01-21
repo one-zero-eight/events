@@ -132,5 +132,17 @@ class SqlTagRepository:
 
             await session.commit()
 
+    async def delete_by_alias(self, alias: str) -> None:
+        async with self._create_session() as session:
+            q = delete(Tag).where(Tag.alias == alias)
+            await session.execute(q)
+            await session.commit()
+
+    async def delete_by_type(self, type_: str) -> None:
+        async with self._create_session() as session:
+            q = delete(Tag).where(Tag.type == type_)
+            await session.execute(q)
+            await session.commit()
+
 
 tag_repository: SqlTagRepository = SqlTagRepository()
