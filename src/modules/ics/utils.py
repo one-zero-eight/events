@@ -1,7 +1,7 @@
 import asyncio
 import datetime
+import logging
 from collections.abc import AsyncGenerator
-from itertools import pairwise
 from pathlib import Path
 from urllib.parse import quote
 from zlib import crc32
@@ -14,7 +14,6 @@ from fastapi import HTTPException
 from pydantic import BaseModel, TypeAdapter
 
 from src.config import settings
-from src.logging_ import logger
 from src.modules.event_groups.repository import event_group_repository
 from src.modules.innohassle_accounts import innohassle_accounts
 from src.modules.parse.utils import aware_utcnow, get_base_calendar, locate_ics_by_path
@@ -242,34 +241,20 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
 
         return new
 
-    def create_quiz(opens: icalendar.Event, closes: icalendar.Event) -> icalendar.Event | None:
-        if "opens" in opens["summary"] and "closes" in closes["summary"]:
-            quiz_name = opens["summary"].split("opens")[0].strip()
-            closes_name = closes["summary"].split("closes")[0].strip()
-            if quiz_name != closes_name:
-                logger.warning(f"Quiz pair is not correct: {opens['summary']} and {closes['summary']}")
-                return None
-        elif "открывается" in opens["summary"] and "закрывается" in closes["summary"]:
-            quiz_name = opens["summary"].split("открывается")[0].strip()
-            closes_name = closes["summary"].split("закрывается")[0].strip()
-            if quiz_name != closes_name:
-                logger.warning(f"Quiz pair is not correct: {opens['summary']} and {closes['summary']}")
-                return None
-        else:
-            return None
-
+    def create_quiz(quiz_name: str, opens: icalendar.Event, closes: icalendar.Event | None = None) -> icalendar.Event:
         new = icalendar.Event()
-
         start: datetime.datetime = opens["dtstart"].dt
         start = start.astimezone(pytz.timezone("Europe/Moscow"))
-        end: datetime.datetime = closes["dtend"].dt
-        end = end.astimezone(pytz.timezone("Europe/Moscow"))
-
-        if start.date() != end.date():
-            new["dtstart"] = icalendar.vDate(end.date())
+        due: datetime.datetime | None = None
+        if closes:
+            due = datetime.datetime = closes["dtend"].dt
+            due = due.astimezone(pytz.timezone("Europe/Moscow"))
+        if due and start.date() != due.date():  # Display only on deadline day
+            new["dtstart"] = icalendar.vDate(due.date())
         else:
             new["dtstart"] = icalendar.vDatetime(start)
-            new["dtend"] = icalendar.vDatetime(end)
+            if due:
+                new["dtend"] = icalendar.vDatetime(due)
 
         new["uid"] = opens["uid"]
         new["dtstamp"] = opens["dtstamp"]
@@ -283,7 +268,7 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
                 [
                     f"Course: {course_name}",
                     opens["description"],
-                    f"Due to: {end.timetz().isoformat()}",
+                    f"Due to: {due.timetz().isoformat()}" if due else None,
                 ],
             )
         )
@@ -303,21 +288,35 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
 
         vevents = calendar.walk(name="VEVENT")
         fixed_events = []
-        quizes_halfs = []
+        quizes_halfs_opens = {}
+        quizes_halfs_closes = {}
+
         for event in vevents:
             event: icalendar.Event
             event_timedelta = event["dtend"].dt - event["dtstart"].dt
-            event_name: str = event["summary"]
+            event_name: str = event["summary"].strip()
 
             if event_timedelta == datetime.timedelta():
-                if (
-                    "closes" in event_name
-                    or "opens" in event_name
-                    or "закрывается" in event_name
-                    or "открывается" in event_name
-                ):
-                    # QUIZ TYPE
-                    quizes_halfs.append(event)
+                if event_name.endswith("opens"):
+                    quiz_name = event_name.split("opens")[0].strip()
+                    if quiz_name in quizes_halfs_opens:
+                        logging.warning(f"Quiz '{quiz_name}' appears twice")
+                    quizes_halfs_opens[quiz_name] = event
+                elif event_name.endswith("открывается"):
+                    quiz_name = event_name.split("открывается")[0].strip()
+                    if quiz_name in quizes_halfs_opens:
+                        logging.warning(f"Quiz '{quiz_name}' appears twice")
+                    quizes_halfs_opens[quiz_name] = event
+                elif event_name.endswith("closes"):
+                    quiz_name = event_name.split("closes")[0].strip()
+                    if quiz_name in quizes_halfs_closes:
+                        logging.warning(f"Quiz '{quiz_name}' appears twice")
+                    quizes_halfs_closes[quiz_name] = event
+                elif event_name.endswith("закрывается"):
+                    quiz_name = event_name.split("закрывается")[0].strip()
+                    if quiz_name in quizes_halfs_closes:
+                        logging.warning(f"Quiz '{quiz_name}' appears twice")
+                    quizes_halfs_closes[quiz_name] = event
                 else:
                     # DEADLINE TYPE
                     deadline = make_deadline(event)
@@ -348,8 +347,17 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
                     event["dtend"] = icalendar.vDatetime(end)
 
                 fixed_events.append(event)
-        quizes_halfs.sort(key=lambda x: int(x["UID"].split("@")[0]))
-        fixed_events += list(filter(None, [create_quiz(a, b) for a, b in pairwise(quizes_halfs)]))
+
+        for quiz_name, opens in quizes_halfs_opens.items():
+            closes = quizes_halfs_closes.get(quiz_name)
+
+            if closes:  # Paired
+                quiz = create_quiz(quiz_name, opens, closes)
+                fixed_events.append(quiz)
+            else:  # Non pair (no deadline)
+                quiz = create_quiz(quiz_name, opens, closes=None)
+                fixed_events.append(quiz)
+
         for event in fixed_events:
             event["color"] = "darkorange"
             fixed_calendar.add_component(event)
