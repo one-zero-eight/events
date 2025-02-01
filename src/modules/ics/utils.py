@@ -247,7 +247,7 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
         start = start.astimezone(pytz.timezone("Europe/Moscow"))
         due: datetime.datetime | None = None
         if closes:
-            due = datetime.datetime = closes["dtend"].dt
+            due = closes["dtend"].dt
             due = due.astimezone(pytz.timezone("Europe/Moscow"))
         if due and start.date() != due.date():  # Display only on deadline day
             new["dtstart"] = icalendar.vDate(due.date())

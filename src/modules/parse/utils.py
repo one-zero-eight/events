@@ -199,7 +199,7 @@ def get_base_calendar() -> icalendar.Calendar:
     standard.add("tzoffsetfrom", datetime.timedelta(hours=3))
     standard.add("tzoffsetto", datetime.timedelta(hours=3))
     standard.add("tzname", "MSK")
-    # standard.add("dtstart", datetime.datetime(1970, 1, 1)) FOR SOME REASON IT RAISES TypeError: 'datetime.datetime' object is not callable
+    standard.add("dtstart", datetime.datetime(1970, 1, 1))
     timezone.add_component(standard)
     calendar.add_component(timezone)
 
