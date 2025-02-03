@@ -235,7 +235,7 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
         new["uid"] = event["uid"]
         new["dtstamp"] = event["dtstamp"]
         categories = (event["categories"]).to_ical().decode(encoding="utf-8")
-        course_name = html.unescape(categories.split("]")[1])
+        course_name = html.unescape(categories.split("]")[1].replace(r"\;", ";"))
         new["summary"] = event["summary"] + f" - {course_name}"
 
         new["description"] = f"Course: {course_name}\nDue to: {end.timetz().isoformat()}"
