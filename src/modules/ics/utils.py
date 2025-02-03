@@ -227,6 +227,11 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
     Get schedule in ICS format for the user from user link to moodle calendar;
     """
 
+    def get_course_name(event: icalendar.Event) -> str:
+        categories = (event["categories"]).to_ical().decode(encoding="utf-8")
+        course_name = html.unescape(categories.split("]")[1].replace(r"\;", ";"))
+        return course_name
+
     def make_deadline(event: icalendar.Event) -> icalendar.Event:
         new = icalendar.Event()
         end: datetime.datetime = event["dtend"].dt
@@ -234,8 +239,7 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
         new["dtstart"] = icalendar.vDate(end.date())
         new["uid"] = event["uid"]
         new["dtstamp"] = event["dtstamp"]
-        categories = (event["categories"]).to_ical().decode(encoding="utf-8")
-        course_name = html.unescape(categories.split("]")[1].replace(r"\;", ";"))
+        course_name = get_course_name(event)
         new["summary"] = event["summary"] + f" - {course_name}"
 
         new["description"] = f"Course: {course_name}\nDue to: {end.timetz().isoformat()}"
@@ -259,8 +263,7 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
 
         new["uid"] = opens["uid"]
         new["dtstamp"] = opens["dtstamp"]
-        categories = (opens["categories"]).to_ical().decode(encoding="utf-8")
-        course_name = categories.split("]")[1]
+        course_name = get_course_name(opens)
         new["summary"] = quiz_name + f" - {course_name}"
 
         new["description"] = "\n".join(
