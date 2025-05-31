@@ -9,7 +9,7 @@ class JsonPredefinedUsers(BaseModel):
         groups: list[str] = Field(default_factory=list)
 
     users: list[InJsonUser] = Field(default_factory=list)
-    academic_groups: dict[str, str] = Field(default_factory=dict)
+    academic_groups: dict[str, str | None] = Field(default_factory=dict)
 
     @field_validator("users")
     def _should_be_unique(cls, v):
