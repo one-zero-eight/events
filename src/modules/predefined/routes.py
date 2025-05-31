@@ -39,5 +39,5 @@ async def update_predefined_data(_: VERIFY_PARSER_DEPENDENCY, user_storage: Json
     event_groups = await event_group_repository.read_all()
     event_group_aliases = {group.alias for group in event_groups}
 
-    non_existent_groups = event_group_aliases - user_groups
+    non_existent_groups = user_groups - event_group_aliases
     return list(non_existent_groups)
