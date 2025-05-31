@@ -2,6 +2,7 @@ from fastapi import APIRouter
 
 from src.api.dependencies import VERIFY_PARSER_DEPENDENCY
 from src.exceptions import IncorrectCredentialsException
+from src.modules.event_groups.repository import event_group_repository
 from src.modules.predefined.repository import predefined_repository
 from src.modules.predefined.storage import JsonPredefinedUsers
 
@@ -25,7 +26,18 @@ async def get_predefined_data(_: VERIFY_PARSER_DEPENDENCY) -> JsonPredefinedUser
         **IncorrectCredentialsException.responses,
     },
 )
-async def update_predefined_data(_: VERIFY_PARSER_DEPENDENCY, user_storage: JsonPredefinedUsers):
+async def update_predefined_data(_: VERIFY_PARSER_DEPENDENCY, user_storage: JsonPredefinedUsers) -> list[str]:
     from src.modules.predefined.utils import setup_predefined_data_from_object
 
     setup_predefined_data_from_object(user_storage)
+
+    user_groups = set()
+    for user in user_storage.users:
+        for group in user.groups:
+            user_groups.add(group)
+
+    event_groups = await event_group_repository.read_all()
+    event_group_aliases = {group.alias for group in event_groups}
+
+    non_existent_groups = event_group_aliases - user_groups
+    return list(non_existent_groups)
