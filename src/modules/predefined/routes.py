@@ -39,5 +39,6 @@ async def update_predefined_data(_: VERIFY_PARSER_DEPENDENCY, user_storage: Json
     event_groups = await event_group_repository.read_all()
     event_group_aliases = {group.alias for group in event_groups}
 
-    non_existent_groups = user_groups - event_group_aliases
-    return list(non_existent_groups)
+    non_existent_groups_from_user = user_groups - event_group_aliases
+    non_existent_groups_from_academic_groups = set(user_storage.academic_groups.values()) - event_group_aliases
+    return list(non_existent_groups_from_user) + list(non_existent_groups_from_academic_groups)
