@@ -33,15 +33,15 @@ def setup_predefined_data_from_file():
     from src.modules.predefined.utils import setup_predefined_data_from_object
 
     # check for file existing
-    users_path = settings.predefined_dir / "innopolis_user_data.json"
-    if not users_path.exists():
-        users_json = {"users": []}
+    predefined_path = settings.predefined_dir / "innopolis_user_data.json"
+    if not predefined_path.exists():
+        predefined_json = {"users": [], "academic_groups": []}
     else:
-        with users_path.open(encoding="utf-8") as users_file:
-            users_json = json.load(users_file)
+        with predefined_path.open(encoding="utf-8") as predefined_file:
+            predefined_json = json.load(predefined_file)
 
-    user_storage = JsonPredefinedUsers.from_jsons(users_json)
-    setup_predefined_data_from_object(user_storage)
+    predefined_storage = JsonPredefinedUsers.from_jsons(predefined_json)
+    setup_predefined_data_from_object(predefined_storage)
 
 
 @asynccontextmanager

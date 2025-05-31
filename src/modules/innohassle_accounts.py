@@ -11,6 +11,7 @@ class UserInfoFromSSO(BaseModel):
     email: str
     name: str | None
     issued_at: datetime.datetime | None
+    group: str | None = None
 
 
 class UserSchema(BaseModel):
@@ -74,6 +75,6 @@ class InNoHassleAccounts:
             return response.json()["access_token"]
 
 
-innohassle_accounts = InNoHassleAccounts(
+innohassle_accounts: InNoHassleAccounts = InNoHassleAccounts(
     api_url=settings.accounts.api_url, api_jwt_token=settings.accounts.api_jwt_token.get_secret_value()
 )
