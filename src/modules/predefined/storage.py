@@ -8,8 +8,13 @@ class JsonPredefinedUsers(BaseModel):
         email: str
         groups: list[str] = Field(default_factory=list)
 
+    class InJsonAcademicGroup(BaseModel):
+        name: str
+        event_group_alias: str | None = None
+        user_emails: list[str] = Field(default_factory=list)
+
     users: list[InJsonUser] = Field(default_factory=list)
-    academic_groups: dict[str, str | None] = Field(default_factory=dict)
+    academic_groups: list[InJsonAcademicGroup] = Field(default_factory=list)
 
     @field_validator("users")
     def _should_be_unique(cls, v):
@@ -35,5 +40,9 @@ class JsonPredefinedUsers(BaseModel):
                 return user
         return None
 
-    def get_academic_group(self, name_in_innohassle_accounts: str) -> str | None:
-        return self.academic_groups.get(name_in_innohassle_accounts)
+    def get_academic_groups(self, email: str) -> list[InJsonAcademicGroup]:
+        groups = []
+        for group in self.academic_groups:
+            if email in group.user_emails:
+                groups.append(group)
+        return groups

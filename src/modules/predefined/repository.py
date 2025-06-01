@@ -26,12 +26,12 @@ class PredefinedRepository:
             and innohassle_accounts_user.innopolis_sso
             and innohassle_accounts_user.innopolis_sso.group
         ):
-            academic_group = innohassle_accounts_user.innopolis_sso.group
-            _ = self.storage.get_academic_group(academic_group)
-            if _:
-                group_aliases.append(_)
+            groups = self.storage.get_academic_groups(user.email)
+            for group in groups:
+                if group.event_group_alias:
+                    group_aliases.append(group.event_group_alias)
             logger.info(
-                f"User {user.email} has academic group {innohassle_accounts_user.innopolis_sso.group}, from predefined: '{_}'"
+                f"User {user.email} has academic group {innohassle_accounts_user.innopolis_sso.group}, from predefined: {groups}"
             )
         if not group_aliases:
             return []

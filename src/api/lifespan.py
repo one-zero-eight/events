@@ -35,7 +35,7 @@ def setup_predefined_data_from_file():
     # check for file existing
     predefined_path = settings.predefined_dir / "innopolis_user_data.json"
     if not predefined_path.exists():
-        predefined_json = {"users": [], "academic_groups": {}}
+        predefined_json = {"users": [], "academic_groups": []}
     else:
         with predefined_path.open(encoding="utf-8") as predefined_file:
             predefined_json = json.load(predefined_file)
