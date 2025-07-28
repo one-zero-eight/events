@@ -1,6 +1,6 @@
 # Events API | InNoHassle ecosystem
 
-> https://api.innohassle.ru/events
+> https://api.innohassle.ru/events/v0
 
 [![GitHub Actions pre-commit](https://img.shields.io/github/actions/workflow/status/one-zero-eight/InNoHassle-Events/pre-commit.yaml?label=pre-commit)](https://github.com/one-zero-eight/InNoHassle-Events/actions)
 
