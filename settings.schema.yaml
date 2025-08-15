@@ -56,6 +56,25 @@ $defs:
         type: string
     title: Sport
     type: object
+  Workshops:
+    additionalProperties: false
+    description: InNoHassle Workshops integration settings
+    properties:
+      api_url:
+        default: https://api.innohassle.ru/workshops/v0
+        description: URL of the Workshops API
+        title: Api Url
+        type: string
+      api_key:
+        description: API key for the Workshops API
+        format: password
+        title: Api Key
+        type: string
+        writeOnly: true
+    required:
+    - api_key
+    title: Workshops
+    type: object
 additionalProperties: false
 description: Settings for the application. Get settings from `settings.yaml` file.
 properties:
@@ -101,6 +120,12 @@ properties:
     $ref: '#/$defs/Sport'
     default:
       api_url: https://sport.innopolis.university/api
+  workshops:
+    anyOf:
+    - $ref: '#/$defs/Workshops'
+    - type: 'null'
+    default: null
+    description: InNoHassle Workshops integration settings
   $schema:
     description: Path to the schema file
     title: Schema

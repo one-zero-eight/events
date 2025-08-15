@@ -116,6 +116,61 @@ async def get_personal_music_room_ics(user: ViewUser) -> AsyncGenerator[bytes, N
     return ical_generator
 
 
+async def get_personal_workshops_ics(user: ViewUser) -> bytes:
+    """
+    GET */users/{innohassle_user_id}/checkins
+
+    [
+        {
+            "id": "b1d378a5-fe1b-47c6-b920-12acf77fcf1a",
+            "dtstart": "2025-08-15T18:40:30.289000Z",
+            "dtend": "2025-08-15T18:59:30.289000Z",
+            "name": "W3",
+            "description": null,
+            "place": null,
+        },
+        ...
+    ]
+    """
+
+    def _workshop_to_vevent(workshop: dict) -> icalendar.Event:
+        string_to_hash = str(workshop["id"])
+        hash_ = crc32(string_to_hash.encode("utf-8"))
+        uid = f"workshop-{abs(hash_):x}@innohassle.ru"
+
+        vevent = icalendar.Event()
+        vevent.add("uid", uid)
+
+        vevent.add("summary", workshop["name"])
+        if workshop.get("place") is not None:
+            vevent.add("location", workshop["place"])
+        if workshop.get("description") is not None:
+            vevent.add("description", workshop["description"])
+        vevent.add("dtstart", icalendar.vDatetime(workshop["dtstart"]))
+        vevent.add("dtend", icalendar.vDatetime(workshop["dtend"]))
+        vevent.add("x-workshop-id", workshop["id"])
+        return vevent
+
+    main_calendar = get_base_calendar()
+    main_calendar["x-wr-calname"] = f"{user.email} Workshops schedule from innohassle.ru"
+
+    async with httpx.AsyncClient(
+        headers={"Authorization": f"Bearer {settings.workshops.api_key.get_secret_value()}"}, timeout=TIMEOUT
+    ) as client:
+        response = await client.get(f"{settings.workshops.api_url}/users/{user.innohassle_id}/checkins")
+        if response.status_code == 404 and "User not found" in response.text:
+            raise HTTPException(status_code=404, detail="User not found in workshops service")
+        response.raise_for_status()
+        workshops = response.json()
+
+    for workshop in workshops:
+        event = _workshop_to_vevent(workshop)
+        main_calendar.add_component(event)
+
+    ical_bytes = main_calendar.to_ical()
+    return ical_bytes
+
+
 class Training(BaseModel):
     class ExtendedProps(BaseModel):
         id: int

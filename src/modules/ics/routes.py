@@ -18,6 +18,7 @@ from src.modules.ics.utils import (
     get_personal_event_groups_ics,
     get_personal_music_room_ics,
     get_personal_sport_ics,
+    get_personal_workshops_ics,
 )
 from src.modules.parse.utils import locate_ics_by_path
 from src.modules.users.linked import LinkedCalendarView
@@ -188,6 +189,56 @@ async def get_sport_user_schedule(user_id: int, access_key: str) -> Response:
         raise ForbiddenException()
 
     ical_bytes = await get_personal_sport_ics(user)
+    return Response(content=ical_bytes, media_type="text/calendar")
+
+
+@router.get(
+    "/users/me/workshops.ics",
+    responses={
+        200: {
+            "description": "ICS file with your workshops check-ins",
+            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
+        },
+    },
+    tags=["Users"],
+)
+async def get_workshops_current_user_schedule(user_id: CURRENT_USER_ID_DEPENDENCY) -> Response:
+    """
+    Get schedule in ICS format for the current user
+    """
+
+    user = await user_repository.read(user_id)
+    if user is None:
+        raise ObjectNotFound()
+
+    ical_bytes = await get_personal_workshops_ics(user)
+    return Response(content=ical_bytes, media_type="text/calendar")
+
+
+@router.get(
+    "/users/{user_id}/workshops.ics",
+    responses={
+        200: {
+            "description": "ICS file with your workshops check-ins",
+            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
+        },
+    },
+    tags=["Users"],
+)
+async def get_workshops_user_schedule(user_id: int, access_key: str) -> Response:
+    """
+    Get schedule in ICS format for the user; requires access key for `/users/{user_id}/workshops.ics` resource
+    """
+
+    user = await user_repository.read(user_id)
+    if user is None:
+        raise ObjectNotFound()
+
+    resource_path = f"/users/{user_id}/workshops.ics"
+    if not await user_repository.check_user_schedule_key(user_id, access_key, resource_path):
+        raise ForbiddenException()
+
+    ical_bytes = await get_personal_workshops_ics(user)
     return Response(content=ical_bytes, media_type="text/calendar")
 
 
