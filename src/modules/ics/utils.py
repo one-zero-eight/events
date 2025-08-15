@@ -146,8 +146,10 @@ async def get_personal_workshops_ics(user: ViewUser) -> bytes:
             vevent.add("location", workshop["place"])
         if workshop.get("description") is not None:
             vevent.add("description", workshop["description"])
-        vevent.add("dtstart", icalendar.vDatetime(workshop["dtstart"]))
-        vevent.add("dtend", icalendar.vDatetime(workshop["dtend"]))
+        _dtstart = datetime.datetime.fromisoformat(workshop["dtstart"])
+        _dtend = datetime.datetime.fromisoformat(workshop["dtend"])
+        vevent.add("dtstart", icalendar.vDatetime(_dtstart))
+        vevent.add("dtend", icalendar.vDatetime(_dtend))
         vevent.add("x-workshop-id", workshop["id"])
         return vevent
 
