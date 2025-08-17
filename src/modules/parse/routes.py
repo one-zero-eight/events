@@ -132,7 +132,7 @@ async def parse_bootcamp_schedule(_: VERIFY_PARSER_DEPENDENCY, config: BootcampP
             event_group = CreateEventGroup(
                 alias=group_alias,
                 name=f"{group.name}",
-                description=f"Bootcamp schedule for {group.name} buddy group",
+                description=f"Bootcamp schedule for {group.name}",
                 tags=[bootcamp_tag, academic_tag],
                 path=path,
             )
