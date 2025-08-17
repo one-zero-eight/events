@@ -71,6 +71,46 @@ class BootcampEvent(BaseModel):
         hash_ = crc32(string_to_hash.encode("utf-8"))
         return f"{abs(hash_):x}#bootcamp@innohassle.ru"
 
+    def get_color_category(self) -> str:
+        """
+        Get consistent color category for similar event types
+        """
+        summary = self.summary.lower()
+
+        # Meals
+        if any(meal in summary for meal in ["breakfast", "завтрак", "lunch", "обед", "dinner", "ужин"]):
+            return "food"
+
+        # Academic subjects
+        if any(
+            subj in summary
+            for subj in [
+                "programming",
+                "программирование",
+                "physics",
+                "физика",
+                "math",
+                "математический анализ",
+                "english",
+                "английский",
+                "labs",
+                "лабораторные",
+                "introduction to computer science",
+            ]
+        ):
+            return "learning"
+        # Special events
+        if any(event in summary for event in ["meeting with buddy", "встреча с бадди"]):
+            return "buddy_meeting"
+
+        if any(event in summary for event in ["workshop", "воркшоп"]):
+            return "workshops"
+
+        if any(event in summary for event in ["лекция про университет", "iu lecture"]):
+            return "iu_lecture"
+
+        return summary
+
     def get_vevent(self) -> icalendar.Event:
         """
         Get icalendar event
@@ -88,10 +128,9 @@ class BootcampEvent(BaseModel):
 
         event.add("uid", self.get_uid())
         event.add("sequence", self.sequence)
-        if "Breakfast" in self.summary or "Lunch" in self.summary or "Dinner" in self.summary:
-            color = get_color("Lunch")
-        else:
-            color = get_color(self.summary)
+
+        color_category = self.get_color_category()
+        color = get_color(color_category)
         event.add("color", color)
 
         return event
