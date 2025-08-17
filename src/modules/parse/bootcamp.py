@@ -79,7 +79,7 @@ class BootcampEvent(BaseModel):
 
         # Meals
         if any(meal in summary for meal in ["breakfast", "завтрак", "lunch", "обед", "dinner", "ужин"]):
-            return "food"
+            return "gray"
 
         # Academic subjects
         if any(
@@ -98,18 +98,19 @@ class BootcampEvent(BaseModel):
                 "introduction to computer science",
             ]
         ):
-            return "learning"
+            return "darkcyan"
+
         # Special events
         if any(event in summary for event in ["meeting with buddy", "встреча с бадди"]):
-            return "buddy_meeting"
+            return "chocolate"
 
         if any(event in summary for event in ["workshop", "воркшоп"]):
-            return "workshops"
+            return "seagreen"
 
         if any(event in summary for event in ["лекция про университет", "iu lecture"]):
-            return "iu_lecture"
+            return "indigo"
 
-        return summary
+        return get_color(summary)
 
     def get_vevent(self) -> icalendar.Event:
         """
@@ -129,8 +130,7 @@ class BootcampEvent(BaseModel):
         event.add("uid", self.get_uid())
         event.add("sequence", self.sequence)
 
-        color_category = self.get_color_category()
-        color = get_color(color_category)
+        color = self.get_color_category()
         event.add("color", color)
 
         return event
