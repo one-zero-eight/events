@@ -11,7 +11,7 @@ from src.api.dependencies import VERIFY_PARSER_DEPENDENCY
 from src.exceptions import IncorrectCredentialsException
 from src.modules.event_groups.repository import event_group_repository
 from src.modules.event_groups.schemas import CreateEventGroup
-from src.modules.parse.bootcamp import AcademicGroup, BootcampParser, BootcampParserConfig, BuddyGroup, Workshop
+from src.modules.parse.bootcamp import AcademicGroup, BootcampParser, BootcampParserConfig, BuddyGroup
 from src.modules.parse.cleaning import CleaningEvent, CleaningParser, CleaningParserConfig, LinenChangeEvent
 from src.modules.parse.utils import get_base_calendar, locate_ics_by_path, sluggify
 from src.modules.tags.schemas import CreateTag
@@ -111,10 +111,9 @@ async def parse_cleaning_schedule(_: VERIFY_PARSER_DEPENDENCY, config: CleaningP
     responses={**IncorrectCredentialsException.responses},
 )
 async def parse_bootcamp_schedule(_: VERIFY_PARSER_DEPENDENCY, config: BootcampParserConfig) -> None:
-    bootcamp_tag = CreateTag(alias="bootcamp2024", name="Bootcamp", type="category")
-    academic_tag = CreateTag(alias="academic", name="Academic", type="bootcamp2024")
-    buddy_tag = CreateTag(alias="buddy", name="Buddy", type="bootcamp2024")
-    workshop_tag = CreateTag(alias="bootcamp2024-workshops", name="Workshops", type="category")
+    bootcamp_tag = CreateTag(alias="bootcamp2025", name="Bootcamp", type="category")
+    academic_tag = CreateTag(alias="academic", name="Academic", type="bootcamp2025")
+    buddy_tag = CreateTag(alias="buddy", name="Buddy", type="bootcamp2025")
 
     parser = BootcampParser(config)
 
@@ -149,35 +148,6 @@ async def parse_bootcamp_schedule(_: VERIFY_PARSER_DEPENDENCY, config: BootcampP
                 tags=[bootcamp_tag, buddy_tag],
                 path=path,
             )
-        elif isinstance(group, Workshop):
-            calendar["x-wr-calname"] = f"Bootcamp: Workshop {group.subject}"
-            dtstart, dtend, _ = parser.when_str_to_datetimes(group.when)
-            date = dtstart.strftime("%b %d")
-            timeslot = f"{dtstart.strftime('%H:%M')}-{dtend.strftime('%H:%M')}"
-            group_alias = f"bootcamp-workshop-{sluggify(group.subject)}-{sluggify(date)}"
-            path = f"bootcamp/{group_alias}.ics"
-
-            # by date "Aug 12"
-            date_tag = CreateTag(
-                alias=f"bootcamp2024-workshops-date-{sluggify(date)}",
-                name=date,
-                type="bootcamp2024-workshops",
-            )
-            # by timeslot
-            timeslot_tag = CreateTag(
-                alias=f"bootcamp2024-workshops-timeslot-{sluggify(timeslot)}",
-                name=timeslot,
-                type="bootcamp2024-workshops-timeslot",
-            )
-
-            event_group = CreateEventGroup(
-                alias=group_alias,
-                name=f"{group.subject}",
-                description=f"Bootcamp workshop {group.subject}",
-                tags=[workshop_tag, date_tag, timeslot_tag],
-                path=path,
-            )
-
         else:
             raise NotImplementedError
 

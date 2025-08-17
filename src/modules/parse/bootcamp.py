@@ -28,9 +28,12 @@ class Entry(BaseModel):
 class AcademicGroup(BaseModel):
     name: str
     ru: bool = False
-    math: Entry | None = None
     english: Entry | None = None
     labs: Entry | None = None
+
+    math: Entry | None = None
+    programming: Entry | None = None
+    physics: Entry | None = None
 
 
 class BuddyGroup(BaseModel):
@@ -39,21 +42,11 @@ class BuddyGroup(BaseModel):
     tg: str
 
 
-class Workshop(BaseModel):
-    subject: str
-    when: str
-    instructor: str = ""
-    location: str = ""
-    limit: str = ""
-    checkin: str = ""
-
-
 class BootcampParserConfig(BaseModel):
     when: str = Field(examples=["2024.08"])
     general_events: list[Entry]
     academic_groups: list[AcademicGroup]
     buddy_groups: list[BuddyGroup]
-    workshops: list[Workshop]
 
 
 class BootcampEvent(BaseModel):
@@ -162,20 +155,22 @@ class BootcampParser:
             events.extend(general_events)
 
         ru_subjects = {
-            "math": "Математика",
-            "english": "Английский язык",
-            "labs": "Лабораторные занятия",
+            "programming": "Программирование",
+            "physics": "Физика",
+            "math": "Математический анализ",
         }
+
         subjects = {
-            "math": "Math",
             "english": "English Practice",
             "labs": "Labs with TA",
         }
 
         for key, entry in [
-            ("math", academic_group.math),
             ("english", academic_group.english),
             ("labs", academic_group.labs),
+            ("programming", academic_group.programming),
+            ("math", academic_group.math),
+            ("physics", academic_group.physics),
         ]:
             if entry is None:
                 continue
@@ -232,25 +227,7 @@ class BootcampParser:
 
         return events
 
-    def parse_workshop(self, workshop: Workshop) -> list[BootcampEvent]:
-        events = []
-        _ = [workshop.instructor, workshop.limit]
-        if workshop.checkin:
-            _.append(f"Check-in: {workshop.checkin}")
-        decription = "\n".join(filter(None, _))
-        dtstart, dtend, rrule = self.when_str_to_datetimes(workshop.when)
-        event = BootcampEvent(
-            summary=workshop.subject,
-            dtstart=dtstart,
-            dtend=dtend,
-            rrule=rrule,
-            description=decription,
-            location=workshop.location,
-        )
-        events.append(event)
-        return events
-
-    def parse(self) -> Generator[tuple[AcademicGroup | BuddyGroup | Workshop, list[BootcampEvent]], None, None]:
+    def parse(self) -> Generator[tuple[AcademicGroup | BuddyGroup, list[BootcampEvent]], None, None]:
         general_events = self.parse_general_events()
         ru_general_events = self.parse_general_events(ru=True)
 
@@ -261,7 +238,3 @@ class BootcampParser:
         for buddy_group in self.config.buddy_groups:
             events = self.parse_buddy_group(buddy_group)
             yield buddy_group, events
-
-        for workshop in self.config.workshops:
-            events = self.parse_workshop(workshop)
-            yield workshop, events
