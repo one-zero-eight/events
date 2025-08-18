@@ -10,7 +10,6 @@ from zlib import crc32
 import aiofiles
 import httpx
 import icalendar
-import pytz
 from fastapi import HTTPException
 from pydantic import BaseModel, TypeAdapter
 
@@ -23,6 +22,7 @@ from src.modules.users.schemas import ViewUser
 
 TIMEOUT = 60
 MAX_SIZE = 10 * 1024 * 1024
+MOSCOW_TZ = datetime.timezone(datetime.timedelta(hours=3), name="Europe/Moscow")
 
 
 async def generate_ics_from_url(url: str, headers: dict = None) -> AsyncGenerator[bytes, None]:
@@ -147,7 +147,9 @@ async def get_personal_workshops_ics(user: ViewUser) -> bytes:
         if workshop.get("description") is not None:
             vevent.add("description", workshop["description"])
         _dtstart = datetime.datetime.fromisoformat(workshop["dtstart"])
+        _dtstart = _dtstart.astimezone(MOSCOW_TZ)
         _dtend = datetime.datetime.fromisoformat(workshop["dtend"])
+        _dtend = _dtend.astimezone(MOSCOW_TZ)
         vevent.add("dtstart", icalendar.vDatetime(_dtstart))
         vevent.add("dtend", icalendar.vDatetime(_dtend))
         vevent.add("x-workshop-id", workshop["id"])
@@ -292,7 +294,7 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
     def make_deadline(event: icalendar.Event) -> icalendar.Event:
         new = icalendar.Event()
         end: datetime.datetime = event["dtend"].dt
-        end = end.astimezone(pytz.timezone("Europe/Moscow"))
+        end = end.astimezone(MOSCOW_TZ)
         new["dtstart"] = icalendar.vDate(end.date())
         new["uid"] = event["uid"]
         new["dtstamp"] = event["dtstamp"]
@@ -306,11 +308,11 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
     def create_quiz(quiz_name: str, opens: icalendar.Event, closes: icalendar.Event | None = None) -> icalendar.Event:
         new = icalendar.Event()
         start: datetime.datetime = opens["dtstart"].dt
-        start = start.astimezone(pytz.timezone("Europe/Moscow"))
+        start = start.astimezone(MOSCOW_TZ)
         due: datetime.datetime | None = None
         if closes:
             due = closes["dtend"].dt
-            due = due.astimezone(pytz.timezone("Europe/Moscow"))
+            due = due.astimezone(MOSCOW_TZ)
         if due and start.date() != due.date():  # Display only on deadline day
             new["dtstart"] = icalendar.vDate(due.date())
         else:
@@ -399,12 +401,12 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
 
                 start = event["dtstart"]
                 if start:
-                    start = start.dt.astimezone(pytz.timezone("Europe/Moscow"))
+                    start = start.dt.astimezone(MOSCOW_TZ)
                     event["dtstart"] = icalendar.vDatetime(start)
 
                 end = event["dtend"]
                 if end:
-                    end = end.dt.astimezone(pytz.timezone("Europe/Moscow"))
+                    end = end.dt.astimezone(MOSCOW_TZ)
                     event["dtend"] = icalendar.vDatetime(end)
 
                 fixed_events.append(event)
