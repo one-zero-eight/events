@@ -390,7 +390,10 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
 
                 categories = (event["categories"]).to_ical().decode(encoding="utf-8")
                 if categories:
-                    course_name = categories.split("]")[1]
+                    if "]" in categories:
+                        course_name = categories.split("]")[1]
+                    else:
+                        course_name = categories
                     event["summary"] = event["summary"] + f" - {course_name}"
                     event["description"] = "\n".join(
                         [
