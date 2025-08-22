@@ -30,9 +30,6 @@ class PredefinedRepository:
             for group in groups:
                 if group.event_group_alias:
                     group_aliases.append(group.event_group_alias)
-            logger.info(
-                f"User {user.email} has academic group {innohassle_accounts_user.innopolis_sso.group}, from predefined: {groups}"
-            )
         if not group_aliases:
             return []
         event_group_mapping = await event_group_repository.batch_read_ids_by_aliases(group_aliases)
