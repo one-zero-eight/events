@@ -1,40 +1,48 @@
 # This is a Docker Compose configuration for local use.
-# In production use docker-compose.prod.yaml
 
 # Run all services:
-# docker compose up --build --detach
+# docker compose up --build --wait
 
 services:
   api:
     build: . # See Dockerfile for more details
+    restart: no
     depends_on:
       db:
-        # Wait for the database to be ready before starting the application
         condition: service_healthy
-    restart: always
+      alembic-migrate:
+        condition: service_completed_successfully
     ports:
       - "8000:8000"
     volumes:
-      - "./predefined:/code/predefined:rw" # Read-write predefined data
-      - "./settings.yaml:/code/settings.yaml:ro" # Read-only settings file
+      - "./predefined:/app/predefined:rw" # Read-write predefined data
+      - "./settings.yaml:/app/settings.yaml:ro" # Read-only settings file
     environment:
-      - TZ=Europe/Moscow # Set the timezone for correct calendar image generation
+      TZ: Europe/Moscow # Set the timezone for correct calendar image generation
+
+  alembic-migrate:
+    build: . # See Dockerfile for more details
+    restart: no
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - "./settings.yaml:/app/settings.yaml:ro" # Read-only settings file
+    command: alembic upgrade head
 
   db:
     # See more: https://hub.docker.com/_/postgres
     image: "postgres:17.1"
-    restart: always
-    # The commits were slow on our servers, so we turned off the synchronous_commit
-    command: postgres -c synchronous_commit=off
-    volumes:
-      - "postgres:/var/lib/postgresql/data"
+    restart: no
     ports:
       - "5432:5432"
+    volumes:
+      - "postgres:/var/lib/postgresql/data"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 5s
       timeout: 5s
-      retries: 5
+      start_period: 30s
+      interval: 1m
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
 

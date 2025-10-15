@@ -266,7 +266,7 @@ class BootcampParser:
 
         return events
 
-    def parse(self) -> Generator[tuple[AcademicGroup | BuddyGroup, list[BootcampEvent]], None, None]:
+    def parse(self) -> Generator[tuple[AcademicGroup | BuddyGroup, list[BootcampEvent]]]:
         general_events = self.parse_general_events()
         ru_general_events = self.parse_general_events(ru=True)
 

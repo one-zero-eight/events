@@ -5,10 +5,8 @@
 !/src/
 !/alembic/
 !/alembic.ini
-!/deploy/docker-entrypoint.sh
 !/pyproject.toml
-!/poetry.lock
-!logging.yaml
+!/uv.lock
 
 # And ignore cache files in the code
 __pycache__

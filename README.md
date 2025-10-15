@@ -1,4 +1,4 @@
-# Events API | InNoHassle ecosystem
+# Events
 
 > https://api.innohassle.ru/events/v0
 
@@ -34,7 +34,7 @@ This is the API for events service in InNoHassle ecosystem. Lets...
 
 ### Technologies
 
-- [Python 3.12](https://www.python.org/downloads/) & [Poetry](https://python-poetry.org/docs/)
+- [Python 3.14](https://www.python.org/downloads/) & [uv](https://docs.astral.sh/uv/)
 - [FastAPI](https://fastapi.tiangolo.com/)
 - Database and ORM: [PostgreSQL](https://www.postgresql.org/), [SQLAlchemy](https://www.sqlalchemy.org/),
   [Alembic](https://alembic.sqlalchemy.org/en/latest/)
@@ -46,17 +46,16 @@ This is the API for events service in InNoHassle ecosystem. Lets...
 
 ### Set up for development
 
-1. Install [Python 3.12+](https://www.python.org/downloads/), [Poetry](https://python-poetry.org/docs/),
-   [Docker](https://docs.docker.com/engine/install/)
-2. Install project dependencies with [Poetry](https://python-poetry.org/docs/cli/#options-2).
+1. Install [uv](https://docs.astral.sh/uv/) and [Docker](https://docs.docker.com/engine/install/)
+2. Install dependencies:
    ```bash
-   poetry install
+   uv sync
    ```
-3. Start development server:
+3. Start development server (and read logs in the terminal):
    ```bash
-   poetry run python -m src.api --reload
+   uv run -m src.api --reload
    ```
-   > Follow provided instructions if needed
+   > Follow the provided instructions (if needed).
 4. Open in the browser: http://localhost:8000
    > The api will be reloaded when you edit the code
 
@@ -80,33 +79,30 @@ This is the API for events service in InNoHassle ecosystem. Lets...
 
 ### Deployment
 
-We use Docker with Docker Compose plugin to run the website on servers.
+We use Docker with Docker Compose plugin to run the service on servers.
 
-1. Copy the file with environment variables: `cp .env.example .env`
+1. Copy the file with environment variables: `cp .example.env .env`
 2. Change environment variables in the `.env` file
 3. Copy the file with settings: `cp settings.example.yaml settings.yaml`
 4. Change settings in the `settings.yaml` file according to your needs
    (check [settings.schema.yaml](settings.schema.yaml) for more info)
 5. Install Docker with Docker Compose
-6. Deploy [Music room service](https://github.com/one-zero-eight/InNoHassle-MusicRoom)
-   > Or just create a network for the music room service: `docker network create music-room`
-7. Build a Docker image: `docker compose build --pull`
-8. Run the container: `docker compose up --detach`
-9. Check the logs: `docker compose logs -f`
+6. Run the containers: `docker compose up --build --wait`
+7. Check the logs: `docker compose logs -f`
 
 ## FAQ
 
-### How to update dependencies?
+### Be up to date with the template!
 
-Project dependencies
+Check https://github.com/one-zero-eight/fastapi-template for updates once in a while.
 
-1. Run `poetry update` to update all dependencies
-2. Run `poetry show --outdated` to check for outdated dependencies
-3. Run `poetry add <package>@latest` to add a new dependency if needed
+### How to update dependencies
 
-Pre-commit hooks
+1. Run `uv sync --upgrade` to update uv.lock file and install the latest versions of the dependencies.
+2. Run `uv tree --outdated --depth=1` will show what package versions are installed and what are the latest versions.
+3. Run `uv run pre-commit autoupdate`
 
-1. Run `poetry run pre-commit autoupdate`
+Also, Dependabot will help you to keep your dependencies up-to-date, see [dependabot.yaml](.github/dependabot.yaml).
 
 ## Contributing
 

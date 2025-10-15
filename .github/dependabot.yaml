@@ -4,9 +4,9 @@ updates:
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     groups:
-      poetry:
+      python-dependencies:
         patterns:
           - "*"
 
@@ -15,9 +15,17 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      docker-dependencies:
+        patterns:
+          - "*"
 
   # Enable version updates for Actions
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      actions-dependencies:
+        patterns:
+          - "*"

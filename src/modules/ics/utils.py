@@ -25,7 +25,7 @@ MAX_SIZE = 10 * 1024 * 1024
 MOSCOW_TZ = datetime.timezone(datetime.timedelta(hours=3), name="Europe/Moscow")
 
 
-async def generate_ics_from_url(url: str, headers: dict = None) -> AsyncGenerator[bytes, None]:
+async def generate_ics_from_url(url: str, headers: dict = None) -> AsyncGenerator[bytes]:
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(url, timeout=TIMEOUT, headers=headers)
@@ -47,7 +47,7 @@ async def generate_ics_from_url(url: str, headers: dict = None) -> AsyncGenerato
             yield chunk
 
 
-async def _generate_ics_from_multiple(user: ViewUser, *ics: Path) -> AsyncGenerator[bytes, None]:
+async def _generate_ics_from_multiple(user: ViewUser, *ics: Path) -> AsyncGenerator[bytes]:
     async def _async_read_schedule(ics_path: Path):
         async with aiofiles.open(ics_path) as f:
             content = await f.read()
@@ -73,7 +73,7 @@ async def _generate_ics_from_multiple(user: ViewUser, *ics: Path) -> AsyncGenera
     yield b"END:VCALENDAR"
 
 
-async def get_personal_event_groups_ics(user: ViewUser) -> AsyncGenerator[bytes, None]:
+async def get_personal_event_groups_ics(user: ViewUser) -> AsyncGenerator[bytes]:
     hidden = set(user.hidden_event_groups)
     predefined = await predefined_repository.get_user_predefined(user.id)
     all_user_event_groups = set(user.favorite_event_groups) | set(predefined)
@@ -93,7 +93,7 @@ async def get_personal_event_groups_ics(user: ViewUser) -> AsyncGenerator[bytes,
     return ical_generator
 
 
-async def get_personal_music_room_ics(user: ViewUser) -> AsyncGenerator[bytes, None]:
+async def get_personal_music_room_ics(user: ViewUser) -> AsyncGenerator[bytes]:
     if settings.music_room is None:
         raise HTTPException(status_code=404, detail="Music room is not configured")
     # check if user registered in music room
