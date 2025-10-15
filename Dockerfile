@@ -7,6 +7,11 @@ ENV PYTHONUNBUFFERED=1 \
     UV_LINK_MODE=copy \
     UV_PYTHON_DOWNLOADS=0
 
+RUN apt-get update \
+    && apt-get install --no-install-recommends -y \
+        build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 COPY ./pyproject.toml ./uv.lock ./
 
