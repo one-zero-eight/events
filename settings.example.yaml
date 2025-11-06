@@ -1,4 +1,4 @@
-# Check settings.schema.yaml for more details
+# yaml-language-server: $schema=settings.schema.yaml
 $schema: "./settings.schema.yaml"
 # ---------- Application settings ----- #
 db_url: null
