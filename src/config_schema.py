@@ -58,7 +58,7 @@ class Settings(SettingsEntityModel):
     "App environment"
     db_url: SecretStr = Field(
         examples=[
-            "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres",
+            "postgresql+asyncpg://postgres:postgres@127.0.0.1:5432/postgres",
             "postgresql+asyncpg://postgres:postgres@db:5432/postgres",
         ],
     )
