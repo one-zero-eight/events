@@ -17,7 +17,7 @@ SETTINGS_TEMPLATE = BASE_DIR / "settings.example.yaml"
 SETTINGS_FILE = BASE_DIR / "settings.yaml"
 PRE_COMMIT_CONFIG = BASE_DIR / ".pre-commit-config.yaml"
 ACCOUNTS_TOKEN_URL = "https://api.innohassle.ru/accounts/v0/tokens/generate-service-token?sub=events-local-dev&scopes=users&only_for_me=true"
-DEFAULT_DB_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres"
+DEFAULT_DB_URL = "postgresql+asyncpg://postgres:postgres@127.0.0.1:5432/postgres"
 
 
 def get_settings():
