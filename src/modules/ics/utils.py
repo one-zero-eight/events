@@ -141,11 +141,11 @@ async def get_personal_workshops_ics(user: ViewUser) -> bytes:
         vevent = icalendar.Event()
         vevent.add("uid", uid)
 
-        vevent.add("summary", workshop["name"])
+        vevent.add("summary", workshop["english_name"])
         if workshop.get("place") is not None:
             vevent.add("location", workshop["place"])
         if workshop.get("description") is not None:
-            vevent.add("description", workshop["description"])
+            vevent.add("description", workshop["english_description"])
         _dtstart = datetime.datetime.fromisoformat(workshop["dtstart"])
         _dtstart = _dtstart.astimezone(MOSCOW_TZ)
         _dtend = datetime.datetime.fromisoformat(workshop["dtend"])
@@ -156,7 +156,7 @@ async def get_personal_workshops_ics(user: ViewUser) -> bytes:
         return vevent
 
     main_calendar = get_base_calendar()
-    main_calendar["x-wr-calname"] = f"{user.email} Workshops schedule from innohassle.ru"
+    main_calendar["x-wr-calname"] = f"{user.email} Events schedule from innohassle.ru"
 
     async with httpx.AsyncClient(
         headers={"Authorization": f"Bearer {settings.workshops.api_key.get_secret_value()}"}, timeout=TIMEOUT
