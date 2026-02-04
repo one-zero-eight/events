@@ -45,6 +45,25 @@ $defs:
     - api_key
     title: MusicRoom
     type: object
+  RoomBooking:
+    additionalProperties: false
+    description: InNoHassle Room Booking integration settings
+    properties:
+      api_url:
+        default: https://api.innohassle.ru/room-booking/v0
+        description: URL of the Room Booking API
+        title: Api Url
+        type: string
+      api_key:
+        description: API key for the Room Booking API
+        format: password
+        title: Api Key
+        type: string
+        writeOnly: true
+    required:
+    - api_key
+    title: RoomBooking
+    type: object
   Sport:
     additionalProperties: false
     description: Innopolis Sport integration settings
@@ -126,6 +145,12 @@ properties:
     - type: 'null'
     default: null
     description: InNoHassle Workshops integration settings
+  room_booking:
+    anyOf:
+    - $ref: '#/$defs/RoomBooking'
+    - type: 'null'
+    default: null
+    description: InNoHassle Room Booking integration settings
   $schema:
     description: Path to the schema file
     title: Schema

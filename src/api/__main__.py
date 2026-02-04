@@ -105,14 +105,14 @@ def ensure_pre_commit_hooks():
 
     try:
         subprocess.run(
-            ["poetry", "run", "pre-commit", "install", "--install-hooks", "-t", "pre-commit", "-t", "commit-msg"],
+            ["uv", "run", "pre-commit", "install", "--install-hooks", "-t", "pre-commit", "-t", "commit-msg"],
             check=True,
             text=True,
         )
         print("✅ Pre-commit hooks installed successfully.")
     except subprocess.CalledProcessError as e:
         print(
-            f"❌ Error setting up pre-commit hooks:\n{e.stderr}\nPlease, setup it manually with `poetry run pre-commit install --install-hooks -t pre-commit -t commit-msg`"
+            f"❌ Error setting up pre-commit hooks:\n{e.stderr}\nPlease, setup it manually with `uv run pre-commit install --install-hooks -t pre-commit -t commit-msg`"
         )
 
 

@@ -40,6 +40,15 @@ class Workshops(SettingsEntityModel):
     "API key for the Workshops API"
 
 
+class RoomBooking(SettingsEntityModel):
+    """InNoHassle Room Booking integration settings"""
+
+    api_url: str = "https://api.innohassle.ru/room-booking/v0"
+    "URL of the Room Booking API"
+    api_key: SecretStr
+    "API key for the Room Booking API"
+
+
 class Accounts(SettingsEntityModel):
     """InNoHassle Accounts integration settings"""
 
@@ -75,6 +84,8 @@ class Settings(SettingsEntityModel):
     "Innopolis Sport integration settings"
     workshops: Workshops | None = None
     "InNoHassle Workshops integration settings"
+    room_booking: RoomBooking | None = None
+    "InNoHassle Room Booking integration settings"
 
     @classmethod
     def from_yaml(cls, path: Path) -> "Settings":

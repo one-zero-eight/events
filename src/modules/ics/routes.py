@@ -17,6 +17,7 @@ from src.modules.ics.utils import (
     get_moodle_ics,
     get_personal_event_groups_ics,
     get_personal_music_room_ics,
+    get_personal_room_bookings,
     get_personal_sport_ics,
     get_personal_workshops_ics,
 )
@@ -414,3 +415,34 @@ async def get_event_group_ics_by_alias(
         raise HTTPException(
             status_code=501, detail="Can not create .ics file on the fly (set static .ics file for the event group"
         )
+
+
+@router.get("/users/me/room-bookings.ics")
+async def get_current_user_room_bookings(user_id: CURRENT_USER_ID_DEPENDENCY) -> Response:
+    """
+    Get bookings in ICS format for the room bookings
+    """
+    user = await user_repository.read(user_id)
+    if user is None:
+        raise ObjectNotFound()
+
+    ical_bytes = await get_personal_room_bookings(user)
+    return Response(content=ical_bytes, media_type="text/calendar")
+
+
+@router.get("/users/{user_id}/room-bookings.ics")
+async def get_user_room_bookings(user_id: int, access_key: str) -> Response:
+    """
+    Get bookings in ICS format for the room bookings;
+    Requires access key for `/users/{user_id}/room-bookings.ics` resource
+    """
+    user = await user_repository.read(user_id)
+    if user is None:
+        raise ObjectNotFound()
+
+    resource_path = f"/users/{user_id}/room-bookings.ics"
+    if not await user_repository.check_user_schedule_key(user_id, access_key, resource_path):
+        raise ForbiddenException()
+
+    ical_bytes = await get_personal_room_bookings(user)
+    return Response(content=ical_bytes, media_type="text/calendar")

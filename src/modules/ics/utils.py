@@ -440,3 +440,66 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
     moodle_calendar = await read_moodle_schedule(user_moodle_calendar_url)
     calendar = await _async_fix_moodle_events(moodle_calendar)
     return calendar.to_ical()
+
+
+async def get_personal_room_bookings(user: ViewUser) -> bytes:
+    """
+    GET */bookings/{user_id}
+
+    [
+        {
+            "id": 0,
+            "room_id": "string",
+            "title": "string",
+            "start": "2026-02-04T20:07:51.866Z",
+            "end": "2026-02-04T20:07:51.866Z"
+        }
+    ]
+    """
+
+    def _booking_to_vevent(booking: dict) -> icalendar.Event:
+        string_to_hash = str(booking["id"])
+        hash_ = crc32(string_to_hash.encode("utf-8"))
+        uid = f"room-booking-{abs(hash_):x}@innohassle.ru"
+
+        vevent = icalendar.Event()
+        vevent.add("uid", uid)
+
+        vevent.add("summary", booking["title"])
+        if booking.get("room_id"):
+            vevent.add("location", booking["room_id"])
+
+        _dtstart = datetime.datetime.fromisoformat(booking["start"])
+        if _dtstart.tzinfo is None:
+            _dtstart = _dtstart.replace(tzinfo=datetime.UTC)
+        _dtstart = _dtstart.astimezone(MOSCOW_TZ)
+
+        _dtend = datetime.datetime.fromisoformat(booking["end"])
+        if _dtend.tzinfo is None:
+            _dtend = _dtend.replace(tzinfo=datetime.UTC)
+        _dtend = _dtend.astimezone(MOSCOW_TZ)
+
+        vevent.add("dtstart", icalendar.vDatetime(_dtstart))
+        vevent.add("dtend", icalendar.vDatetime(_dtend))
+        vevent.add("x-room-booking-id", booking["id"])
+        return vevent
+
+    if settings.room_booking is None:
+        raise HTTPException(status_code=404, detail="Room booking service is not configured")
+
+    main_calendar = get_base_calendar()
+    main_calendar["x-wr-calname"] = f"{user.email} Room bookings from innohassle.ru"
+
+    async with httpx.AsyncClient(
+        headers={"Authorization": f"Bearer {settings.room_booking.api_key.get_secret_value()}"}, timeout=TIMEOUT
+    ) as client:
+        response = await client.get(f"{settings.room_booking.api_url}/bookings/{user.innohassle_id}")
+        response.raise_for_status()
+        bookings = response.json()
+
+    for booking in bookings:
+        event = _booking_to_vevent(booking)
+        main_calendar.add_component(event)
+
+    ical_bytes = main_calendar.to_ical()
+    return ical_bytes
