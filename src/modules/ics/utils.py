@@ -458,7 +458,7 @@ async def get_personal_room_bookings(user: ViewUser) -> bytes:
     """
 
     def _booking_to_vevent(booking: dict) -> icalendar.Event:
-        string_to_hash = str(booking["id"])
+        string_to_hash = str(booking["outlook_booking_id"])
         hash_ = crc32(string_to_hash.encode("utf-8"))
         uid = f"room-booking-{abs(hash_):x}@innohassle.ru"
 
@@ -481,7 +481,7 @@ async def get_personal_room_bookings(user: ViewUser) -> bytes:
 
         vevent.add("dtstart", icalendar.vDatetime(_dtstart))
         vevent.add("dtend", icalendar.vDatetime(_dtend))
-        vevent.add("x-room-booking-id", booking["id"])
+        vevent.add("x-room-booking-id", booking["outlook_booking_id"])
         return vevent
 
     if settings.room_booking is None:
