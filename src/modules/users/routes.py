@@ -1,5 +1,3 @@
-from typing import Literal
-
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
@@ -10,7 +8,7 @@ from src.modules.event_groups.repository import event_group_repository
 from src.modules.predefined.repository import predefined_repository
 from src.modules.users.linked import LinkedCalendarCreate, LinkedCalendarView
 from src.modules.users.repository import user_repository
-from src.modules.users.schemas import ViewUser, ViewUserScheduleKey
+from src.modules.users.schemas import TargetForExport, ViewUser, ViewUserScheduleKey
 
 router = APIRouter(
     prefix="/users",
@@ -85,9 +83,7 @@ async def hide_favorite(user_id: CURRENT_USER_ID_DEPENDENCY, group_id: int, hide
 
 
 @router.post("/me/{target}/hide", responses={200: {"description": "Target hidden"}})
-async def hide_target(
-    user_id: CURRENT_USER_ID_DEPENDENCY, target: Literal["music-room", "sports", "moodle"], hide: bool = True
-) -> ViewUser:
+async def hide_target(user_id: CURRENT_USER_ID_DEPENDENCY, target: TargetForExport, hide: bool = True) -> ViewUser:
     """
     Hide music room, sports or moodle from current user
     """

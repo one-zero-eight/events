@@ -1,9 +1,19 @@
 __all__ = ["CreateUser", "ViewUser", "UpdateUser", "ViewUserScheduleKey"]
 
 
+from enum import StrEnum
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from src.modules.users.linked import LinkedCalendarView
+
+
+class TargetForExport(StrEnum):
+    MUSIC_ROOM = "music-room"
+    SPORTS = "sports"
+    MOODLE = "moodle"
+    ROOM_BOOKINGS = "room-bookings"
+    WORKSHOPS = "workshops"
 
 
 class CreateUser(BaseModel):

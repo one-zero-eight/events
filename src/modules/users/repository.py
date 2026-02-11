@@ -2,7 +2,6 @@ __all__ = ["SqlUserRepository", "user_repository"]
 
 import random
 import string
-from typing import Literal
 
 from sqlalchemy import delete, select, update
 from sqlalchemy.dialects.postgresql import insert
@@ -13,7 +12,7 @@ from sqlalchemy.sql.expression import exists
 from src.exceptions import EventGroupNotFoundException
 from src.modules.crud import AbstractCRUDRepository, CRUDFactory
 from src.modules.users.linked import LinkedCalendarCreate, LinkedCalendarView
-from src.modules.users.schemas import CreateUser, UpdateUser, ViewUser, ViewUserScheduleKey
+from src.modules.users.schemas import CreateUser, TargetForExport, UpdateUser, ViewUser, ViewUserScheduleKey
 from src.storages.sql.models import EventGroup, LinkedCalendar, User, UserScheduleKeys, UserXFavoriteEventGroup
 from src.storages.sql.models.event_groups import UserXHiddenEventGroup
 from src.storages.sql.storage import SQLAlchemyStorage
@@ -167,16 +166,20 @@ class SqlUserRepository:
             user = await session.scalar(q)
             return ViewUser.model_validate(user)
 
-    async def set_hidden(self, user_id: int, target: Literal["music-room", "sports", "moodle"], hide: bool = True):
+    async def set_hidden(self, user_id: int, target: TargetForExport, hide: bool = True):
         async with self._create_session() as session:
             q = (
                 update(User)
                 .where(User.id == user_id)
                 .values(
                     {
-                        "music_room_hidden": hide if target == "music-room" else User.music_room_hidden,
-                        "sports_hidden": hide if target == "sports" else User.sports_hidden,
-                        "moodle_hidden": hide if target == "moodle" else User.moodle_hidden,
+                        "music_room_hidden": hide if target == TargetForExport.MUSIC_ROOM else User.music_room_hidden,
+                        "sports_hidden": hide if target == TargetForExport.SPORTS else User.sports_hidden,
+                        "moodle_hidden": hide if target == TargetForExport.MOODLE else User.moodle_hidden,
+                        "workshops_hidden": hide if target == TargetForExport.WORKSHOPS else User.workshops_hidden,
+                        "room_bookings_hidden": hide
+                        if target == TargetForExport.ROOM_BOOKINGS
+                        else User.room_bookings_hidden,
                     }
                 )
                 .returning(User)
