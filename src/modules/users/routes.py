@@ -70,7 +70,13 @@ async def delete_favorite(user_id: CURRENT_USER_ID_DEPENDENCY, group_id: int) ->
     return updated_user
 
 
-@router.post("/me/favorites/hide", responses={200: {"description": "Favorite hidden"}})
+@router.post(
+    "/me/favorites/hide",
+    responses={
+        200: {"description": "Favorite hidden"},
+        **ObjectNotFound.responses,
+    },
+)
 async def hide_favorite(user_id: CURRENT_USER_ID_DEPENDENCY, group_id: int, hide: bool = True) -> ViewUser:
     """
     Hide favorite from current user
@@ -96,7 +102,10 @@ async def hide_target(user_id: CURRENT_USER_ID_DEPENDENCY, target: TargetForExpo
 
 @router.post(
     "/me/linked",
-    responses={200: {"description": "Linked calendar added successfully"}},
+    responses={
+        200: {"description": "Linked calendar added successfully"},
+        409: {"description": "Calendar with this alias already exists"},
+    },
 )
 async def link_calendar(
     linked_calendar: LinkedCalendarCreate, user_id: CURRENT_USER_ID_DEPENDENCY

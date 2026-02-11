@@ -95,6 +95,7 @@ async def get_user_schedule(user_id: int, access_key: str) -> StreamingResponse:
             "description": "ICS file with schedule of the music room booking",
             "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
         },
+        **ObjectNotFound.responses,
     },
     tags=["Users"],
 )
@@ -344,6 +345,7 @@ async def get_user_linked_schedule(user_id: int, linked_alias: str) -> Streaming
             "description": "ICS file with schedule of the music room",
             "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
         },
+        404: {"description": "Music room is not configured"},
     },
     response_class=StreamingResponse,
 )
@@ -368,6 +370,7 @@ async def get_music_room_schedule() -> StreamingResponse:
             "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
         },
         **EventGroupNotFoundException.responses,
+        501: {"description": "Path is not set for this event group, on-the-fly .ics not supported"},
     },
     tags=["Event Groups"],
 )
@@ -418,7 +421,16 @@ async def get_event_group_ics_by_alias(
         )
 
 
-@router.get("/users/me/room-bookings.ics")
+@router.get(
+    "/users/me/room-bookings.ics",
+    responses={
+        200: {
+            "description": "ICS file with room bookings",
+            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
+        },
+        **ObjectNotFound.responses,
+    },
+)
 async def get_current_user_room_bookings(user_id: CURRENT_USER_ID_DEPENDENCY) -> Response:
     """
     Get bookings in ICS format for the room bookings
@@ -431,7 +443,17 @@ async def get_current_user_room_bookings(user_id: CURRENT_USER_ID_DEPENDENCY) ->
     return Response(content=ical_bytes, media_type="text/calendar")
 
 
-@router.get("/users/{user_id}/room-bookings.ics")
+@router.get(
+    "/users/{user_id}/room-bookings.ics",
+    responses={
+        200: {
+            "description": "ICS file with room bookings",
+            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
+        },
+        **ObjectNotFound.responses,
+        **ForbiddenException.responses,
+    },
+)
 async def get_user_room_bookings(user_id: int, access_key: str) -> Response:
     """
     Get bookings in ICS format for the room bookings;
