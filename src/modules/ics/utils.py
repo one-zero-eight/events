@@ -444,7 +444,7 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
 
 async def get_personal_room_bookings(user: ViewUser) -> bytes:
     """
-    GET */bookings/{user_id}
+    GET */user/{user_id}/bookings
 
     [
         {
@@ -491,9 +491,11 @@ async def get_personal_room_bookings(user: ViewUser) -> bytes:
     main_calendar["x-wr-calname"] = f"{user.email} Room bookings from innohassle.ru"
 
     async with httpx.AsyncClient(
-        headers={"Authorization": f"Bearer {settings.room_booking.api_key.get_secret_value()}"}, timeout=TIMEOUT
+        base_url=settings.room_booking.api_url,
+        headers={"Authorization": f"Bearer {settings.room_booking.api_key.get_secret_value()}"},
+        timeout=TIMEOUT,
     ) as client:
-        response = await client.get(f"{settings.room_booking.api_url}/bookings/{user.innohassle_id}")
+        response = await client.get(f"/user/{user.innohassle_id}/bookings")
         response.raise_for_status()
         bookings = response.json()
 
