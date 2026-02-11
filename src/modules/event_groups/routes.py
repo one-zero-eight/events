@@ -3,6 +3,7 @@ from urllib.parse import unquote
 import aiofiles
 import icalendar
 from fastapi import APIRouter, Body, HTTPException, UploadFile
+from fastapi_derive_responses import AutoDeriveResponsesAPIRoute
 from sqlalchemy.exc import IntegrityError
 from starlette.responses import JSONResponse
 
@@ -17,7 +18,7 @@ from src.modules.event_groups.repository import event_group_repository
 from src.modules.event_groups.schemas import CreateEventGroup, ListEventGroupsResponse, UpdateEventGroup, ViewEventGroup
 from src.modules.parse.utils import locate_ics_by_path
 
-router = APIRouter(prefix="/event-groups", tags=["Event Groups"])
+router = APIRouter(prefix="/event-groups", tags=["Event Groups"], route_class=AutoDeriveResponsesAPIRoute)
 
 
 @router.post(

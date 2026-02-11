@@ -1,6 +1,7 @@
 from urllib.parse import unquote
 
 from fastapi import APIRouter, Body
+from fastapi_derive_responses import AutoDeriveResponsesAPIRoute
 from pydantic import BaseModel
 
 from src.api.dependencies import VERIFY_PARSER_DEPENDENCY
@@ -8,7 +9,7 @@ from src.exceptions import IncorrectCredentialsException
 from src.modules.tags.repository import tag_repository
 from src.modules.tags.schemas import CreateTag, ViewTag
 
-router = APIRouter(prefix="/tags", tags=["Tags"])
+router = APIRouter(prefix="/tags", tags=["Tags"], route_class=AutoDeriveResponsesAPIRoute)
 
 
 class ListTagsResponse(BaseModel):

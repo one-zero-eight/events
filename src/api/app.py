@@ -67,7 +67,7 @@ if settings.environment == Environment.DEVELOPMENT:
 
     from src.logging_ import logger
 
-    logger.warn("Enable sqlalchemy logging")
+    logger.warning("Enable sqlalchemy logging")
     logging.basicConfig()
     logging.getLogger("sqlalchemy.engine").setLevel(logging.INFO)
 

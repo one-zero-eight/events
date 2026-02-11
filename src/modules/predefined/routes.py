@@ -1,4 +1,5 @@
 from fastapi import APIRouter
+from fastapi_derive_responses import AutoDeriveResponsesAPIRoute
 
 from src.api.dependencies import VERIFY_PARSER_DEPENDENCY
 from src.exceptions import IncorrectCredentialsException
@@ -6,7 +7,7 @@ from src.modules.event_groups.repository import event_group_repository
 from src.modules.predefined.repository import predefined_repository
 from src.modules.predefined.storage import JsonPredefinedUsers
 
-router = APIRouter(prefix="", tags=["Predefined"])
+router = APIRouter(prefix="", tags=["Predefined"], route_class=AutoDeriveResponsesAPIRoute)
 
 
 @router.get(

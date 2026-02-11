@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from fastapi_derive_responses import AutoDeriveResponsesAPIRoute
 from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 
@@ -16,6 +17,7 @@ router = APIRouter(
     responses={
         **IncorrectCredentialsException.responses,
     },
+    route_class=AutoDeriveResponsesAPIRoute,
 )
 
 

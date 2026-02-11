@@ -6,6 +6,7 @@ from itertools import groupby
 import aiofiles
 import icalendar
 from fastapi import APIRouter
+from fastapi_derive_responses import AutoDeriveResponsesAPIRoute
 
 from src.api.dependencies import VERIFY_PARSER_DEPENDENCY
 from src.exceptions import IncorrectCredentialsException
@@ -16,7 +17,7 @@ from src.modules.parse.cleaning import CleaningEvent, CleaningParser, CleaningPa
 from src.modules.parse.utils import get_base_calendar, locate_ics_by_path, sluggify
 from src.modules.tags.schemas import CreateTag
 
-router = APIRouter(prefix="/parse", tags=["Parse"])
+router = APIRouter(prefix="/parse", tags=["Parse"], route_class=AutoDeriveResponsesAPIRoute)
 
 
 async def save_ics(calendar: icalendar.Calendar, event_group_path: str, event_group_id: int):

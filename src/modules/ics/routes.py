@@ -4,6 +4,7 @@ from urllib.parse import unquote
 
 import icalendar
 from fastapi import APIRouter, Header, HTTPException
+from fastapi_derive_responses import AutoDeriveResponsesAPIRoute
 from icalendar import vDDDTypes
 from starlette.responses import FileResponse, Response, StreamingResponse
 
@@ -25,7 +26,7 @@ from src.modules.parse.utils import locate_ics_by_path
 from src.modules.users.linked import LinkedCalendarView
 from src.modules.users.repository import user_repository
 
-router = APIRouter(prefix="", tags=["ICS"])
+router = APIRouter(prefix="", tags=["ICS"], route_class=AutoDeriveResponsesAPIRoute)
 
 
 @router.get(
