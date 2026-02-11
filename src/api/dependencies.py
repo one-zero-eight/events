@@ -10,7 +10,7 @@ from src.modules.tokens.repository import TokenRepository
 
 bearer_scheme = HTTPBearer(
     scheme_name="Bearer",
-    description="Your JSON Web Token (JWT)",
+    description="Token from [InNoHassle Accounts](https://innohassle.ru/account/token)",
     bearerFormat="JWT",
     auto_error=False,  # We'll handle error manually
 )
