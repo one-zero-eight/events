@@ -10,7 +10,7 @@ from src.modules.users.linked import LinkedCalendarView
 
 class TargetForExport(StrEnum):
     MUSIC_ROOM = "music-room"
-    SPORTS = "sports"
+    SPORT = "sport"
     MOODLE = "moodle"
     ROOM_BOOKINGS = "room-bookings"
     WORKSHOPS = "workshops"

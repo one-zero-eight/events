@@ -174,7 +174,7 @@ class SqlUserRepository:
                 .values(
                     {
                         "music_room_hidden": hide if target == TargetForExport.MUSIC_ROOM else User.music_room_hidden,
-                        "sports_hidden": hide if target == TargetForExport.SPORTS else User.sports_hidden,
+                        "sports_hidden": hide if target == TargetForExport.SPORT else User.sports_hidden,
                         "moodle_hidden": hide if target == TargetForExport.MOODLE else User.moodle_hidden,
                         "workshops_hidden": hide if target == TargetForExport.WORKSHOPS else User.workshops_hidden,
                         "room_bookings_hidden": hide
