@@ -495,7 +495,13 @@ async def get_personal_room_bookings(user: ViewUser) -> bytes:
         headers={"Authorization": f"Bearer {settings.room_booking.api_key.get_secret_value()}"},
         timeout=TIMEOUT,
     ) as client:
-        response = await client.get(f"/user/{user.innohassle_id}/bookings")
+        response = await client.get(
+            f"/user/{user.innohassle_id}/bookings",
+            params={
+                "start": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "end": (datetime.datetime.now() + datetime.timedelta(days=14)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            },
+        )
         response.raise_for_status()
         bookings = response.json()
 
