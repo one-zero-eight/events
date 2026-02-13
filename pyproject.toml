@@ -27,7 +27,7 @@ dependencies = [
     "ruff>=0.7.4",
     "sqlalchemy[postgresql-asyncpg]>=2.0.44",
     "uvicorn>=0.32.0",
-    "fastapi-derive-responses>=0.1.5",
+    "fastapi-derive-responses>=0.1.7",
 ]
 
 [tool.ruff]
