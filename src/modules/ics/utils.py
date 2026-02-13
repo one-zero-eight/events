@@ -14,6 +14,7 @@ from fastapi import HTTPException
 from pydantic import BaseModel, TypeAdapter
 
 from src.config import settings
+from src.logging_ import logger
 from src.modules.event_groups.repository import event_group_repository
 from src.modules.innohassle_accounts import innohassle_accounts
 from src.modules.parse.utils import aware_utcnow, get_base_calendar, locate_ics_by_path
@@ -29,21 +30,27 @@ async def generate_ics_from_url(url: str, headers: dict = None) -> AsyncGenerato
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(url, timeout=TIMEOUT, headers=headers)
+            logger.info(f"Response: {response.status_code}, {response.headers}")
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
             # reraise as HTTPException
-            raise HTTPException(status_code=e.response.status_code, detail=e.response.text) from e
+            raise HTTPException(
+                status_code=400,
+                detail=f"Error fetching calendar from {url}, {e.response.status_code}: {e.response.text}",
+            ) from e
 
         # read from stream
-        size: int | None = int(response.headers.get("Content-Length"))
+        _size = response.headers.get("Content-Length")
+        size: int | None = int(_size) if _size is not None else None
 
-        if size is None or size > MAX_SIZE:
-            raise HTTPException(status_code=400, detail="File is too big or Content-Length is not specified")
+        if size and size > MAX_SIZE:
+            raise HTTPException(status_code=400, detail=f"File is too big: {size}")
 
         async for chunk in response.aiter_bytes():
-            size -= len(chunk)
-            if size < 0:
-                raise HTTPException(status_code=400, detail="File is too big")
+            if size is not None:
+                size -= len(chunk)
+                if size < 0:
+                    raise HTTPException(status_code=400, detail="File is too big")
             yield chunk
 
 

@@ -6,6 +6,7 @@ import icalendar
 from fastapi import APIRouter, Header, HTTPException
 from fastapi_derive_responses import AutoDeriveResponsesAPIRoute
 from icalendar import vDDDTypes
+from pydantic import HttpUrl
 from starlette.responses import FileResponse, Response, StreamingResponse
 
 from src.api.dependencies import CURRENT_USER_ID_DEPENDENCY
@@ -307,6 +308,27 @@ async def get_moodle_current_user_schedule(user_id: int, access_key: str) -> Res
     return Response(content=ical_bytes, media_type="text/calendar")
 
 
+@router.post(
+    "/me/check-calendar-url-to-link",
+    responses={
+        200: {
+            "description": "Calendar can be processed by the server",
+            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
+        },
+        400: {"description": "Calendar can't be processed by the server"},
+    },
+)
+async def check_calendar_url(user_id: CURRENT_USER_ID_DEPENDENCY, calendar_url: HttpUrl) -> Response:
+    """
+    Check if calendar url can be processed by the server
+    """
+
+    ical_generator = generate_ics_from_url(str(calendar_url))
+    ical_bytes = b"".join([chunk async for chunk in ical_generator])
+
+    return Response(content=ical_bytes, media_type="text/calendar")
+
+
 @router.get(
     "/users/{user_id}/linked/{linked_alias}.ics",
     responses={
@@ -318,7 +340,7 @@ async def get_moodle_current_user_schedule(user_id: int, access_key: str) -> Res
     },
     tags=["Users"],
 )
-async def get_user_linked_schedule(user_id: int, linked_alias: str) -> StreamingResponse:
+async def get_user_linked_schedule(user_id: int, linked_alias: str) -> Response:
     """
     Get schedule in ICS format for the user
     """
@@ -334,8 +356,9 @@ async def get_user_linked_schedule(user_id: int, linked_alias: str) -> Streaming
     linked_calendar: LinkedCalendarView = user.linked_calendars[linked_alias]
 
     ical_generator = generate_ics_from_url(linked_calendar.url)
+    ical_bytes = b"".join([chunk async for chunk in ical_generator])
 
-    return StreamingResponse(content=ical_generator, media_type="text/calendar")
+    return Response(content=ical_bytes, media_type="text/calendar")
 
 
 @router.get(
