@@ -1,7 +1,6 @@
 __all__ = ["AbstractCRUDRepository", "CRUDFactory"]
 
 from abc import ABCMeta, abstractmethod
-from typing import Generic, TypeVar
 
 from pydantic import BaseModel as PydanticModel
 from sqlalchemy import ColumnElement, and_, or_
@@ -10,13 +9,10 @@ from sqlalchemy.sql.base import ExecutableOption
 
 from src.storages.sql.models.base import Base
 
-# Define generic types
-ViewType = TypeVar("ViewType", bound=PydanticModel)
-CreateType = TypeVar("CreateType", bound=PydanticModel)
-UpdateType = TypeVar("UpdateType", bound=PydanticModel)
 
-
-class AbstractCRUDRepository(Generic[CreateType, ViewType, UpdateType], metaclass=ABCMeta):
+class AbstractCRUDRepository[CreateType: PydanticModel, ViewType: PydanticModel, UpdateType: PydanticModel](
+    metaclass=ABCMeta
+):
     @abstractmethod
     async def create(self, session: AsyncSession, data: CreateType) -> ViewType:
         pass
@@ -60,15 +56,16 @@ class AbstractCRUDRepository(Generic[CreateType, ViewType, UpdateType], metaclas
         pass
 
 
-# define generic type
-ModelType = TypeVar("ModelType", bound=Base)
-
-
-def CRUDFactory(
+def CRUDFactory[
+    ModelType: Base,
+    CreateType: PydanticModel,
+    ViewType: PydanticModel,
+    UpdateType: PydanticModel,
+](
     Model: type[ModelType],
     CreateScheme: type[CreateType],
     ViewScheme: type[ViewType],
-    UpdateScheme: type[UpdateType] = None,
+    UpdateScheme: type[UpdateType] | None = None,
     get_options: tuple[ExecutableOption, ...] = (),
 ) -> AbstractCRUDRepository[CreateType, ViewType, UpdateType]:
     from sqlalchemy import delete, insert, select
