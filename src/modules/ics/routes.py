@@ -308,7 +308,7 @@ async def get_moodle_current_user_schedule(user_id: int, access_key: str) -> Res
     return Response(content=ical_bytes, media_type="text/calendar")
 
 
-@router.post(
+@router.get(
     "/me/check-calendar-url-to-link",
     responses={
         200: {
