@@ -497,6 +497,9 @@ async def get_personal_room_bookings(user: ViewUser) -> bytes:
     main_calendar = get_base_calendar()
     main_calendar["x-wr-calname"] = f"{user.email} Room bookings from innohassle.ru"
 
+    now_utc = datetime.datetime.now(datetime.UTC)
+    start_of_day = now_utc.replace(hour=0, minute=0, second=0, microsecond=0)
+
     async with httpx.AsyncClient(
         base_url=settings.room_booking.api_url,
         headers={"Authorization": f"Bearer {settings.room_booking.api_key.get_secret_value()}"},
@@ -505,8 +508,8 @@ async def get_personal_room_bookings(user: ViewUser) -> bytes:
         response = await client.get(
             f"/user/{user.innohassle_id}/bookings",
             params={
-                "start": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%SZ"),
-                "end": (datetime.datetime.now() + datetime.timedelta(days=14)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "start": start_of_day.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                "end": (now_utc + datetime.timedelta(days=14)).strftime("%Y-%m-%dT%H:%M:%SZ"),
             },
         )
         response.raise_for_status()
