@@ -368,22 +368,22 @@ async def get_moodle_ics(user: ViewUser) -> bytes:
 
             if event_timedelta == datetime.timedelta():
                 if event_name.endswith("opens"):
-                    quiz_name = event_name.split("opens")[0].strip()
+                    quiz_name = event_name.split("opens", maxsplit=1)[0].strip()
                     if quiz_name in quizes_halfs_opens:
                         logging.warning(f"Quiz '{quiz_name}' appears twice")
                     quizes_halfs_opens[quiz_name] = event
                 elif event_name.endswith("открывается"):
-                    quiz_name = event_name.split("открывается")[0].strip()
+                    quiz_name = event_name.split("открывается", maxsplit=1)[0].strip()
                     if quiz_name in quizes_halfs_opens:
                         logging.warning(f"Quiz '{quiz_name}' appears twice")
                     quizes_halfs_opens[quiz_name] = event
                 elif event_name.endswith("closes"):
-                    quiz_name = event_name.split("closes")[0].strip()
+                    quiz_name = event_name.split("closes", maxsplit=1)[0].strip()
                     if quiz_name in quizes_halfs_closes:
                         logging.warning(f"Quiz '{quiz_name}' appears twice")
                     quizes_halfs_closes[quiz_name] = event
                 elif event_name.endswith("закрывается"):
-                    quiz_name = event_name.split("закрывается")[0].strip()
+                    quiz_name = event_name.split("закрывается", maxsplit=1)[0].strip()
                     if quiz_name in quizes_halfs_closes:
                         logging.warning(f"Quiz '{quiz_name}' appears twice")
                     quizes_halfs_closes[quiz_name] = event

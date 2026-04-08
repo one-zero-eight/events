@@ -15,10 +15,9 @@ dependencies = [
     "colorlog>=6.8.2",
     "cryptography>=46.0.2",
     "fastapi[all]>=0.115.0",
-    "fastapi-swagger>=0.2.3",
+    "fastapi-swagger>=0.4.46",
     "gunicorn==23.0.0",
     "icalendar>=6.0.1",
-    "pre-commit>=4.0.1",
     "prometheus-fastapi-instrumentator>=7.0.0",
     "pydantic>=2.12.2",
     "python-multipart>=0.0.19",
@@ -28,6 +27,7 @@ dependencies = [
     "sqlalchemy[postgresql-asyncpg]>=2.0.44",
     "uvicorn>=0.32.0",
     "fastapi-derive-responses>=0.1.7",
+    "prek>=0.3.8",
 ]
 
 [tool.ruff]

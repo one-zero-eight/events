@@ -1,9 +1,9 @@
-name: Run pre-commit
+name: Run prek
 
 on: [ push, pull_request ]
 
 jobs:
-  pre-commit:
+  prek:
     runs-on: ubuntu-latest
     steps:
       - name: 👾 Check out repository
@@ -15,7 +15,7 @@ jobs:
           activate-environment: true
       - name: 📦 Install the project
         run: uv sync
-      - name: 🧪 Run pre-commit
-        run: uv run pre-commit run --show-diff-on-failure --color=always --all-files --hook-stage manual
+      - name: 🧪 Run prek
+        run: uv run prek run --show-diff-on-failure --color=always --all-files --hook-stage manual
         env:
           RUFF_FORMAT: github

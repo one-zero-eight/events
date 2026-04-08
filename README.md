@@ -100,7 +100,7 @@ Check https://github.com/one-zero-eight/fastapi-template for updates once in a w
 
 1. Run `uv sync --upgrade` to update uv.lock file and install the latest versions of the dependencies.
 2. Run `uv tree --outdated --depth=1` will show what package versions are installed and what are the latest versions.
-3. Run `uv run pre-commit autoupdate`
+3. Run `uv run prek auto-update`
 
 Also, Dependabot will help you to keep your dependencies up-to-date, see [dependabot.yaml](.github/dependabot.yaml).
 
