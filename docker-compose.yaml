@@ -19,6 +19,13 @@ services:
       - "./settings.yaml:/app/settings.yaml:ro" # Read-only settings file
     environment:
       TZ: Europe/Moscow # Set the timezone for correct calendar image generation
+    deploy:
+      # Change limits if project needs more RAM, though try to stay within limits
+      resources:
+        limits:
+          memory: 1g
+        reservations:
+          memory: 500m
 
   alembic-migrate:
     build: . # See Dockerfile for more details
