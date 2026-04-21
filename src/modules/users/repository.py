@@ -11,7 +11,7 @@ from sqlalchemy.sql.expression import exists
 
 from src.exceptions import EventGroupNotFoundException
 from src.modules.crud import AbstractCRUDRepository, CRUDFactory
-from src.modules.users.linked import LinkedCalendarCreate, LinkedCalendarView
+from src.modules.users.linked import LinkedCalendarCreate, LinkedCalendarUpdate, LinkedCalendarView
 from src.modules.users.schemas import CreateUser, TargetForExport, UpdateUser, ViewUser, ViewUserScheduleKey
 from src.storages.sql.models import EventGroup, LinkedCalendar, User, UserScheduleKeys, UserXFavoriteEventGroup
 from src.storages.sql.models.event_groups import UserXHiddenEventGroup
@@ -189,20 +189,74 @@ class SqlUserRepository:
             await session.commit()
             return ViewUser.model_validate(user)
 
-    async def link_calendar(self, user_id: int, calendar: "LinkedCalendarCreate") -> "LinkedCalendarView":
+    async def link_calendar(self, user_id: int, linked_calendar: "LinkedCalendarCreate") -> "LinkedCalendarView":
         async with self._create_session() as session:
             q = (
                 insert(LinkedCalendar)
                 .values(
                     user_id=user_id,
-                    **calendar.model_dump(),
+                    **linked_calendar.model_dump(),
                 )
                 .returning(LinkedCalendar)
             )
 
+            created_calendar = await session.scalar(q)
+            await session.commit()
+            return LinkedCalendarView.model_validate(created_calendar)
+
+    async def set_linked_calendar_hidden(self, user_id: int, alias: str, hide: bool = True) -> ViewUser:
+        async with self._create_session() as session:
+            q = (
+                update(LinkedCalendar)
+                .where(
+                    LinkedCalendar.user_id == user_id,
+                    LinkedCalendar.alias == alias,
+                )
+                .values(is_active=not hide)
+            )
+            await session.execute(q)
+            await session.commit()
+
+            user = await session.scalar(SELECT_USER_BY_ID(user_id))
+            return ViewUser.model_validate(user)
+
+    async def delete_linked_calendar(self, user_id: int, alias: str) -> ViewUser:
+        async with self._create_session() as session:
+            q = delete(LinkedCalendar).where(
+                LinkedCalendar.user_id == user_id,
+                LinkedCalendar.alias == alias,
+            )
+            await session.execute(q)
+            await session.commit()
+
+            user = await session.scalar(SELECT_USER_BY_ID(user_id))
+            return ViewUser.model_validate(user)
+
+    async def update_linked_calendar(
+        self, user_id: int, alias: str, linked_calendar: "LinkedCalendarUpdate"
+    ) -> LinkedCalendarView | None:
+        async with self._create_session() as session:
+            values = linked_calendar.model_dump(exclude_unset=True)
+            if not values:
+                q = select(LinkedCalendar).where(
+                    LinkedCalendar.user_id == user_id,
+                    LinkedCalendar.alias == alias,
+                )
+                calendar = await session.scalar(q)
+                return LinkedCalendarView.model_validate(calendar) if calendar else None
+
+            q = (
+                update(LinkedCalendar)
+                .where(
+                    LinkedCalendar.user_id == user_id,
+                    LinkedCalendar.alias == alias,
+                )
+                .values(**values)
+                .returning(LinkedCalendar)
+            )
             calendar = await session.scalar(q)
             await session.commit()
-            return LinkedCalendarView.model_validate(calendar)
+            return LinkedCalendarView.model_validate(calendar) if calendar else None
 
     async def generate_user_schedule_key(self, user_id: int, resource_path: str) -> ViewUserScheduleKey:
         async with self._create_session() as session:

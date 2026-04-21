@@ -7,7 +7,7 @@ from src.api.dependencies import CURRENT_USER_ID_DEPENDENCY
 from src.exceptions import EventGroupNotFoundException, IncorrectCredentialsException, ObjectNotFound
 from src.modules.event_groups.repository import event_group_repository
 from src.modules.predefined.repository import predefined_repository
-from src.modules.users.linked import LinkedCalendarCreate, LinkedCalendarView
+from src.modules.users.linked import LinkedCalendarCreate, LinkedCalendarUpdate, LinkedCalendarView
 from src.modules.users.repository import user_repository
 from src.modules.users.schemas import TargetForExport, ViewUser, ViewUserScheduleKey
 
@@ -90,6 +90,25 @@ async def hide_favorite(user_id: CURRENT_USER_ID_DEPENDENCY, group_id: int, hide
     return updated_user
 
 
+@router.post(
+    "/me/linked/hide",
+    responses={
+        200: {"description": "Linked calendar hidden"},
+        **ObjectNotFound.responses,
+    },
+)
+async def hide_linked_calendar(user_id: CURRENT_USER_ID_DEPENDENCY, alias: str, hide: bool = True) -> ViewUser:
+    """
+    Hide linked calendar from current user
+    """
+    user = await user_repository.read(user_id)
+    if user is None or alias not in user.linked_calendars:
+        raise ObjectNotFound(f"Linked calendar with alias {alias} does not exist")
+
+    updated_user = await user_repository.set_linked_calendar_hidden(user_id=user_id, alias=alias, hide=hide)
+    return updated_user
+
+
 @router.post("/me/{target}/hide", responses={200: {"description": "Target hidden"}})
 async def hide_target(user_id: CURRENT_USER_ID_DEPENDENCY, target: TargetForExport, hide: bool = True) -> ViewUser:
     """
@@ -116,6 +135,52 @@ async def link_calendar(
     try:
         calendar = await user_repository.link_calendar(user_id, linked_calendar)
         return calendar
+    except IntegrityError:
+        raise HTTPException(status_code=409, detail="Calendar with this alias already exists")
+
+
+@router.delete(
+    "/me/linked",
+    responses={
+        200: {"description": "Linked calendar deleted"},
+        **ObjectNotFound.responses,
+    },
+)
+async def delete_linked_calendar(user_id: CURRENT_USER_ID_DEPENDENCY, alias: str) -> ViewUser:
+    """
+    Delete linked calendar from current user
+    """
+    user = await user_repository.read(user_id)
+    if user is None or alias not in user.linked_calendars:
+        raise ObjectNotFound(f"Linked calendar with alias {alias} does not exist")
+
+    updated_user = await user_repository.delete_linked_calendar(user_id=user_id, alias=alias)
+    return updated_user
+
+
+@router.patch(
+    "/me/linked",
+    responses={
+        200: {"description": "Linked calendar updated"},
+        409: {"description": "Calendar with this alias already exists"},
+        **ObjectNotFound.responses,
+    },
+)
+async def update_linked_calendar(
+    user_id: CURRENT_USER_ID_DEPENDENCY, alias: str, linked_calendar: LinkedCalendarUpdate
+) -> LinkedCalendarView:
+    """
+    Update linked calendar for current user
+    """
+    user = await user_repository.read(user_id)
+    if user is None or alias not in user.linked_calendars:
+        raise ObjectNotFound(f"Linked calendar with alias {alias} does not exist")
+
+    try:
+        updated_calendar = await user_repository.update_linked_calendar(user_id, alias, linked_calendar)
+        if updated_calendar is None:
+            raise ObjectNotFound(f"Linked calendar with alias {alias} does not exist")
+        return updated_calendar
     except IntegrityError:
         raise HTTPException(status_code=409, detail="Calendar with this alias already exists")
 
