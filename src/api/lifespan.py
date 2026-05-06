@@ -10,7 +10,7 @@ from src.storages.sql import SQLAlchemyStorage
 
 async def setup_repositories() -> SQLAlchemyStorage:
     from src.modules.event_groups.repository import event_group_repository
-    from src.modules.innohassle_accounts import innohassle_accounts
+    from src.modules.inh_accounts_sdk import inh_accounts
     from src.modules.tags.repository import tag_repository
     from src.modules.users.repository import user_repository
 
@@ -21,7 +21,7 @@ async def setup_repositories() -> SQLAlchemyStorage:
     user_repository.update_storage(storage)
     event_group_repository.update_storage(storage)
     tag_repository.update_storage(storage)
-    await innohassle_accounts.update_key_set()
+    await inh_accounts.update_key_set()
 
     return storage
 

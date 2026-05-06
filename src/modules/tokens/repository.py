@@ -5,7 +5,7 @@ import time
 from authlib.jose import JoseError, JWTClaims, jwt
 from pydantic import BaseModel
 
-from src.modules.innohassle_accounts import innohassle_accounts
+from src.modules.inh_accounts_sdk import inh_accounts
 from src.modules.users.repository import user_repository
 from src.modules.users.schemas import CreateUser
 
@@ -19,7 +19,7 @@ class TokenRepository:
     @classmethod
     def decode_token(cls, token: str) -> JWTClaims:
         now = time.time()
-        pub_key = innohassle_accounts.get_public_key()
+        pub_key = inh_accounts.get_public_key()
         payload = jwt.decode(token, pub_key)
         payload.validate_exp(now, leeway=0)
         payload.validate_iat(now, leeway=0)
@@ -31,7 +31,7 @@ class TokenRepository:
         if user_id is not None:
             return user_id
 
-        innohassle_user = await innohassle_accounts.get_user_by_id(innohassle_id)
+        innohassle_user = await inh_accounts.get_user(innohassle_id)
         if innohassle_user is None:
             return None
         user_id = await user_repository.read_id_by_email(innohassle_user.innopolis_sso.email)

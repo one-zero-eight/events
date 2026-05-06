@@ -16,7 +16,7 @@ from pydantic import BaseModel, TypeAdapter
 from src.config import settings
 from src.logging_ import logger
 from src.modules.event_groups.repository import event_group_repository
-from src.modules.innohassle_accounts import innohassle_accounts
+from src.modules.inh_accounts_sdk import inh_accounts
 from src.modules.parse.utils import aware_utcnow, get_base_calendar, locate_ics_by_path
 from src.modules.predefined.repository import predefined_repository
 from src.modules.users.schemas import ViewUser
@@ -264,7 +264,7 @@ async def get_personal_sport_ics(user: ViewUser) -> bytes:
     main_calendar = get_base_calendar()
     main_calendar["x-wr-calname"] = f"{user.email} Sport schedule from innohassle.ru"
 
-    sport_token = await innohassle_accounts.get_sport_token(user.innohassle_id)
+    sport_token = await inh_accounts.get_sport_token(user.innohassle_id)
     _now = aware_utcnow()
     _start = _now - datetime.timedelta(days=7)
     _end = _now + datetime.timedelta(days=7)
