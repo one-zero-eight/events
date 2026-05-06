@@ -414,7 +414,10 @@ async def get_event_group_ics_by_alias(
     if event_group is None:
         raise EventGroupNotFoundException()
     if event_group.path:
-        ics_path = locate_ics_by_path(event_group.path)
+        try:
+            ics_path = locate_ics_by_path(event_group.path)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
 
         if user_agent == "Google-Calendar-Importer":  # patch reccurences for Google Calendar
             with ics_path.open() as f:

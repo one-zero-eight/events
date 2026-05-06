@@ -172,7 +172,13 @@ def aware_utcnow() -> datetime.datetime:
 
 
 def locate_ics_by_path(path: str) -> Path:
-    return settings.predefined_dir / "ics" / path
+    base_dir = (settings.predefined_dir / "ics").resolve(strict=False)
+    ics_path = (base_dir / path).resolve(strict=False)
+
+    if not ics_path.is_relative_to(base_dir):
+        raise ValueError(f"Path escapes predefined ICS directory: {path!r}")
+
+    return ics_path
 
 
 def get_base_calendar() -> icalendar.Calendar:
