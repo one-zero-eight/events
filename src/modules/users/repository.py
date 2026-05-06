@@ -11,6 +11,7 @@ from sqlalchemy.sql.expression import exists
 
 from src.exceptions import EventGroupNotFoundException
 from src.modules.crud import AbstractCRUDRepository, CRUDFactory
+from src.modules.inh_accounts_sdk import inh_accounts
 from src.modules.users.linked import LinkedCalendarCreate, LinkedCalendarUpdate, LinkedCalendarView
 from src.modules.users.schemas import CreateUser, TargetForExport, UpdateUser, ViewUser, ViewUserScheduleKey
 from src.storages.sql.models import EventGroup, LinkedCalendar, User, UserScheduleKeys, UserXFavoriteEventGroup
@@ -101,6 +102,27 @@ class SqlUserRepository:
             q = update(User).where(User.id == user_id).values(innohassle_id=innohassle_id)
             await session.execute(q)
             await session.commit()
+
+    async def fetch_user_id_or_create(self, innohassle_id: str) -> int | None:
+        user_id = await self.read_id_by_innohassle_id(innohassle_id)
+        if user_id is not None:
+            return user_id
+
+        innohassle_user = await inh_accounts.get_user(innohassle_id)
+        if innohassle_user is None:
+            return None
+        user_id = await self.read_id_by_email(innohassle_user.innopolis_info.email)
+        if user_id is not None:
+            await self.update_innohassle_id(user_id, innohassle_id)
+            return user_id
+
+        user = CreateUser(
+            email=innohassle_user.innopolis_info.email,
+            name=innohassle_user.innopolis_info.name,
+            innohassle_id=innohassle_id,
+        )
+        user_id = (await self.create(user)).id
+        return user_id
 
     async def add_favorite(self, user_id: int, favorite_id: int) -> ViewUser:
         async with self._create_session() as session:

@@ -2,11 +2,13 @@ __all__ = ["CURRENT_USER_ID_DEPENDENCY", "VERIFY_PARSER_DEPENDENCY", "get_curren
 
 from typing import Annotated
 
+from authlib.jose.errors import JoseError
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from src.exceptions import IncorrectCredentialsException
-from src.modules.tokens.repository import TokenRepository
+from src.modules.inh_accounts_sdk import inh_accounts
+from src.modules.users.repository import user_repository
 
 bearer_scheme = HTTPBearer(
     scheme_name="Bearer",
@@ -23,8 +25,13 @@ async def get_current_user_id(
     token = bearer and bearer.credentials
     if not token:
         raise IncorrectCredentialsException(no_credentials=True)
-    token_data = await TokenRepository.verify_user_token(token, IncorrectCredentialsException())
-    return token_data.user_id
+    token_data = inh_accounts.decode_token(token)
+    if token_data is None:
+        raise IncorrectCredentialsException()
+    user_id = await user_repository.fetch_user_id_or_create(token_data.innohassle_id)
+    if user_id is None:
+        raise IncorrectCredentialsException()
+    return user_id
 
 
 def verify_parser(
@@ -33,7 +40,13 @@ def verify_parser(
     token = (bearer and bearer.credentials) or None
     if not token:
         raise IncorrectCredentialsException(no_credentials=True)
-    return TokenRepository.verify_parser_token(token, IncorrectCredentialsException())
+    try:
+        payload = inh_accounts._get_jwt_claims(token)
+        if payload.get("sub") == "parser":
+            return True
+        raise IncorrectCredentialsException()
+    except JoseError:
+        raise IncorrectCredentialsException()
 
 
 CURRENT_USER_ID_DEPENDENCY = Annotated[int, Depends(get_current_user_id)]
