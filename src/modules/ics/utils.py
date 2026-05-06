@@ -1,10 +1,12 @@
 import asyncio
 import datetime
 import html
+import ipaddress
 import logging
+import socket
 from collections.abc import AsyncGenerator
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 from zlib import crc32
 
 import aiofiles
@@ -26,10 +28,39 @@ MAX_SIZE = 10 * 1024 * 1024
 MOSCOW_TZ = datetime.timezone(datetime.timedelta(hours=3), name="Europe/Moscow")
 
 
+def _validate_public_https_url(url: str) -> None:
+    parsed = urlparse(url)
+
+    if parsed.scheme.lower() != "https":
+        raise HTTPException(status_code=400, detail="Only https URLs are allowed")
+    if parsed.hostname is None:
+        raise HTTPException(status_code=400, detail="URL must contain a hostname")
+    if parsed.port is not None:
+        raise HTTPException(status_code=400, detail="Explicit port in URL is not allowed")
+    if parsed.username is not None or parsed.password is not None:
+        raise HTTPException(status_code=400, detail="User info in URL is not allowed")
+
+    hostname = parsed.hostname
+    try:
+        addrinfo = socket.getaddrinfo(hostname, 443, type=socket.SOCK_STREAM)
+    except socket.gaierror as e:
+        raise HTTPException(status_code=400, detail=f"Could not resolve hostname: {hostname}") from e
+
+    if not addrinfo:
+        raise HTTPException(status_code=400, detail=f"Could not resolve hostname: {hostname}")
+
+    for entry in addrinfo:
+        ip_raw = entry[4][0]
+        ip = ipaddress.ip_address(ip_raw)
+        if not ip.is_global:
+            raise HTTPException(status_code=400, detail=f"URL resolves to non-public IP: {ip}")
+
+
 async def generate_ics_from_url(url: str, headers: dict = None) -> AsyncGenerator[bytes]:
+    _validate_public_https_url(url)
     async with httpx.AsyncClient() as client:
         try:
-            response = await client.get(url, timeout=TIMEOUT, headers=headers)
+            response = await client.get(url, timeout=TIMEOUT, headers=headers, follow_redirects=False)
             logger.info(f"Response: {response.status_code}, {response.headers}")
             response.raise_for_status()
         except httpx.HTTPStatusError as e:
@@ -39,19 +70,21 @@ async def generate_ics_from_url(url: str, headers: dict = None) -> AsyncGenerato
                 detail=f"Error fetching calendar from {url}, {e.response.status_code}: {e.response.text}",
             ) from e
 
-        # read from stream
         _size = response.headers.get("Content-Length")
-        size: int | None = int(_size) if _size is not None else None
+        if _size is not None:
+            content_length = int(_size)
+            if content_length > MAX_SIZE:
+                raise HTTPException(status_code=400, detail=f"File is too big: {content_length}")
 
-        if size and size > MAX_SIZE:
-            raise HTTPException(status_code=400, detail=f"File is too big: {size}")
+        ics_content = await response.aread()
+        if len(ics_content) > MAX_SIZE:
+            raise HTTPException(status_code=400, detail="File is too big")
+        try:
+            calendar = icalendar.Calendar.from_ical(ics_content)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail="Invalid ICS format") from e
 
-        async for chunk in response.aiter_bytes():
-            if size is not None:
-                size -= len(chunk)
-                if size < 0:
-                    raise HTTPException(status_code=400, detail="File is too big")
-            yield chunk
+        yield calendar.to_ical()
 
 
 async def _generate_ics_from_multiple(user: ViewUser, *ics: Path) -> AsyncGenerator[bytes]:
