@@ -8,10 +8,22 @@ __all__ = [
 
 import datetime
 from collections.abc import Iterable
+from pathlib import PurePosixPath
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from src.modules.tags.schemas import CreateTag, ViewTag
+
+
+def _validate_event_group_path(path: str | None) -> str | None:
+    if path is None:
+        return None
+
+    normalized_path = PurePosixPath(path)
+    if normalized_path.is_absolute() or ".." in normalized_path.parts:
+        raise ValueError("Path must stay within predefined/ics")
+
+    return path
 
 
 class CreateEventGroupWithoutTags(BaseModel):
@@ -23,6 +35,10 @@ class CreateEventGroupWithoutTags(BaseModel):
     name: str
     path: str | None = None
     description: str | None = None
+
+    @field_validator("path")
+    def _validate_path(cls, v: str | None):
+        return _validate_event_group_path(v)
 
 
 class CreateEventGroup(CreateEventGroupWithoutTags):
@@ -61,6 +77,10 @@ class UpdateEventGroup(BaseModel):
     name: str | None = None
     description: str | None = None
     path: str | None = None
+
+    @field_validator("path")
+    def _validate_path(cls, v: str | None):
+        return _validate_event_group_path(v)
 
 
 class ListEventGroupsResponse(BaseModel):
