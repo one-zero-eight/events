@@ -13,7 +13,7 @@ __all__ = [
 
 import datetime
 import re
-from pathlib import Path
+from pathlib import Path, PurePath
 from zlib import crc32
 
 import dateutil.rrule
@@ -172,11 +172,19 @@ def aware_utcnow() -> datetime.datetime:
 
 
 def locate_ics_by_path(path: str) -> Path:
+    normalized_path = PurePath(path)
+    if normalized_path.is_absolute() or ".." in normalized_path.parts:
+        raise ValueError(f"Path escapes predefined ICS directory: {path!r}")
+    if normalized_path.name == "" or normalized_path.suffix != ".ics":
+        raise ValueError(f"Path must point to an .ics file inside predefined/ics: {path!r}")
+
     base_dir = (settings.predefined_dir / "ics").resolve(strict=False)
-    ics_path = (base_dir / path).resolve(strict=False)
+    ics_path = (base_dir / normalized_path).resolve(strict=False)
 
     if not ics_path.is_relative_to(base_dir):
         raise ValueError(f"Path escapes predefined ICS directory: {path!r}")
+    if ics_path.exists() and ics_path.is_dir():
+        raise ValueError(f"Path must point to a file, not a directory: {path!r}")
 
     return ics_path
 

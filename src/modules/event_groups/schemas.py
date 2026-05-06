@@ -22,6 +22,8 @@ def _validate_event_group_path(path: str | None) -> str | None:
     normalized_path = PurePath(path)
     if normalized_path.is_absolute() or ".." in normalized_path.parts:
         raise ValueError("Path must stay within predefined/ics")
+    if normalized_path.name == "" or normalized_path.suffix != ".ics":
+        raise ValueError("Path must point to an .ics file inside predefined/ics")
 
     return path
 
