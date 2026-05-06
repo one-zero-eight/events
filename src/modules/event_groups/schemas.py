@@ -8,7 +8,7 @@ __all__ = [
 
 import datetime
 from collections.abc import Iterable
-from pathlib import PurePosixPath
+from pathlib import PurePath
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -19,7 +19,7 @@ def _validate_event_group_path(path: str | None) -> str | None:
     if path is None:
         return None
 
-    normalized_path = PurePosixPath(path)
+    normalized_path = PurePath(path)
     if normalized_path.is_absolute() or ".." in normalized_path.parts:
         raise ValueError("Path must stay within predefined/ics")
 
