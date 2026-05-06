@@ -9,6 +9,7 @@ updates:
       python-dependencies:
         patterns:
           - "*"
+    versioning-strategy: increase
 
   # Enable version updates for Docker
   - package-ecosystem: "docker"
