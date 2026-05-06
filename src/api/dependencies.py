@@ -2,9 +2,9 @@ __all__ = ["CURRENT_USER_ID_DEPENDENCY", "VERIFY_PARSER_DEPENDENCY", "get_curren
 
 from typing import Annotated
 
-from authlib.jose.errors import JoseError
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from joserfc.errors import JoseError
 
 from src.exceptions import IncorrectCredentialsException
 from src.modules.inh_accounts_sdk import inh_accounts

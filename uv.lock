@@ -80,19 +80,6 @@ wheels = [
 ]
 
 [[package]]
-name = "authlib"
-version = "1.7.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "cryptography" },
-    { name = "joserfc" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/36/98/7d93f30d029643c0275dbc0bd6d5a6f670661ee6c9a94d93af7ab4887600/authlib-1.7.2.tar.gz", hash = "sha256:2cea25fefcd4e7173bdf1372c0afc265c8034b23a8cd5dcb6a9164b826c64231", size = 176511, upload-time = "2026-05-06T08:10:23.116Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/fb/95/adcb68e20c34162e9135f370d6e31737719c2b6f94bc953fe7ed1f10fe21/authlib-1.7.2-py2.py3-none-any.whl", hash = "sha256:3e1faedc9d87e7d56a164eca3ccb6ace0d61b94abe83e92242f8dc8bba9b4a9f", size = 259548, upload-time = "2026-05-06T08:10:21.436Z" },
-]
-
-[[package]]
 name = "certifi"
 version = "2026.1.4"
 source = { registry = "https://pypi.org/simple" }
@@ -250,7 +237,6 @@ dependencies = [
     { name = "aiofiles" },
     { name = "alembic" },
     { name = "asyncpg" },
-    { name = "authlib" },
     { name = "colorlog" },
     { name = "cryptography" },
     { name = "fastapi", extra = ["all"] },
@@ -258,6 +244,7 @@ dependencies = [
     { name = "fastapi-swagger" },
     { name = "gunicorn" },
     { name = "icalendar" },
+    { name = "joserfc" },
     { name = "prek" },
     { name = "prometheus-fastapi-instrumentator" },
     { name = "pydantic" },
@@ -274,7 +261,6 @@ requires-dist = [
     { name = "aiofiles", specifier = ">=25.1.0" },
     { name = "alembic", specifier = ">=1.18.4" },
     { name = "asyncpg", specifier = ">=0.31.0" },
-    { name = "authlib", specifier = ">=1.7.2" },
     { name = "colorlog", specifier = ">=6.10.1" },
     { name = "cryptography", specifier = ">=48.0.0" },
     { name = "fastapi", extras = ["all"], specifier = ">=0.136.1" },
@@ -282,6 +268,7 @@ requires-dist = [
     { name = "fastapi-swagger", specifier = ">=0.4.49" },
     { name = "gunicorn", specifier = "==26.0.0" },
     { name = "icalendar", specifier = ">=7.1.0" },
+    { name = "joserfc", specifier = ">=1.6.5" },
     { name = "prek", specifier = ">=0.3.13" },
     { name = "prometheus-fastapi-instrumentator", specifier = ">=7.1.0" },
     { name = "pydantic", specifier = ">=2.13.4" },

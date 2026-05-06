@@ -11,7 +11,6 @@ dependencies = [
     "aiofiles>=25.1.0",
     "alembic>=1.18.4",
     "asyncpg>=0.31.0",
-    "authlib>=1.7.2",
     "colorlog>=6.10.1",
     "cryptography>=48.0.0",
     "fastapi[all]>=0.136.1",
@@ -28,6 +27,7 @@ dependencies = [
     "uvicorn>=0.46.0",
     "fastapi-derive-responses>=0.1.7",
     "prek>=0.3.13",
+    "joserfc>=1.6.5",
 ]
 
 [tool.ruff]
