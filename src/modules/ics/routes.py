@@ -419,7 +419,7 @@ async def get_event_group_ics_by_alias(
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e)) from e
 
-        if user_agent == "Google-Calendar-Importer":  # patch reccurences for Google Calendar
+        if user_agent == "Google-Calendar-Importer":  # patch reccurrences for Google Calendar
             with ics_path.open() as f:
                 calendar: icalendar.Calendar = icalendar.Calendar.from_ical(f.read())
             events = []
@@ -443,7 +443,7 @@ async def get_event_group_ics_by_alias(
     else:
         # TODO: create ics file on the fly from events connected to event group
         raise HTTPException(
-            status_code=501, detail="Can not create .ics file on the fly (set static .ics file for the event group"
+            status_code=501, detail="Can not create .ics file on the fly (set static .ics file for the event group)"
         )
 
 
