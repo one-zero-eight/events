@@ -261,7 +261,10 @@ async def set_event_group_ics(
 
     content = calendar.to_ical()
 
-    ics_path = locate_ics_by_path(event_group_path)
+    try:
+        ics_path = locate_ics_by_path(event_group_path)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
     if ics_path.exists():
         async with aiofiles.open(ics_path, "rb") as f:

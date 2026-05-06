@@ -94,7 +94,10 @@ async def get_personal_event_groups_ics(user: ViewUser) -> AsyncGenerator[bytes]
                 status_code=501,
                 detail="Can not create .ics file for event group on the fly (set static .ics file for the event group",
             )
-        ics_path = locate_ics_by_path(event_group.path)
+        try:
+            ics_path = locate_ics_by_path(event_group.path)
+        except ValueError as e:
+            raise HTTPException(status_code=400, detail=str(e)) from e
         paths.add(ics_path)
     ical_generator = _generate_ics_from_multiple(user, *paths)
     return ical_generator
