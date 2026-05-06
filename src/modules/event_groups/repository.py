@@ -54,14 +54,16 @@ class SqlEventGroupRepository:
             q = insert(EventGroup).values(group.model_dump(exclude={"tags"})).returning(EventGroup)
             obj = await session.scalar(q)
             if tags_ids:  # add tags
+                association_table = EventGroup.TagAssociation
                 q = (
-                    insert(EventGroup.tags_association)
+                    insert(association_table)
                     .values([{"object_id": obj.id, "tag_id": tag_id} for tag_id in tags_ids])
                     .on_conflict_do_nothing()
                 )
                 await session.execute(q)
             await session.commit()
-            return ViewEventGroup.model_validate(group)
+
+        return await self.read(obj.id)
 
     async def batch_create(self, groups: list[CreateEventGroupWithoutTags]) -> list[ViewEventGroup]:
         if not groups:
