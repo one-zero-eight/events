@@ -379,7 +379,7 @@ async def get_music_room_schedule() -> StreamingResponse:
     if settings.music_room is None:
         raise HTTPException(status_code=404, detail="Music room is not configured")
 
-    ical_generator = generate_ics_from_url(f"{settings.music_room.api_url}/music-room.ics")
+    ical_generator = generate_ics_from_url(f"{settings.music_room.api_url}/music-room.ics", should_validate_url=False)
 
     return StreamingResponse(content=ical_generator, media_type="text/calendar")
 

@@ -56,8 +56,9 @@ def _validate_public_https_url(url: str) -> None:
             raise HTTPException(status_code=400, detail=f"URL resolves to non-public IP: {ip}")
 
 
-async def generate_ics_from_url(url: str, headers: dict = None) -> AsyncGenerator[bytes]:
-    _validate_public_https_url(url)
+async def generate_ics_from_url(url: str, headers: dict = None, should_validate_url=True) -> AsyncGenerator[bytes]:
+    if should_validate_url:
+        _validate_public_https_url(url)
     async with httpx.AsyncClient() as client:
         try:
             response = await client.get(url, timeout=TIMEOUT, headers=headers, follow_redirects=False)
@@ -155,6 +156,7 @@ async def get_personal_music_room_ics(user: ViewUser) -> AsyncGenerator[bytes]:
     ical_generator = generate_ics_from_url(
         f"{settings.music_room.api_url}/users/{user_id}/bookings.ics",
         headers={"Authorization": f"Bearer {settings.music_room.api_key.get_secret_value()}"},
+        should_validate_url=False,
     )
     return ical_generator
 
