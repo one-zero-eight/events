@@ -273,7 +273,7 @@ requires-dist = [
     { name = "prometheus-fastapi-instrumentator", specifier = ">=7.1.0" },
     { name = "pydantic", specifier = ">=2.13.4" },
     { name = "python-multipart", specifier = ">=0.0.27" },
-    { name = "pytz", specifier = "~=2026.2" },
+    { name = "pytz", specifier = ">=2026.2" },
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "ruff", specifier = ">=0.15.12" },
     { name = "sqlalchemy", extras = ["postgresql-asyncpg"], specifier = ">=2.0.49" },
