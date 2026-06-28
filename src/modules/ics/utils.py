@@ -216,7 +216,9 @@ async def get_all_workshops_ics(only_published: bool = True) -> bytes:
         workshops = [
             workshop
             for workshop in workshops
-            if workshop.get("is_draft") is False and workshop.get("is_active") is True
+            if workshop.get("is_draft") is False
+            and workshop.get("is_active") is True
+            and workshop.get("is_approved") is True
         ]
     return _generate_workshops_ics(workshops, "Workshops schedule from innohassle.ru")
 
