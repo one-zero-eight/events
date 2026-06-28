@@ -16,6 +16,7 @@ from src.logging_ import logger
 from src.modules.event_groups.repository import event_group_repository
 from src.modules.ics.utils import (
     generate_ics_from_url,
+    get_all_workshops_ics,
     get_moodle_ics,
     get_personal_event_groups_ics,
     get_personal_music_room_ics,
@@ -382,6 +383,25 @@ async def get_music_room_schedule() -> StreamingResponse:
     ical_generator = generate_ics_from_url(f"{settings.music_room.api_url}/music-room.ics", should_validate_url=False)
 
     return StreamingResponse(content=ical_generator, media_type="text/calendar")
+
+
+@router.get(
+    "/workshops.ics",
+    responses={
+        200: {
+            "description": "ICS file with all workshops",
+            "content": {"text/calendar": {"schema": {"type": "string", "format": "binary"}}},
+        },
+        404: {"description": "Workshops are not configured"},
+    },
+)
+async def get_workshops_schedule(only_published: bool = True) -> Response:
+    """
+    Get schedule in ICS format for workshops.
+    By default, returns only active non-draft workshops.
+    """
+    ical_bytes = await get_all_workshops_ics(only_published=only_published)
+    return Response(content=ical_bytes, media_type="text/calendar")
 
 
 @router.get(
